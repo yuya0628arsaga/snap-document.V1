@@ -1,7 +1,7 @@
 FROM python:3.9-buster
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /src
+WORKDIR /app
 
 COPY .tool-versions .
 
@@ -19,3 +19,8 @@ ENV PATH="/root/.asdf/shims:/root/.asdf/bin:${PATH}"
 RUN asdf plugin add poetry \
     && asdf plugin add python \
     && asdf install
+
+# .venv の作成
+COPY poetry.lock pyproject.toml ./
+
+RUN poetry install
