@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "python"
+version = "0.1.0"
+description = ""
+authors = ["yuya0628arsaga <yuya.ogawa@arsaga.jp>"]
+
+[tool.poetry.dependencies]
+python = "3.9.13"
+fastapi = "^0.65.1"
+uvicorn = {extras = ["standard"], version = "^0.13.4"}
+
+
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
