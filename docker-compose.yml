@@ -99,11 +99,10 @@ services:
   gpt_engine:
     container_name: snap-document-gpt-engine
     build: ".docker/local/python"
-    working_dir: /src
+    working_dir: /app
     volumes:
-      - ./app/Python:/src
+      - "./.docker/local/python:/app"
     ports:
       - "8000:8000"
     command: >
-      bash -c 'poetry install &&
-      poetry run uvicorn api.main:app --host 0.0.0.0 --reload'
+      bash -c 'poetry run uvicorn api.main:app --host 0.0.0.0 --reload'

@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "/Users/ogawayuuya/snap-document.V1/app/Python/.venv"
+    ],
+    "cSpell.words": [
+        "fastapi",
+        "OPENAI"
+    ]
+}
