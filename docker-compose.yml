@@ -1,0 +1,109 @@
+services:
+  app:
+    build: ".docker/local/php"
+    container_name: snap-document-app
+    working_dir: /app
+    volumes:
+      - ".:/app"
+      - "./.docker/local/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
+    ports:
+      - "9000:9000"
+      - "5173:5173"
+    environment:
+      - USER_NAME
+      - USER_ID
+      - GROUP_NAME
+      - GROUP_ID
+      - OS_NAME
+    depends_on:
+      - mysql
+      - redis
+      - minio
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  nginx:
+    build: ".docker/local/nginx"
+    platform: linux/arm64/v8
+    container_name: snap-document-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/app/public
+      - ./.docker/local/nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+
+  queue_worker:
+    build: ".docker/local/php"
+    container_name: snap-document-worker
+    working_dir: "/app"
+    command: "php artisan queue:work --tries=3 --queue=high,default,low"
+    environment:
+      - USER_NAME
+      - USER_ID
+      - GROUP_NAME
+      - GROUP_ID
+      - OS_NAME
+    volumes:
+      - ".:/app"
+      - "./.docker/local/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
+    depends_on:
+      - mysql
+      - redis
+      - minio
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mysql:
+    container_name: snap-document-mysql
+    platform: linux/amd64
+    build: ".docker/local/mysql"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ".docker/local/mysql/my.cnf:/etc/mysql/my.cnf"
+      - "./storage/mysql:/var/lib/mysql"
+      - ".docker/local/mysql/mysql-docker-entrypoint.sql:/docker-entrypoint-initdb.d/mysql-docker-entrypoint.sql"
+    environment:
+      MYSQL_DATABASE: snap-document
+      MYSQL_USER: snap-document
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+
+  redis:
+    image: redis:6.2-buster
+    container_name: snap-document-redis
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio
+    container_name: snap-document-minio
+    ports:
+      - "9001:9001"
+      - "9002:9002"
+    environment:
+      MINIO_ROOT_USER: access_key
+      MINIO_ROOT_PASSWORD: secret_key
+    # entrypoint: bash
+    # command: -c "/opt/bin/minio server /export --address :9001 --console-address :9002"
+    command: server /data --address :9001 --console-address :9002
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: snap-document-mailhog
+    ports:
+      - "8025:8025"
+
+  gpt_engine:
+    container_name: snap-document-gpt-engine
+    build: ".docker/local/python"
+    working_dir: /src
+    volumes:
+      - ./app/Python:/src
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c 'poetry install &&
+      poetry run uvicorn api.main:app --host 0.0.0.0 --reload'
