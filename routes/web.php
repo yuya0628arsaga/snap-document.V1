@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Log;
 */
 
 Route::get('/', function () {
-    $resp = Http::get('http://gpt_engine:8000/hello');
-    $resp = $resp->json();
-    Log::debug($resp);
-    return view('welcome');
+    // $resp = Http::get('http://gpt_engine:8000/hello');
+    // $resp = $resp->json();
+    // Log::debug($resp);
+    return view('index');
 });

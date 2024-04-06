@@ -14,6 +14,12 @@
 
 <body>
     <div id="test">test</div>
+    <div
+        id="example-id"
+        data-props="{{ json_encode([
+        ])}}">
+    </div>
+
 </body>
 
 </html>
