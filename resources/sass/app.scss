@@ -1,3 +1,4 @@
-#test {
-    color: red;
-}
+@import './foundation/reset';
+@import './foundation/colors';
+
+@import './components/frontend/home'

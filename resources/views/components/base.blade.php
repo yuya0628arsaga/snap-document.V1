@@ -13,13 +13,11 @@
 </head>
 
 <body>
-    <div id="test">test</div>
-    <div
-        id="example-id"
-        data-props="{{ json_encode([
-        ])}}">
+    <div>
+        <div>
+            {{ $slot }}
+        </div>
     </div>
-
 </body>
 
 </html>
