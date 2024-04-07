@@ -102,7 +102,7 @@ const InputText = styled('input')`
     width: 85%;
     padding: 8px;
     :focus {
-        border-color: ${borderColor.blue};
+        outline: 1px ${borderColor.blue} solid;
     }
 `
 const AiChatMessage = (props) => {
