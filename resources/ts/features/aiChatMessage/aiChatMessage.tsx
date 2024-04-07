@@ -16,7 +16,12 @@ const MainContainer = styled('div')`
     flex-grow: 8;
     display: flex;
     flex-direction: column;
-    margin-top: 48px;
+    /* padding-top: 48px; */
+    height: 100vh;
+    > .messages {
+        flex: 1;
+        overflow-y: scroll;
+    }
 `
 
 const SidebarContainer = styled('div')`
@@ -27,8 +32,8 @@ const SidebarContainer = styled('div')`
 `
 const MessageContainer = styled('div')`
     max-width: 80%;
-    margin: 0 10%;
-    height: 80vh;
+    margin: 5% 10%;
+    /* height: 80vh; */
     overflow-y: scroll;
     ::-webkit-scrollbar {
         display:none;
@@ -185,52 +190,54 @@ const AiChatMessage = (props) => {
                 </SidebarContainer>
 
                 <MainContainer>
-                    {/* <button onClick={handleClick}>ボタン</button> */}
-                    {qAndAObjs.map((qAndA, i) => {
-                        return (<MessageContainer key={i}>
-                            {isDisplayQuestion &&
-                                <UsersQuestion>
-                                    <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                    <p className="text">
-                                        <span className="name">You</span>
-                                        {/* 回路エディタで素子を選択するにはどうしたらいいですか？
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
-                                        { qAndA.question }
-                                    </p>
-                                </UsersQuestion>
-                            }
-                            {qAndA.isGenerating &&
-                                <Load>
-                                    <CircularProgress disableShrink size={25}/>
-                                    <p>回答を生成中です...</p>
-                                </Load>
-                            }
-                            {isDisplayChatGPT &&
-                                <AiAnswer>
-                                    <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                    <p className="text">
-                                        <span className="name">ChatGPT</span>
-                                        { qAndA.answer }
-                                        {/* Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                        Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
-                                    </p>
-                                </AiAnswer>
-                            }
+                    <div className="messages">
+                        {/* <button onClick={handleClick}>ボタン</button> */}
+                        {qAndAObjs.map((qAndA, i) => {
+                            return (<MessageContainer key={i}>
+                                {isDisplayQuestion &&
+                                    <UsersQuestion>
+                                        <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                        <p className="text">
+                                            <span className="name">You</span>
+                                            {/* 回路エディタで素子を選択するにはどうしたらいいですか？
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
+                                            { qAndA.question }
+                                        </p>
+                                    </UsersQuestion>
+                                }
+                                {qAndA.isGenerating &&
+                                    <Load>
+                                        <CircularProgress disableShrink size={25}/>
+                                        <p>回答を生成中です...</p>
+                                    </Load>
+                                }
+                                {isDisplayChatGPT &&
+                                    <AiAnswer>
+                                        <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                        <p className="text">
+                                            <span className="name">ChatGPT</span>
+                                            { qAndA.answer }
+                                            {/* Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
+                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
+                                        </p>
+                                    </AiAnswer>
+                                }
 
-                        </MessageContainer>)
-                    })}
+                            </MessageContainer>)
+                        })}
+                    </div>
 
                     <div className='m_48'>
                         <FormContainer className='ta_c'>
@@ -238,6 +245,7 @@ const AiChatMessage = (props) => {
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
                         </FormContainer>
                     </div>
+
                 </MainContainer>
             </Wrapper>
         </>
