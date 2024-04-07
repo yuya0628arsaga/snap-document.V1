@@ -94,8 +94,6 @@ const AiAnswer = styled('div')`
     }
 `
 
-const SendButton = styled('button')`
-`
 const InputText = styled('input')`
     background: ${bgColor.lightGray};
     border: 1px solid ${borderColor.gray};
@@ -118,6 +116,11 @@ const AiChatMessage = (props) => {
     const [answer, setAnswer] = useState('')
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
+
+    const SendButton = styled('button')`
+        cursor: ${ (isGenerating || !inputQuestion) && 'default'};
+    `
+
     const fetch = () => {
         axios.get('http://localhost:80/api/test').then((res) => {
             console.log(res.data)
@@ -134,6 +137,8 @@ const AiChatMessage = (props) => {
     }
 
     const sendQuestion = () => {
+        if (isGenerating || !inputQuestion) return;
+
         setIsGenerating(true)
 
         setIsDisplayQuestion(true)
@@ -213,8 +218,8 @@ const AiChatMessage = (props) => {
 
                     <div className='m_48'>
                         <div className='ta_c'>
-                            <InputText onChange={handleChangeInput} value={inputQuestion} className="test" type='text' placeholder='質問を入力してください。'></InputText>
-                            <SendButton onClick={sendQuestion}><SendIcon /></SendButton>
+                            <InputText onChange={handleChangeInput} value={inputQuestion} className="test" type='text' placeholder='質問を入力してください。' disabled={isGenerating}></InputText>
+                            <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion && `${bgColor.blue}` }}/></SendButton>
                         </div>
                     </div>
                 </MainContainer>
