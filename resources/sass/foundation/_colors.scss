@@ -1,0 +1,16 @@
+$light-gray: (
+    'background': #F5F5F7,
+    'border': #C3C3C3,
+);
+
+$blue: (
+    'base': #00A4FF
+);
+
+@function gray($key) {
+    @return map-get($light-gray, $key);
+}
+
+@function blue($key) {
+    @return map-get($blue, $key);
+}

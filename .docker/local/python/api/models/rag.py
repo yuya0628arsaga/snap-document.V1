@@ -45,8 +45,8 @@ class Rag(object):
             model="gpt-4-vision-preview",
             max_tokens=1024,
             temperature=0,
-            streaming=True,
-            callback_manager=BaseCallbackManager([StreamingStdOutCallbackHandler()])
+            # streaming=True,
+            # callback_manager=BaseCallbackManager([StreamingStdOutCallbackHandler()])
         )
 
         # MEMO::chain については p.106~
@@ -56,10 +56,10 @@ class Rag(object):
             | model
             | StrOutputParser()
         )
-        # answer = chain.invoke(question)
-        stream_answer = chain.stream(question)
+        answer = chain.invoke(question)
+        # stream_answer = chain.stream(question)
 
-        return stream_answer, docs_by_type
+        return answer, docs_by_type
 
 
     def split_image_text_types(self, docs):
