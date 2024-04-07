@@ -16,6 +16,7 @@ const MainContainer = styled('div')`
     flex-grow: 8;
     display: flex;
     flex-direction: column;
+    margin-top: 48px;
 `
 
 const SidebarContainer = styled('div')`
@@ -172,7 +173,7 @@ const AiChatMessage = (props) => {
                 </SidebarContainer>
 
                 <MainContainer>
-                    <button onClick={handleClick}>ボタン</button>
+                    {/* <button onClick={handleClick}>ボタン</button> */}
                     <MessageContainer>
                         {isDisplayQuestion &&
                             <UsersQuestion>
