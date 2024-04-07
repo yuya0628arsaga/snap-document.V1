@@ -4,17 +4,9 @@ import React, { useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontWeight } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
-
-import FormControl, { useFormControl } from '@mui/material/FormControl';
-import OutlinedInput from '@mui/material/OutlinedInput';
-
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Typography from '@mui/material/Typography';
 import SendIcon from '@mui/icons-material/Send';
-
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-
 
 const Wrapper = styled('div')`
     display: flex;
@@ -94,6 +86,10 @@ const AiAnswer = styled('div')`
     }
 `
 
+const FormContainer = styled('div')`
+    position: relative;
+`
+
 const InputText = styled('input')`
     background: ${bgColor.lightGray};
     border: 1px solid ${borderColor.gray};
@@ -105,6 +101,7 @@ const InputText = styled('input')`
         outline: 1px ${borderColor.blue} solid;
     }
 `
+
 const AiChatMessage = (props) => {
 
     const [inputQuestion, setInputQuestion] = useState('')
@@ -119,6 +116,10 @@ const AiChatMessage = (props) => {
 
     const SendButton = styled('button')`
         cursor: ${ (isGenerating || !inputQuestion) && 'default'};
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 8.5%;
     `
 
     const fetch = () => {
@@ -217,10 +218,10 @@ const AiChatMessage = (props) => {
                     </MessageContainer>
 
                     <div className='m_48'>
-                        <div className='ta_c'>
+                        <FormContainer className='ta_c'>
                             <InputText onChange={handleChangeInput} value={inputQuestion} className="test" type='text' placeholder='質問を入力してください。' disabled={isGenerating}></InputText>
-                            <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion && `${bgColor.blue}` }}/></SendButton>
-                        </div>
+                            <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
+                        </FormContainer>
                     </div>
                 </MainContainer>
             </Wrapper>
