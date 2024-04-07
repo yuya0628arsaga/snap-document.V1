@@ -161,7 +161,7 @@ const AiChatMessage = (props) => {
 
         setIsDisplayChatGPT(true)
 
-        axios.get('http://user.localhost:80/api/v1/test').then((res) => {
+        axios.get('/api/v1/test').then((res) => {
             console.log(res.data['message'])
             // setAnswer(res.data['message'])
             const lastQandA = newQAndAObjs.slice(-1)[0];

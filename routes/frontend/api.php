@@ -66,7 +66,7 @@ Route::middleware([])->group(function () {
 // });
 
 Route::get('/test', function (Request $request) {
-    Sleep::sleep(5);
+    Sleep::sleep(1);
     Log::debug('停止');
     $a = rand();
     return [
