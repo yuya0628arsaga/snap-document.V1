@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Frontend\Chats\Api\StoreChatController;
+use App\Http\Controllers\Frontend\Chat\Api\StoreChatController;
 use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
