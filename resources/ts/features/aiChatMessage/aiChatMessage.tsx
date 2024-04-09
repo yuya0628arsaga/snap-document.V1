@@ -7,6 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import SelectBox from './../../components/SelectBox';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -31,8 +32,8 @@ const SidebarContainer = styled('div')`
     background: yellow;
 `
 const MessageContainer = styled('div')`
-    max-width: 80%;
-    margin: 5% 10%;
+    max-width: 60%;
+    margin: 1% auto;
     /* height: 80vh; */
     overflow-y: scroll;
     ::-webkit-scrollbar {
@@ -119,6 +120,9 @@ const AiChatMessage = (props) => {
 
     const [qAndAObjs, setQandAObjs] = useState([])
 
+    const [manual, setManual] = React.useState('');
+    const [isSelectManual, setIsSelectManual] = useState(true);
+
     const SendButton = styled('button')`
         cursor: ${ (isLoading || !inputQuestion) && 'default'};
         position: absolute;
@@ -145,6 +149,10 @@ const AiChatMessage = (props) => {
     const sendQuestion = () => {
         // const latestQAndAObjs = qAndAObjs.slice(-1)[0];
         if (isLoading || !inputQuestion) return;
+        if (manual === '') {
+            setIsSelectManual(false)
+            return;
+        }
 
         const newQAndAObjs = [...qAndAObjs, { question: inputQuestion, answer: '', isGenerating: true }]
 
@@ -190,6 +198,7 @@ const AiChatMessage = (props) => {
                 </SidebarContainer>
 
                 <MainContainer>
+                    <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                     <div className="messages">
                         {/* <button onClick={handleClick}>ボタン</button> */}
                         {qAndAObjs.map((qAndA, i) => {
