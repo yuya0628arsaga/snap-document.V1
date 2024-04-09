@@ -12,7 +12,7 @@ class ChatRepositoryImpl implements ChatRepository
     /**
      * {@inheritdoc}
      */
-    public function create(StoreChatParams $params): Chat
+    public function store(StoreChatParams $params): Chat
     {
         return Chat::create($params->toArray());
     }

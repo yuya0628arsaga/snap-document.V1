@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace App\Repositories\Frontend\Page;
 
 use App\Models\Page;
-use App\Repositories\Frontend\Page\Params\StorePageParams;
 
 class PageRepositoryImpl implements PageRepository
 {
     /**
      * {@inheritdoc}
      */
-    public function create(StorePageParams $storePageParams): Page
+    public function insert(array $records): void
     {
-        return Page::create($storePageParams->toArray());
+        Page::insert($records);
     }
 }
