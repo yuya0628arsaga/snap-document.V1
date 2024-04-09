@@ -161,11 +161,11 @@ const AiChatMessage = (props) => {
 
         setIsDisplayChatGPT(true)
 
-        axios.get('/api/v1/test').then((res) => {
-            console.log(res.data['message'])
+        axios.post('/api/v1/chats/').then((res) => {
+            console.log(res.data['answer'])
             // setAnswer(res.data['message'])
             const lastQandA = newQAndAObjs.slice(-1)[0];
-            lastQandA.answer = res.data['message']
+            lastQandA.answer = res.data['answer']
             lastQandA.isGenerating = false
 
             setQandAObjs(newQAndAObjs)

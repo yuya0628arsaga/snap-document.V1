@@ -2,28 +2,25 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use App\Traits\Common\SerializeDate;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class User extends Authenticatable
+class Page extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
+    use HasUlids;
     use SerializeDate;
 
-     /**
+    /**
      * The attributes that are not mass assignable.
      *
      * @var array
      */
     protected $guarded = [
         'id',
-        'remember_token',
         'created_at',
         'updated_at',
         'deleted_at',
@@ -34,10 +31,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = [];
 
     /**
      * The attributes that should be cast.
@@ -45,20 +39,19 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
-        'email_verified_at' => 'immutable_datetime',
-        'password' => 'hashed',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
         'deleted_at' => 'immutable_datetime',
     ];
 
+
     /**
-     *  chatsテーブルとのリレーション
+     * chatsテーブルとのリレーション
      *
-     * @return HasMany
+     * @return BelongsTo
      */
-    public function chats(): HasMany
+    public function chat(): BelongsTo
     {
-        return $this->hasMany(Chat::class);
+        return $this->belongsTo(Chat::class);
     }
 }
