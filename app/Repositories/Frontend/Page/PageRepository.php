@@ -16,5 +16,5 @@ interface PageRepository
     *
     * @return Page
     */
-    public function create(StorePageParams $params): Page;
+    public function store(StorePageParams $params): Page;
 }

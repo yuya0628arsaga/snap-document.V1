@@ -62,7 +62,7 @@ class StoreChatUseCase
                 'user_id' => $userId ?? null,
             ]);
 
-            $chat = $this->chatRepository->create($storeChatParams);
+            $chat = $this->chatRepository->store($storeChatParams);
 
             foreach ($pdfPages as $pdfPage) {
                 $storePageParams = $this->makeStorePageParams($pdfPage, $chat->id);
@@ -75,7 +75,7 @@ class StoreChatUseCase
                 ]);
 
                 // TODO::ここ insert で一括createできない？
-                $this->pageRepository->create($storePageParams);
+                $this->pageRepository->store($storePageParams);
             }
 
             Log::info('[End] チャットとページの保存処理が完了しました。', [

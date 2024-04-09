@@ -15,5 +15,5 @@ interface ChatRepository
      * @param StoreChatParams $params
      * @return Chat
      */
-    public function create(StoreChatParams $params): Chat;
+    public function store(StoreChatParams $params): Chat;
 }

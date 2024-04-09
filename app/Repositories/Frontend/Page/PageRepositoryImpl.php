@@ -12,7 +12,7 @@ class PageRepositoryImpl implements PageRepository
     /**
      * {@inheritdoc}
      */
-    public function create(StorePageParams $storePageParams): Page
+    public function store(StorePageParams $storePageParams): Page
     {
         return Page::create($storePageParams->toArray());
     }
