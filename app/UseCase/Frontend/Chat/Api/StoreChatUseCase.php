@@ -70,6 +70,12 @@ class StoreChatUseCase
                         documentId: $document->id,
                     );
 
+                Log::info('[Start] チャットの保存処理を開始します。', [
+                    'method' => __METHOD__,
+                    'question' => $question,
+                    'user_id' => $userId ?? null,
+                ]);
+
                 $chat = $this->chatRepository->create($storeChatParams);
 
                 foreach ($pdfPages as $pdfPage) {
@@ -78,9 +84,23 @@ class StoreChatUseCase
                             page: $pdfPage,
                             chatId: $chat->id,
                         );
+
+                    Log::info('[Start] ページの保存処理を開始します。', [
+                        'method' => __METHOD__,
+                        'chat_id' => $chat->id,
+                        'user_id' => $userId ?? null,
+                    ]);
+
                     // TODO::ここ insert で一括createできない？
                     $this->pageRepository->create($storePageParams);
                 }
+
+                Log::info('[End] チャットとページの保存処理が完了しました。', [
+                    'method' => __METHOD__,
+                    'question' => $question,
+                    'chat_id' => $chat->id,
+                    'user_id' => $userId ?? null,
+                ]);
             });
 
             return $res;
