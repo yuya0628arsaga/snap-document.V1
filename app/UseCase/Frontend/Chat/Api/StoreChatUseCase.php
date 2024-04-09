@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCase\Frontend\Chat\Api;
 
 use App\Exceptions\GptEngineProcessException;
+use App\Models\Page;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\Document\DocumentRepository;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Illuminate\Support\Str;
 
 class StoreChatUseCase
 {
@@ -64,19 +66,16 @@ class StoreChatUseCase
 
             $chat = $this->chatRepository->store($storeChatParams);
 
-            foreach ($pdfPages as $pdfPage) {
-                $storePageParams = $this->makeStorePageParams($pdfPage, $chat->id);
+            $insertPageParams = $this->makeInsertPageParams($pdfPages, $chat->id);
 
-                Log::info('[Start] ページの保存処理を開始します。', [
-                    'method' => __METHOD__,
-                    'chat_id' => $chat->id,
-                    'user_id' => $userId ?? null,
-                    'page' => $pdfPage,
-                ]);
+            Log::info('[Start] ページの保存処理を開始します。', [
+                'method' => __METHOD__,
+                'chat_id' => $chat->id,
+                'user_id' => $userId ?? null,
+                'pages' => $pdfPages,
+            ]);
 
-                // TODO::ここ insert で一括createできない？
-                $this->pageRepository->store($storePageParams);
-            }
+            $this->pageRepository->insert($insertPageParams);
 
             Log::info('[End] チャットとページの保存処理が完了しました。', [
                 'method' => __METHOD__,
@@ -123,19 +122,30 @@ class StoreChatUseCase
     }
 
     /**
-     * ページを保存するためのオブジェクト作成
+     * ページ配列をinsertするためのオブジェクト作成
      *
-     * @param int $pdfPage
+     * @param array $pdfPages
      * @param string $chatId
      *
-     * @return StorePageParams
+     * @return array
      */
-    private function makeStorePageParams($pdfPage, $chatId): StorePageParams
+    private function makeInsertPageParams($pdfPages, $chatId): array
     {
-        return
-            new StorePageParams(
-                page: $pdfPage,
-                chatId: $chatId,
-            );
+        $insertPageParams = [];
+
+        foreach ($pdfPages as $pdfPage) {
+            $storePageParams =
+                new StorePageParams(
+                    id: strtolower((string) Str::ulid()),
+                    page: $pdfPage,
+                    chatId: $chatId,
+                    createdAt: CarbonImmutable::now(),
+                    updatedAt: CarbonImmutable::now(),
+                    deletedAt: null,
+                );
+
+            $insertPageParams[] = $storePageParams->toArrayForInsert();
+        }
+        return $insertPageParams;
     }
 }
