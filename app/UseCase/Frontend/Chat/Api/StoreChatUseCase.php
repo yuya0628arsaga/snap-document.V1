@@ -41,28 +41,20 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName): Response
     {
-        $res = Http::timeout(-1)->get('http://gpt_engine:8000/hello');
+        $responseFromGptEngine = $this->getAnswerFromGptEngine();
 
-        if ($res["status"] !== SymfonyResponse::HTTP_OK) {
-            ['status' => $status, 'message' => $errorMessage] = $res;
+        if ($responseFromGptEngine["status"] !== SymfonyResponse::HTTP_OK) {
+            ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
+
             throw new GptEngineProcessException(message: $errorMessage, code: $status);
         }
 
-        ['answer' => $answer, 'pdf_pages' => $pdfPages] = $res;
+        ['answer' => $answer, 'pdf_pages' => $pdfPages] = $responseFromGptEngine;
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
-            $storeChatParams =
-                new StoreChatParams(
-                    question: $question,
-                    questionTokenCount: 12,
-                    answer: $answer,
-                    answerTokenCount: 28,
-                    date: CarbonImmutable::now(),
-                    userId: null,
-                    documentId: $document->id,
-                );
+            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id);
 
             Log::info('[Start] チャットの保存処理を開始します。', [
                 'method' => __METHOD__,
@@ -73,11 +65,7 @@ class StoreChatUseCase
             $chat = $this->chatRepository->create($storeChatParams);
 
             foreach ($pdfPages as $pdfPage) {
-                $storePageParams =
-                    new StorePageParams(
-                        page: $pdfPage,
-                        chatId: $chat->id,
-                    );
+                $storePageParams = $this->makeStorePageParams($pdfPage, $chat->id);
 
                 Log::info('[Start] ページの保存処理を開始します。', [
                     'method' => __METHOD__,
@@ -98,6 +86,56 @@ class StoreChatUseCase
             ]);
         });
 
-        return $res;
+        return $responseFromGptEngine;
+    }
+
+    /**
+     * gpt_engine から回答を取得
+     *
+     * @return \Illuminate\Http\Client\Response
+     */
+    private function getAnswerFromGptEngine(): Response
+    {
+        return Http::timeout(-1)->get('http://gpt_engine:8000/hello');
+    }
+
+    /**
+     * チャットを保存するためのオブジェクト作成
+     *
+     * @param string $question
+     * @param string $answer
+     * @param string $documentId
+     *
+     * @return StoreChatParams
+     */
+    private function makeStoreChatParams($question, $answer, $documentId): StoreChatParams
+    {
+        return
+            new StoreChatParams(
+                question: $question,
+                questionTokenCount: 12,
+                answer: $answer,
+                answerTokenCount: 28,
+                date: CarbonImmutable::now(),
+                userId: null,
+                documentId: $documentId,
+            );
+    }
+
+    /**
+     * ページを保存するためのオブジェクト作成
+     *
+     * @param int $pdfPage
+     * @param string $chatId
+     *
+     * @return StorePageParams
+     */
+    private function makeStorePageParams($pdfPage, $chatId): StorePageParams
+    {
+        return
+            new StorePageParams(
+                page: $pdfPage,
+                chatId: $chatId,
+            );
     }
 }

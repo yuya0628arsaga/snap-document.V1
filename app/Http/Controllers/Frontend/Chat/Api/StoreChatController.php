@@ -20,7 +20,7 @@ class StoreChatController extends Controller
     }
 
     /**
-     * @return array
+     * @return JsonResponse
      */
     public function __invoke(): JsonResponse
     {
