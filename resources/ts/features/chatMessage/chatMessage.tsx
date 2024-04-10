@@ -12,6 +12,7 @@ import SelectBox from '../../components/SelectBox';
 const Wrapper = styled('div')`
     display: flex;
 `
+
 const MainContainer = styled('div')`
     /* background: green; */
     flex-grow: 8;
@@ -131,23 +132,11 @@ const ChatMessage = (props) => {
         right: 8.5%;
     `
 
-    const fetch = () => {
-        axios.get('http://user.localhost:80/api/v1/test').then((res) => {
-            console.log(res.data)
-        })
-    }
-
-    const handleClick = () => {
-        console.log(121212)
-        fetch()
-    }
-
     const handleChangeInput = (e) => {
         setInputQuestion(e.target.value)
     }
 
     const sendQuestion = () => {
-        // const latestQAndAObjs = qAndAObjs.slice(-1)[0];
         if (isLoading || !inputQuestion) return;
         if (manual === '') {
             setIsSelectManual(false)
@@ -161,9 +150,6 @@ const ChatMessage = (props) => {
         setIsLoading(true)
 
         setIsDisplayQuestion(true)
-
-        // const newDisplayedQuestions = [...displayedQuestions, inputQuestion]
-        // setDisplayedQuestions([...displayedQuestions, inputQuestion])
 
         setInputQuestion('')
 
@@ -183,13 +169,7 @@ const ChatMessage = (props) => {
 
         console.log(7777)
         console.log(inputQuestion)
-
-        // setTimeout(() => {
-        //     setIsGenerating(false)
-        // }, 3000)
-
     }
-
 
     return (
         <>
@@ -200,7 +180,6 @@ const ChatMessage = (props) => {
                 <MainContainer>
                     <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                     <div className="messages">
-                        {/* <button onClick={handleClick}>ボタン</button> */}
                         {qAndAObjs.map((qAndA, i) => {
                             return (<MessageContainer key={i}>
                                 {isDisplayQuestion &&
@@ -208,8 +187,6 @@ const ChatMessage = (props) => {
                                         <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                         <p className="text">
                                             <span className="name">You</span>
-                                            {/* 回路エディタで素子を選択するにはどうしたらいいですか？
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
                                             { qAndA.question }
                                         </p>
                                     </UsersQuestion>
@@ -226,20 +203,6 @@ const ChatMessage = (props) => {
                                         <p className="text">
                                             <span className="name">ChatGPT</span>
                                             { qAndA.answer }
-                                            {/* Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
                                         </p>
                                     </AiAnswer>
                                 }
