@@ -119,7 +119,7 @@ const ChatMessage = (props) => {
 
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
-    const [qAndAObjs, setQandAObjs] = useState([])
+    const [chats, setChats] = useState([])
 
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
@@ -143,9 +143,9 @@ const ChatMessage = (props) => {
             return;
         }
 
-        const newQAndAObjs = [...qAndAObjs, { question: inputQuestion, answer: '', isGenerating: true }]
+        const newChats = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
 
-        setQandAObjs(newQAndAObjs)
+        setChats(newChats)
 
         setIsLoading(true)
 
@@ -158,11 +158,11 @@ const ChatMessage = (props) => {
         axios.post('/api/v1/chats/', { question: '質問params', documentName: 'ドキュメントparams' }).then((res) => {
             console.log(res.data['answer'])
             // setAnswer(res.data['message'])
-            const lastQandA = newQAndAObjs.slice(-1)[0];
-            lastQandA.answer = res.data['answer']
-            lastQandA.isGenerating = false
+            const lastChat = newChats.slice(-1)[0];
+            lastChat.answer = res.data['answer']
+            lastChat.isGenerating = false
 
-            setQandAObjs(newQAndAObjs)
+            setChats(newChats)
 
             setIsLoading(false)
         })
@@ -180,18 +180,18 @@ const ChatMessage = (props) => {
                 <MainContainer>
                     <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                     <div className="messages">
-                        {qAndAObjs.map((qAndA, i) => {
+                        {chats.map((chat, i) => {
                             return (<MessageContainer key={i}>
                                 {isDisplayQuestion &&
                                     <UsersQuestion>
                                         <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                         <p className="text">
                                             <span className="name">You</span>
-                                            { qAndA.question }
+                                            { chat.question }
                                         </p>
                                     </UsersQuestion>
                                 }
-                                {qAndA.isGenerating &&
+                                {chat.isGenerating &&
                                     <Load>
                                         <CircularProgress disableShrink size={25}/>
                                         <p>回答を生成中です...</p>
@@ -202,7 +202,7 @@ const ChatMessage = (props) => {
                                         <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                         <p className="text">
                                             <span className="name">ChatGPT</span>
-                                            { qAndA.answer }
+                                            { chat.answer }
                                         </p>
                                     </AiAnswer>
                                 }
