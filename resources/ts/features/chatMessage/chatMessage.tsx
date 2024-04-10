@@ -176,7 +176,7 @@ const ChatMessage = () => {
                 setErrorMessage('サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。')
             } else {
                 // general error
-                console.log(e)
+                console.error(e)
                 setErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
             }
             setChats(chats)
