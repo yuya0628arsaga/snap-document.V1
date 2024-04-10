@@ -153,6 +153,9 @@ const ChatMessage = () => {
         setInputQuestion(e.target.value)
     }
 
+    /**
+     * サーバに質問を投げて回答を取得
+     */
     const postChats = (inputQuestion: string, manual: string, newChats: Chat[]): void => {
         axios({
             url: '/api/v1/chats/',
@@ -192,20 +195,25 @@ const ChatMessage = () => {
             setIsSelectManual(false)
             return;
         }
-
+        // エラーメッセージを空に
         setErrorMessage('')
 
         const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
         setChats(newChats)
 
+        // ローディング表示
         setIsLoading(true)
 
+        // 質問表示
         setIsDisplayQuestion(true)
 
+        // GPTのアイコン表示
         setIsDisplayChatGPT(true)
 
+        // API通信
         postChats(inputQuestion, manual, newChats)
 
+        // 質問入力欄を空に
         setInputQuestion('')
     }
 
