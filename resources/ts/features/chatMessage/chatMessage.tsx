@@ -153,24 +153,7 @@ const ChatMessage = () => {
         setInputQuestion(e.target.value)
     }
 
-    const sendQuestion = () => {
-        if (isLoading || !inputQuestion) return;
-        if (manual === '') {
-            setIsSelectManual(false)
-            return;
-        }
-
-        setErrorMessage('')
-
-        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
-        setChats(newChats)
-
-        setIsLoading(true)
-
-        setIsDisplayQuestion(true)
-
-        setIsDisplayChatGPT(true)
-
+    const postChats = (inputQuestion: string, manual: string, newChats: Chat[]): void => {
         axios({
             url: '/api/v1/chats/',
             method: 'POST',
@@ -201,8 +184,28 @@ const ChatMessage = () => {
         .then((): void => {
             setIsLoading(false)
         })
+    }
 
-        console.log(inputQuestion)
+    const sendQuestion = () => {
+        if (isLoading || !inputQuestion) return;
+        if (manual === '') {
+            setIsSelectManual(false)
+            return;
+        }
+
+        setErrorMessage('')
+
+        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
+        setChats(newChats)
+
+        setIsLoading(true)
+
+        setIsDisplayQuestion(true)
+
+        setIsDisplayChatGPT(true)
+
+        postChats(inputQuestion, manual, chats)
+
         setInputQuestion('')
     }
 
