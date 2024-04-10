@@ -34,9 +34,9 @@ const SelectBox = (props) => {
                         label="マニュアルを選択"
                         onChange={handleChange}
                     >
-                        <MenuItem value={10}>Man_Digest_v9</MenuItem>
-                        <MenuItem value={20}>PCBmanual3DV5</MenuItem>
-                        <MenuItem value={30}>PCBmanualV5</MenuItem>
+                        <MenuItem value={'Man_Digest_v9'}>Man_Digest_v9</MenuItem>
+                        <MenuItem value={'PCBmanual3DV5'}>PCBmanual3DV5</MenuItem>
+                        <MenuItem value={'PCBmanualV5'}>PCBmanualV5</MenuItem>
                     </Select>
                     { !isSelectManual && <FormHelperText>マニュアルを選択して下さい</FormHelperText> }
                 </FormControl>
