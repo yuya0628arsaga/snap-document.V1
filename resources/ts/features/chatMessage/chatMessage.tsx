@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
 import React, { useState } from 'react'
 import styled from '@emotion/styled'
@@ -110,7 +110,13 @@ const InputText = styled('input')`
     }
 `
 
-const ChatMessage = (props) => {
+type Chat = {
+    question: string,
+    answer: string,
+    isGenerating: boolean,
+}
+
+const ChatMessage = () => {
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -119,7 +125,7 @@ const ChatMessage = (props) => {
 
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
-    const [chats, setChats] = useState([])
+    const [chats, setChats] = useState<Chat[]>([])
 
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
@@ -132,7 +138,7 @@ const ChatMessage = (props) => {
         right: 8.5%;
     `
 
-    const handleChangeInput = (e) => {
+    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputQuestion(e.target.value)
     }
 
@@ -143,7 +149,7 @@ const ChatMessage = (props) => {
             return;
         }
 
-        const newChats = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
+        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
 
         setChats(newChats)
 
@@ -151,24 +157,37 @@ const ChatMessage = (props) => {
 
         setIsDisplayQuestion(true)
 
-        setInputQuestion('')
-
         setIsDisplayChatGPT(true)
 
-        axios.post('/api/v1/chats/', { question: '質問params', documentName: 'ドキュメントparams' }).then((res) => {
-            console.log(res.data['answer'])
-            // setAnswer(res.data['message'])
-            const lastChat = newChats.slice(-1)[0];
-            lastChat.answer = res.data['answer']
+        axios({
+            url: '/api/v1/chats/',
+            method: 'POST',
+            data: { question: inputQuestion, manualName: manual }
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data.answer)
+
+            const lastChat: Chat = newChats.slice(-1)[0];
+            lastChat.answer = data.answer
             lastChat.isGenerating = false
 
             setChats(newChats)
-
+        })
+        .catch((e: AxiosError): void => {
+            if (axios.isAxiosError(e)) {
+                console.log(e.response?.data)
+            } else {
+                // general error
+                console.log(e)
+            }
+        })
+        .then((): void => {
             setIsLoading(false)
         })
 
-        console.log(7777)
         console.log(inputQuestion)
+        setInputQuestion('')
     }
 
     return (
@@ -180,7 +199,7 @@ const ChatMessage = (props) => {
                 <MainContainer>
                     <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                     <div className="messages">
-                        {chats.map((chat, i) => {
+                        {chats.map((chat: Chat, i: number) => {
                             return (<MessageContainer key={i}>
                                 {isDisplayQuestion &&
                                     <UsersQuestion>
