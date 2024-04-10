@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
-import SelectBox from './../../components/SelectBox';
+import SelectBox from '../../components/SelectBox';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -169,7 +169,7 @@ const AiChatMessage = (props) => {
 
         setIsDisplayChatGPT(true)
 
-        axios.post('/api/v1/chats/').then((res) => {
+        axios.post('/api/v1/chats/', { question: '質問params', documentName: 'ドキュメントparams' }).then((res) => {
             console.log(res.data['answer'])
             // setAnswer(res.data['message'])
             const lastQandA = newQAndAObjs.slice(-1)[0];
@@ -263,7 +263,7 @@ const AiChatMessage = (props) => {
 
 export default AiChatMessage
 
-const element = document.getElementById('ai-chat-message')
+const element = document.getElementById('chat-message')
 if (element) {
   const props = element.dataset.props
   const reactProps = props ? JSON.parse(props) : null

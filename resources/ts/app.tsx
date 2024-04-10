@@ -1,1 +1,1 @@
-import "./features/aiChatMessage/aiChatMessage";
+import "./features/chatMessage/chatMessage";
