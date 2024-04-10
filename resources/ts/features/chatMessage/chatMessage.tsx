@@ -32,6 +32,7 @@ const SidebarContainer = styled('div')`
     height: 100vh;
     background: yellow;
 `
+
 const MessageContainer = styled('div')`
     max-width: 60%;
     margin: 1% auto;
@@ -110,6 +111,14 @@ const InputText = styled('input')`
     }
 `
 
+const ErrorMessageContainer = styled('div')`
+    padding: 24px;
+    text-align: center;
+    > .error-message {
+        color: red;
+    }
+`
+
 type Chat = {
     question: string,
     answer: string,
@@ -130,6 +139,8 @@ const ChatMessage = () => {
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
 
+    const [errorMessage, setErrorMessage] = useState('')
+
     const SendButton = styled('button')`
         cursor: ${ (isLoading || !inputQuestion) && 'default'};
         position: absolute;
@@ -149,8 +160,9 @@ const ChatMessage = () => {
             return;
         }
 
-        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
+        setErrorMessage('')
 
+        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
         setChats(newChats)
 
         setIsLoading(true)
@@ -175,12 +187,16 @@ const ChatMessage = () => {
             setChats(newChats)
         })
         .catch((e: AxiosError): void => {
-            if (axios.isAxiosError(e)) {
-                console.log(e.response?.data)
+            if (axios.isAxiosError(e) && e.response) {
+                console.error(e)
+                const data = e.response.data as {status: number, message: string}
+                setErrorMessage('サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。')
             } else {
                 // general error
                 console.log(e)
+                setErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
             }
+            setChats(chats)
         })
         .then((): void => {
             setIsLoading(false)
@@ -236,6 +252,10 @@ const ChatMessage = () => {
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
                         </FormContainer>
                     </div>
+                    {errorMessage &&
+                        <ErrorMessageContainer>
+                            <div className='error-message'>{errorMessage}</div>
+                        </ErrorMessageContainer>}
 
                 </MainContainer>
             </Wrapper>
