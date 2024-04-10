@@ -109,7 +109,7 @@ const InputText = styled('input')`
     }
 `
 
-const AiChatMessage = (props) => {
+const ChatMessage = (props) => {
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -261,11 +261,11 @@ const AiChatMessage = (props) => {
     )
 }
 
-export default AiChatMessage
+export default ChatMessage
 
 const element = document.getElementById('chat-message')
 if (element) {
   const props = element.dataset.props
   const reactProps = props ? JSON.parse(props) : null
-  createRoot(element).render(<AiChatMessage {...reactProps}/>)
+  createRoot(element).render(<ChatMessage {...reactProps}/>)
 }
