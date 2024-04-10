@@ -204,7 +204,7 @@ const ChatMessage = () => {
 
         setIsDisplayChatGPT(true)
 
-        postChats(inputQuestion, manual, chats)
+        postChats(inputQuestion, manual, newChats)
 
         setInputQuestion('')
     }
