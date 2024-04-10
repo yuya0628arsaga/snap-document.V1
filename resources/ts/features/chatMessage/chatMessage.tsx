@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
 import React, { useState } from 'react'
 import styled from '@emotion/styled'
@@ -7,10 +7,12 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import SelectBox from '../../components/SelectBox';
 
 const Wrapper = styled('div')`
     display: flex;
 `
+
 const MainContainer = styled('div')`
     /* background: green; */
     flex-grow: 8;
@@ -30,9 +32,10 @@ const SidebarContainer = styled('div')`
     height: 100vh;
     background: yellow;
 `
+
 const MessageContainer = styled('div')`
-    max-width: 80%;
-    margin: 5% 10%;
+    max-width: 60%;
+    margin: 1% auto;
     /* height: 80vh; */
     overflow-y: scroll;
     ::-webkit-scrollbar {
@@ -108,7 +111,21 @@ const InputText = styled('input')`
     }
 `
 
-const AiChatMessage = (props) => {
+const ErrorMessageContainer = styled('div')`
+    padding: 24px;
+    text-align: center;
+    > .error-message {
+        color: red;
+    }
+`
+
+type Chat = {
+    question: string,
+    answer: string,
+    isGenerating: boolean,
+}
+
+const ChatMessage = () => {
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -117,7 +134,12 @@ const AiChatMessage = (props) => {
 
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
-    const [qAndAObjs, setQandAObjs] = useState([])
+    const [chats, setChats] = useState<Chat[]>([])
+
+    const [manual, setManual] = React.useState('');
+    const [isSelectManual, setIsSelectManual] = useState(true);
+
+    const [errorMessage, setErrorMessage] = useState('')
 
     const SendButton = styled('button')`
         cursor: ${ (isLoading || !inputQuestion) && 'default'};
@@ -127,61 +149,73 @@ const AiChatMessage = (props) => {
         right: 8.5%;
     `
 
-    const fetch = () => {
-        axios.get('http://user.localhost:80/api/v1/test').then((res) => {
-            console.log(res.data)
-        })
-    }
-
-    const handleClick = () => {
-        console.log(121212)
-        fetch()
-    }
-
-    const handleChangeInput = (e) => {
+    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputQuestion(e.target.value)
     }
 
-    const sendQuestion = () => {
-        // const latestQAndAObjs = qAndAObjs.slice(-1)[0];
-        if (isLoading || !inputQuestion) return;
+    /**
+     * サーバに質問を投げて回答を取得
+     */
+    const postChats = (inputQuestion: string, manual: string, newChats: Chat[]): void => {
+        axios({
+            url: '/api/v1/chats/',
+            method: 'POST',
+            data: { question: inputQuestion, manualName: manual }
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data.answer)
 
-        const newQAndAObjs = [...qAndAObjs, { question: inputQuestion, answer: '', isGenerating: true }]
+            const lastChat: Chat = newChats.slice(-1)[0];
+            lastChat.answer = data.answer
+            lastChat.isGenerating = false
 
-        setQandAObjs(newQAndAObjs)
-
-        setIsLoading(true)
-
-        setIsDisplayQuestion(true)
-
-        // const newDisplayedQuestions = [...displayedQuestions, inputQuestion]
-        // setDisplayedQuestions([...displayedQuestions, inputQuestion])
-
-        setInputQuestion('')
-
-        setIsDisplayChatGPT(true)
-
-        axios.post('/api/v1/chats/').then((res) => {
-            console.log(res.data['answer'])
-            // setAnswer(res.data['message'])
-            const lastQandA = newQAndAObjs.slice(-1)[0];
-            lastQandA.answer = res.data['answer']
-            lastQandA.isGenerating = false
-
-            setQandAObjs(newQAndAObjs)
-
+            setChats(newChats)
+        })
+        .catch((e: AxiosError): void => {
+            if (axios.isAxiosError(e) && e.response) {
+                console.error(e)
+                const data = e.response.data as {status: number, message: string}
+                setErrorMessage('サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。')
+            } else {
+                // general error
+                console.error(e)
+                setErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
+            }
+            setChats(chats)
+        })
+        .then((): void => {
             setIsLoading(false)
         })
-
-        console.log(7777)
-        console.log(inputQuestion)
-
-        // setTimeout(() => {
-        //     setIsGenerating(false)
-        // }, 3000)
-
     }
 
+    const sendQuestion = () => {
+        if (isLoading || !inputQuestion) return;
+        if (manual === '') {
+            setIsSelectManual(false)
+            return;
+        }
+        // エラーメッセージを空に
+        setErrorMessage('')
+
+        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
+        setChats(newChats)
+
+        // ローディング表示
+        setIsLoading(true)
+
+        // 質問表示
+        setIsDisplayQuestion(true)
+
+        // GPTのアイコン表示
+        setIsDisplayChatGPT(true)
+
+        // API通信
+        postChats(inputQuestion, manual, newChats)
+
+        // 質問入力欄を空に
+        setInputQuestion('')
+    }
 
     return (
         <>
@@ -190,22 +224,20 @@ const AiChatMessage = (props) => {
                 </SidebarContainer>
 
                 <MainContainer>
+                    <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                     <div className="messages">
-                        {/* <button onClick={handleClick}>ボタン</button> */}
-                        {qAndAObjs.map((qAndA, i) => {
+                        {chats.map((chat: Chat, i: number) => {
                             return (<MessageContainer key={i}>
                                 {isDisplayQuestion &&
                                     <UsersQuestion>
                                         <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                         <p className="text">
                                             <span className="name">You</span>
-                                            {/* 回路エディタで素子を選択するにはどうしたらいいですか？
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
-                                            { qAndA.question }
+                                            { chat.question }
                                         </p>
                                     </UsersQuestion>
                                 }
-                                {qAndA.isGenerating &&
+                                {chat.isGenerating &&
                                     <Load>
                                         <CircularProgress disableShrink size={25}/>
                                         <p>回答を生成中です...</p>
@@ -216,21 +248,7 @@ const AiChatMessage = (props) => {
                                         <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                         <p className="text">
                                             <span className="name">ChatGPT</span>
-                                            { qAndA.answer }
-                                            {/* Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout."
-                                            Browse through the icons below to find the one you need. The search field supports synonyms—for example, try searching for "hamburger" or "logout." */}
+                                            { chat.answer }
                                         </p>
                                     </AiAnswer>
                                 }
@@ -245,6 +263,10 @@ const AiChatMessage = (props) => {
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
                         </FormContainer>
                     </div>
+                    {errorMessage &&
+                        <ErrorMessageContainer>
+                            <div className='error-message'>{errorMessage}</div>
+                        </ErrorMessageContainer>}
 
                 </MainContainer>
             </Wrapper>
@@ -252,11 +274,11 @@ const AiChatMessage = (props) => {
     )
 }
 
-export default AiChatMessage
+export default ChatMessage
 
-const element = document.getElementById('ai-chat-message')
+const element = document.getElementById('chat-message')
 if (element) {
   const props = element.dataset.props
   const reactProps = props ? JSON.parse(props) : null
-  createRoot(element).render(<AiChatMessage {...reactProps}/>)
+  createRoot(element).render(<ChatMessage {...reactProps}/>)
 }

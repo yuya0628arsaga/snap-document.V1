@@ -1,6 +1,6 @@
 <x-base>
     <div
-        id="ai-chat-message"
+        id="chat-message"
         data-props="{{ json_encode([
         ])}}">
     </div>
