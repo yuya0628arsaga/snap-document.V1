@@ -121,6 +121,7 @@ const ErrorMessageContainer = styled('div')`
 `
 
 type Chat = {
+    id: string
     question: string,
     answer: string,
     isGenerating: boolean,
@@ -201,7 +202,8 @@ const ChatMessage = () => {
         // エラーメッセージを空に
         setErrorMessage('')
 
-        const newChats: Chat[] = [...chats, { question: inputQuestion, answer: '', isGenerating: true }]
+        const elementId = crypto.randomUUID();
+        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', isGenerating: true }]
         setChats(newChats)
 
         // ローディング表示
@@ -221,8 +223,14 @@ const ChatMessage = () => {
      * 質問が追加されたときに質問箇所まで自動スクロールする
      */
     const autoScroll = () => {
-        const messageContainer = document.getElementById('scroll-target') as HTMLElement;
-        messageContainer.scrollTop = messageContainer.scrollHeight;
+        const latestChat: Chat = chats.slice(-1)[0];
+        if (!latestChat) return;
+
+        const messageContainer = document.getElementById(`${latestChat.id}`) as HTMLElement;
+        messageContainer.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        })
     }
 
     useEffect(() => {
@@ -239,7 +247,7 @@ const ChatMessage = () => {
                     <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                     <div className="messages" id="scroll-target">
                         {chats.map((chat: Chat, i: number) => {
-                            return (<MessageContainer key={i}>
+                            return (<MessageContainer id={chat.id} key={i}>
                                 <UsersQuestion>
                                     <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                     <p className="text">
