@@ -8,6 +8,7 @@ import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
+import { StatusCode } from '../../utils/statusCode';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -175,12 +176,12 @@ const ChatMessage = () => {
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
                 console.error(e)
-                const data = e.response.data as { status: number, message: string }
-                if (data.status === 422) {
-                    setErrorMessage(`${data.status}エラー： ${data.message}`)
-                } else {
-                    setErrorMessage('サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。')
+                const { status, message } = e.response.data as { status: number, message: string }
+                const errorMessages = {
+                    [StatusCode.VALIDATION]: `${status}エラー： ${message}`,
+                    [StatusCode.SERVER_ERROR]: 'サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。'
                 }
+                setErrorMessage(errorMessages[status])
             } else {
                 // general error
                 console.error(e)
