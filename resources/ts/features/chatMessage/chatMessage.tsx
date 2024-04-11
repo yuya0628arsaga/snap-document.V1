@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontWeight } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -131,8 +131,6 @@ const ChatMessage = () => {
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
-    const [isDisplayQuestion, setIsDisplayQuestion] = useState(false)
-
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
     const [chats, setChats] = useState<Chat[]>([])
@@ -209,9 +207,6 @@ const ChatMessage = () => {
         // ローディング表示
         setIsLoading(true)
 
-        // 質問表示
-        setIsDisplayQuestion(true)
-
         // GPTのアイコン表示
         setIsDisplayChatGPT(true)
 
@@ -222,6 +217,18 @@ const ChatMessage = () => {
         setInputQuestion('')
     }
 
+    /**
+     * 質問が追加されたときに質問箇所まで自動スクロールする
+     */
+    const autoScroll = () => {
+        const messageContainer = document.getElementById('scroll-target') as HTMLElement;
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+
+    useEffect(() => {
+        autoScroll()
+    }, [chats])
+
     return (
         <>
             <Wrapper>
@@ -230,18 +237,16 @@ const ChatMessage = () => {
 
                 <MainContainer>
                     <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
-                    <div className="messages">
+                    <div className="messages" id="scroll-target">
                         {chats.map((chat: Chat, i: number) => {
                             return (<MessageContainer key={i}>
-                                {isDisplayQuestion &&
-                                    <UsersQuestion>
-                                        <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                        <p className="text">
-                                            <span className="name">You</span>
-                                            { chat.question }
-                                        </p>
-                                    </UsersQuestion>
-                                }
+                                <UsersQuestion>
+                                    <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                    <p className="text">
+                                        <span className="name">You</span>
+                                        { chat.question }
+                                    </p>
+                                </UsersQuestion>
                                 {chat.isGenerating &&
                                     <Load>
                                         <CircularProgress disableShrink size={25}/>
