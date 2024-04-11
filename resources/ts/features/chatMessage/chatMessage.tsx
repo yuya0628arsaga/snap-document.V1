@@ -175,8 +175,12 @@ const ChatMessage = () => {
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
                 console.error(e)
-                const data = e.response.data as {status: number, message: string}
-                setErrorMessage('サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。')
+                const data = e.response.data as { status: number, message: string }
+                if (data.status === 422) {
+                    setErrorMessage(`${data.status}エラー： ${data.message}`)
+                } else {
+                    setErrorMessage('サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。')
+                }
             } else {
                 // general error
                 console.error(e)
