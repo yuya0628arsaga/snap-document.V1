@@ -160,7 +160,6 @@ const ChatMessage = () => {
     useEffect(() => {
     if (invisibleTextAreaRef.current) {
         const MAX_HEIGHT = 256
-        console.log(invisibleTextAreaRef.current.scrollHeight)
         if (invisibleTextAreaRef.current.scrollHeight >= MAX_HEIGHT) return;
         setTextareaHeight(invisibleTextAreaRef.current.scrollHeight);
     }
