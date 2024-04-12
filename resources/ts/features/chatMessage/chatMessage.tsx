@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontWeight } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -100,7 +100,10 @@ const FormContainer = styled('div')`
     position: relative;
 `
 
-const InputText = styled('input')`
+const InputText = styled('textarea')`
+    resize: none;
+    height:200px;
+
     background: ${bgColor.lightGray};
     border: 1px solid ${borderColor.gray};
     border-radius: 5px;
@@ -146,10 +149,23 @@ const ChatMessage = () => {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        right: 8.5%;
+        right: 10%;
     `
 
-    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [ textareaHeight, setTextareaHeight ] = useState(0);
+    const textAreaRef = useRef(null);
+    const invisibleTextAreaRef = useRef<HTMLTextAreaElement>(null);
+
+    // テキスト量に応じてtextareaの高さを自動調整する
+    useEffect(() => {
+    if (invisibleTextAreaRef.current) {
+        const MAX_HEIGHT = 256
+        if (invisibleTextAreaRef.current.scrollHeight >= MAX_HEIGHT) return;
+        setTextareaHeight(invisibleTextAreaRef.current.scrollHeight);
+    }
+    }, [inputQuestion]);
+
+    const handleChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputQuestion(e.target.value)
     }
 
@@ -252,7 +268,12 @@ const ChatMessage = () => {
                                     <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                     <p className="text">
                                         <span className="name">You</span>
-                                        { chat.question }
+                                        {/* Fix::改行反映のため */}
+                                        {chat.question.split("\n").map((item, index) => {
+                                            return (
+                                                <React.Fragment key={index}>{item}<br /></React.Fragment>
+                                            )
+                                        })}
                                     </p>
                                 </UsersQuestion>
                                 {chat.isGenerating &&
@@ -277,7 +298,23 @@ const ChatMessage = () => {
 
                     <div className='m_48'>
                         <FormContainer className='ta_c'>
-                            <InputText onChange={handleChangeInput} value={inputQuestion} className="test" type='text' placeholder='質問を入力してください。' disabled={isLoading}></InputText>
+                            <InputText
+                                onChange={handleChangeInput}
+                                value={inputQuestion}
+                                placeholder='質問を入力してください。'
+                                disabled={isLoading}
+                                ref={textAreaRef}
+                                style={{ height: textareaHeight && `${textareaHeight}px` }}
+                            >
+                            </InputText>
+                            <InputText // 高さ計算用テキストエリア
+                                ref={ invisibleTextAreaRef }
+                                value={ inputQuestion }
+                                onChange={ () => {} }
+                                style={{ position: 'fixed', top: -999 }} // 見えない範囲へ移動
+                            >
+                            </InputText>
+
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
                         </FormContainer>
                     </div>

@@ -1,3 +1,33 @@
+@import './google_font';
+
+*{
+	--color-black: #333;
+	--color-white: #fff;
+	--color-gray: #e0e0e0;
+	--color-gray-light: #f5f5f5;
+	--color-gray-dark: #888;
+	--color-green: #00847B;
+	--color-primary: #3658aa;
+	--color-primary-light: #97ADE2;
+	--color-accent: #f08e2b;
+	--color-accent-text: #EB1700;
+	--color-red-light: #FFEFEF;
+	--color-purple: #6265E4;
+	--color-link: #00A6DA;
+	--color-pink: #FFEFEF;
+	--font-weight-regular: 400;
+	--font-weight-bold: 700;
+}
+
+body{
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: var(--font-weight-regular);
+    font-style: normal;
+	margin: 0;
+	line-height: 1.5;
+	color: var(--color-black);
+}
+
 .ta_c {
     text-align: center;
 }
