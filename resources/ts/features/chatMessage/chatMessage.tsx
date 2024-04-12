@@ -156,11 +156,12 @@ const ChatMessage = () => {
     const textAreaRef = useRef(null);
     const invisibleTextAreaRef = useRef<HTMLTextAreaElement>(null);
 
-    // textarea テキスト量に応じて高さを自動調整する
+    // テキスト量に応じてtextareaの高さを自動調整する
     useEffect(() => {
     if (invisibleTextAreaRef.current) {
-        const MAX_VERTICAL_SIZE = 160
-        if (invisibleTextAreaRef.current.scrollHeight >= MAX_VERTICAL_SIZE) return;
+        const MAX_HEIGHT = 256
+        console.log(invisibleTextAreaRef.current.scrollHeight)
+        if (invisibleTextAreaRef.current.scrollHeight >= MAX_HEIGHT) return;
         setTextareaHeight(invisibleTextAreaRef.current.scrollHeight);
     }
     }, [inputQuestion]);
