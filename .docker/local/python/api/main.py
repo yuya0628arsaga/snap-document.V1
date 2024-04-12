@@ -66,7 +66,7 @@ async def test():
 
 
     collection = client.create_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
-        openai_api_key="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"
+        openai_api_key=""
     ))
     # collection = client.create_collection(name="langchain")
 
