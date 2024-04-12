@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontWeight } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -100,7 +100,10 @@ const FormContainer = styled('div')`
     position: relative;
 `
 
-const InputText = styled('input')`
+const InputText = styled('textarea')`
+    resize: none;
+    height:200px;
+
     background: ${bgColor.lightGray};
     border: 1px solid ${borderColor.gray};
     border-radius: 5px;
@@ -149,7 +152,20 @@ const ChatMessage = () => {
         right: 8.5%;
     `
 
-    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [ textareaHeight, setTextareaHeight ] = useState(0);
+    const textAreaRef = useRef(null);
+    const invisibleTextAreaRef = useRef<HTMLTextAreaElement>(null);
+
+    // textarea テキスト量に応じて高さを自動調整する
+    useEffect(() => {
+    if (invisibleTextAreaRef.current) {
+        const MAX_VERTICAL_SIZE = 160
+        if (invisibleTextAreaRef.current.scrollHeight >= MAX_VERTICAL_SIZE) return;
+        setTextareaHeight(invisibleTextAreaRef.current.scrollHeight);
+    }
+    }, [inputQuestion]);
+
+    const handleChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputQuestion(e.target.value)
     }
 
@@ -277,7 +293,23 @@ const ChatMessage = () => {
 
                     <div className='m_48'>
                         <FormContainer className='ta_c'>
-                            <InputText onChange={handleChangeInput} value={inputQuestion} className="test" type='text' placeholder='質問を入力してください。' disabled={isLoading}></InputText>
+                            <InputText
+                                onChange={handleChangeInput}
+                                value={inputQuestion}
+                                placeholder='質問を入力してください。'
+                                disabled={isLoading}
+                                ref={textAreaRef}
+                                style={{ height: textareaHeight && `${textareaHeight}px` }}
+                            >
+                            </InputText>
+                            <InputText // 高さ計算用テキストエリア
+                                ref={ invisibleTextAreaRef }
+                                value={ inputQuestion }
+                                onChange={ () => {} }
+                                style={{ position: 'fixed', top: -999 }} // 見えない範囲へ移動
+                            >
+                            </InputText>
+
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
                         </FormContainer>
                     </div>
