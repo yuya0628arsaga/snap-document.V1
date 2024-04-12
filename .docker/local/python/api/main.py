@@ -64,7 +64,11 @@ async def test():
     #     model_name="text-embedding-ada-002"
     # )
 
-    collection = client.create_collection(name="langchain")
+
+    collection = client.create_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
+        openai_api_key="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"
+    ))
+    # collection = client.create_collection(name="langchain")
 
     texts = S3().get_pdf_text('Man_Digest_v9')
 
@@ -116,9 +120,31 @@ async def test():
     # client = chromadb.Client()
     client = chromadb.PersistentClient(path="./chromadb_data")
     # collection = client.create_collection(name="langchain")
-    collection = client.get_collection(name="langchain")
+    # collection = client.get_collection(name="langchain", embedding_function=OpenAIEmbeddings())
+    collection = client.get_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
+        openai_api_key=""
+    ))
+    # collection = client.get_collection(name="langchain")
     results = collection.query(
-        query_texts=["Sパラメータ解析"],
+        # query_texts=["Sパラメータ解析"],
+        query_texts=["SPICEモデルはどこのフォルダに入れればいいですか？"],
         n_results=2
     )
     return results
+
+
+
+class CustomOpenAIEmbeddings(OpenAIEmbeddings):
+
+    def __init__(self, openai_api_key, *args, **kwargs):
+        super().__init__(openai_api_key=openai_api_key, *args, **kwargs)
+
+    def _embed_documents(self, texts):
+        embeddings = [
+            self.client.create(input=text, model="text-embedding-ada-002").data[0].embedding
+            for text in texts
+        ]
+        return embeddings
+
+    def __call__(self, input):
+        return self._embed_documents(input)
