@@ -149,7 +149,7 @@ const ChatMessage = () => {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
-        right: 8.5%;
+        right: 10%;
     `
 
     const [ textareaHeight, setTextareaHeight ] = useState(0);
