@@ -268,7 +268,12 @@ const ChatMessage = () => {
                                     <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                     <p className="text">
                                         <span className="name">You</span>
-                                        { chat.question }
+                                        {/* Fix::改行反映のため */}
+                                        {chat.question.split("\n").map((item, index) => {
+                                            return (
+                                                <React.Fragment key={index}>{item}<br /></React.Fragment>
+                                            )
+                                        })}
                                     </p>
                                 </UsersQuestion>
                                 {chat.isGenerating &&
