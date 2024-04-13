@@ -54,8 +54,11 @@ import settings
 
 MANUAL = 'Man_Digest_v9'
 
+
 @app.get("/test")
 async def test():
+    """ChromaDB にドキュメントのベクトルデータを永久保存する
+    """
 
     client = chromadb.PersistentClient(path=f"./chromadb_data/{MANUAL}")
 
@@ -112,25 +115,70 @@ async def test():
 # from api.models.rag_2 import Rag_2
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
+
+from langchain.prompts import PromptTemplate
+from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
+
+# Q&A用Chain
 from langchain.chains import ConversationalRetrievalChain
+from langchain.chains import LLMChain
+from langchain.chains.question_answering import load_qa_chain
 
 @app.get("/test2")
 async def test():
-    # client = chromadb.PersistentClient(path=f"./chromadb_data/{MANUAL}")
 
-    # collection = client.get_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
-    #     openai_api_key=settings.OPENAI_API_KEY
-    # ))
+    GPT_MODEL = 'gpt-3.5-turbo'
 
-    # results = collection.query(
-    #     query_texts=["回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？"],
-    #     # query_texts=["SPICEモデルはどこのフォルダに入れればいいですか？"],
-    #     n_results=2
-    # )
 
-    vectordb = Chroma(persist_directory=f"./chromadb_data/{MANUAL}", embedding_function=CustomOpenAIEmbeddings(
-        openai_api_key=settings.OPENAI_API_KEY
-    ))
+    # Question generator （質問・履歴を投げる段階）で投げるプロンプトの作成
+    # デフォルトでは CONDENSE_QUESTION_PROMPT が使われる
+    template_qg = \
+    """
+    次の会話に対しフォローアップの質問があるので、フォローアップの質問を独立した質問に言い換えなさい。
+
+    チャットの履歴:
+    {chat_history}
+
+    フォローアップの質問:
+    {question}
+
+    言い換えられた独立した質問:
+    """
+
+    prompt_qg = PromptTemplate(
+            template=template_qg,
+            input_variables=["chat_history", "question"],
+            output_parser=None,
+            partial_variables={},
+            template_format='f-string',
+            validate_template=True,
+    )
+
+
+
+    # QA の最終質問のプロンプト
+    # 次の文脈を使用して、最後の質問に答えてください。答えがわからない場合は、答えをでっち上げようとせず、わからないと言ってください。
+    prompt_template_qa = """You are a helpful assistant. Please answer in Japanese! If the context is not relevant, please answer the question by using your own knowledge about the topic.
+
+    {context}
+
+    Question: {question}
+    Answer in Japanese:"""
+
+    prompt_qa = PromptTemplate(
+            template=prompt_template_qa,
+            input_variables=["context", "question"]
+    )
+    chain_type_kwargs = {"prompt": prompt_qa}
+
+
+
+
+
+    vectordb = Chroma(
+        persist_directory=f"./chromadb_data/{MANUAL}",
+        embedding_function=CustomOpenAIEmbeddings(openai_api_key=settings.OPENAI_API_KEY)
+    )
 
     retriever = vectordb.as_retriever()
     # retriever.search_kwargs["distance_metric"] = "cos"
@@ -138,19 +186,46 @@ async def test():
     # retriever.search_kwargs["maximal_marginal_relevance"] = True
     # retriever.search_kwargs["k"] = 7
 
-    # answer = Rag_2().rag_application("回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？", retriever)
+    LLM = ChatOpenAI(
+        model=GPT_MODEL,
+        max_tokens=1024,
+        temperature=0,
+    )
 
-    model = ChatOpenAI(model_name="gpt-3.5-turbo")
-    qa = ConversationalRetrievalChain.from_llm(model, retriever=retriever)
 
-    # question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
-    question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
-    result = qa({"question": question, "chat_history": ''})
+
+    question_generator = LLMChain(llm=LLM, prompt=prompt_qg)
+    # question_generator = LLMChain(llm=LLM, prompt=CONDENSE_QUESTION_PROMPT)  # デフォルトのプロント使いたかったらこう書く
+
+    doc_chain = load_qa_chain(llm=LLM, chain_type="stuff", prompt=prompt_qa)
+
+    qa = ConversationalRetrievalChain(
+            retriever=retriever,
+            question_generator=question_generator,
+            combine_docs_chain=doc_chain,
+    )
+
+
+
+    # return_source_documents=True でソースも取得
+    #### qa = ConversationalRetrievalChain.from_llm(LLM, retriever=retriever, return_source_documents=True)
+
+    question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
+    # question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
+    chat_history = []
+
+    # ベクトル間の距離を閾値としたフィルターを設定し、関連度がより強いものしか参照しないようにできます。ここでは、 vectordbkwargs 内のdictに、 search_distance というキー名で格納します。 vector store が探していれば、 search distance に閾値を設定してフィルタがかけられる
+    vectordbkwargs = {"search_distance": 0.9}
+
+    result = qa({"question": question, "chat_history": chat_history})
+    # result = qa({"question": question, "chat_history": chat_history, "vectordbkwargs": vectordbkwargs})
+
+
 
     print(result["answer"])
+    # print(result["source_documents"])
 
     return result["answer"]
-
 
 
 class CustomOpenAIEmbeddings(OpenAIEmbeddings):
