@@ -203,6 +203,7 @@ async def test():
             retriever=retriever,
             question_generator=question_generator,
             combine_docs_chain=doc_chain,
+            return_source_documents=True,
     )
 
 
@@ -220,12 +221,10 @@ async def test():
     result = qa({"question": question, "chat_history": chat_history})
     # result = qa({"question": question, "chat_history": chat_history, "vectordbkwargs": vectordbkwargs})
 
-
-
     print(result["answer"])
-    # print(result["source_documents"])
+    print(result["source_documents"])
 
-    return result["answer"]
+    return result["answer"], result["source_documents"]
 
 
 class CustomOpenAIEmbeddings(OpenAIEmbeddings):
