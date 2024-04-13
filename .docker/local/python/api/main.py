@@ -47,30 +47,30 @@ async def hello():
 # from api.models.chatbot_engine_2 import ChatbotEngine2
 import chromadb
 from chromadb.config import Settings
-import os
-from chromadb.utils import embedding_functions
 from api.models.s3 import S3
 import uuid
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.schema.document import Document
+import settings
+
+MANUAL = 'Man_Digest_v9'
 
 @app.get("/test")
 async def test():
 
-    client = chromadb.PersistentClient(path="./chromadb_data")
+    client = chromadb.PersistentClient(path=f"./chromadb_data/{MANUAL}")
 
     # openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    #     api_key='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',
+    #     api_key='',
     #     model_name="text-embedding-ada-002"
     # )
 
 
     collection = client.create_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
-        openai_api_key="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"
+        openai_api_key=settings.OPENAI_API_KEY
     ))
     # collection = client.create_collection(name="langchain")
 
-    texts = S3().get_pdf_text('Man_Digest_v9')
+    texts = S3().get_pdf_text(MANUAL)
 
     doc_ids = [str(uuid.uuid4()) for _ in texts]
 
@@ -88,49 +88,68 @@ async def test():
     print(metadatas)
     print(doc_ids)
 
-    collection.add(
-        documents=texts,
-        metadatas=metadatas,
-        ids=doc_ids
-    )
-
-    # chunk_size = 10
-    # for i in range(0, len(documents), chunk_size):
-    #     chunk_docs = documents[i:i + chunk_size]
-    #     chunk_ids = doc_ids[i:i + chunk_size]
-    #     content_list = [d['content'] for d in chunk_docs]
-    #     metadata_list = [d['metadata'] for d in chunk_docs]
-    #     print(f"Adding chunk: {i // chunk_size + 1}")
-    #     collection.add(documents=content_list, metadatas=metadata_list, ids=chunk_ids)
-
-
-
-    # client = chromadb.Client()
-    # # collection = client.create_collection(name="langchain")
-    # collection = client.get_collection(name="langchain")
-    # results = collection.query(
-    #     query_texts=["解析"],
-    #     n_results=2
+    # collection.add(
+    #     documents=texts,
+    #     metadatas=metadatas,
+    #     ids=doc_ids
     # )
+
+    # 100個ずつ保存
+    chunk_size = 100
+    for i in range(0, len(documents), chunk_size):
+        chunk_docs = documents[i:i + chunk_size]
+        chunk_ids = doc_ids[i:i + chunk_size]
+        content_list = [d['content'] for d in chunk_docs]
+        metadata_list = [d['metadata'] for d in chunk_docs]
+        print(f"Adding chunk: {i // chunk_size + 1}")
+        collection.add(documents=content_list, metadatas=metadata_list, ids=chunk_ids)
+
 
     return '保存成功'
 
+
+
+# from api.models.rag_2 import Rag_2
+from langchain.vectorstores import Chroma
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import ConversationalRetrievalChain
+
 @app.get("/test2")
 async def test():
-    # client = chromadb.Client()
-    client = chromadb.PersistentClient(path="./chromadb_data")
-    # collection = client.create_collection(name="langchain")
-    # collection = client.get_collection(name="langchain", embedding_function=OpenAIEmbeddings())
-    collection = client.get_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
-        openai_api_key=""
+    # client = chromadb.PersistentClient(path=f"./chromadb_data/{MANUAL}")
+
+    # collection = client.get_collection(name="langchain", embedding_function=CustomOpenAIEmbeddings(
+    #     openai_api_key=settings.OPENAI_API_KEY
+    # ))
+
+    # results = collection.query(
+    #     query_texts=["回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？"],
+    #     # query_texts=["SPICEモデルはどこのフォルダに入れればいいですか？"],
+    #     n_results=2
+    # )
+
+    vectordb = Chroma(persist_directory=f"./chromadb_data/{MANUAL}", embedding_function=CustomOpenAIEmbeddings(
+        openai_api_key=settings.OPENAI_API_KEY
     ))
-    # collection = client.get_collection(name="langchain")
-    results = collection.query(
-        # query_texts=["Sパラメータ解析"],
-        query_texts=["SPICEモデルはどこのフォルダに入れればいいですか？"],
-        n_results=2
-    )
-    return results
+
+    retriever = vectordb.as_retriever()
+    # retriever.search_kwargs["distance_metric"] = "cos"
+    # retriever.search_kwargs["fetch_k"] = 100
+    # retriever.search_kwargs["maximal_marginal_relevance"] = True
+    # retriever.search_kwargs["k"] = 7
+
+    # answer = Rag_2().rag_application("回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？", retriever)
+
+    model = ChatOpenAI(model_name="gpt-3.5-turbo")
+    qa = ConversationalRetrievalChain.from_llm(model, retriever=retriever)
+
+    # question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
+    question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
+    result = qa({"question": question, "chat_history": ''})
+
+    print(result["answer"])
+
+    return result["answer"]
 
 
 
