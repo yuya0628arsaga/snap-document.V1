@@ -93,6 +93,20 @@ const AiAnswer = styled('div')`
             margin: 3px 0;
             display: block;
         }
+        >.img-container {
+            text-align: center;
+            margin-top: 32px;
+
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            >.img {
+                width: 80%;
+                margin: 0 auto;
+            }
+            >.img-text{
+            }
+        }
     }
 `
 
@@ -127,6 +141,7 @@ type Chat = {
     id: string
     question: string,
     answer: string,
+    base64Images: {path: string, base64: string}[],
     isGenerating: boolean,
 }
 
@@ -184,6 +199,7 @@ const ChatMessage = () => {
 
             const lastChat: Chat = newChats.slice(-1)[0];
             lastChat.answer = data.answer
+            lastChat.base64Images = data.base64Images
             lastChat.isGenerating = false
 
             setChats(newChats)
@@ -219,7 +235,7 @@ const ChatMessage = () => {
         setErrorMessage('')
 
         const elementId = crypto.randomUUID();
-        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', isGenerating: true }]
+        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], isGenerating: true }]
         setChats(newChats)
 
         // ローディング表示
@@ -285,10 +301,20 @@ const ChatMessage = () => {
                                 {isDisplayChatGPT &&
                                     <AiAnswer>
                                         <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                        <p className="text">
+                                        <div className="text">
                                             <span className="name">ChatGPT</span>
-                                            { chat.answer }
-                                        </p>
+                                            {chat.answer}
+                                            {chat.base64Images &&
+                                                chat.base64Images.map((base64Image, i) => {
+                                                    return (
+                                                        <div className='img-container' key={i}>
+                                                            <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
+                                                            <div className='img-text'>{base64Image.path}</div>
+                                                        </div>
+                                                    )
+                                                })
+                                            }
+                                        </div>
                                     </AiAnswer>
                                 }
 

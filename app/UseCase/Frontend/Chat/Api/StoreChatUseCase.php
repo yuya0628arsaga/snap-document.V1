@@ -41,7 +41,7 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName): array
     {
-        [$answer, $pdfPages] = $this->getAnswerFromGptEngine();
+        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine();
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -75,7 +75,7 @@ class StoreChatUseCase
             ]);
         });
 
-        return ['answer' => $answer, 'pdfPages' => $pdfPages];
+        return ['answer' => $answer, 'base64Images' => $base64Images, 'pdfPages' => $pdfPages];
     }
 
     /**
@@ -87,7 +87,7 @@ class StoreChatUseCase
      */
     private function getAnswerFromGptEngine(): array
     {
-        $responseFromGptEngine = Http::timeout(-1)->get('http://gpt_engine:8000/hello');
+        $responseFromGptEngine = Http::timeout(-1)->get('http://gpt_engine:8000/test2');
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
             ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
@@ -95,7 +95,7 @@ class StoreChatUseCase
             throw new GptEngineProcessException(message: $errorMessage, code: $status);
         };
 
-        return [$responseFromGptEngine['answer'], $responseFromGptEngine['pdf_pages']];
+        return [$responseFromGptEngine['answer'], $responseFromGptEngine['base64_images'], $responseFromGptEngine['pdf_pages']];
     }
 
     /**

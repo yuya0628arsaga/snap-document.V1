@@ -225,10 +225,13 @@ async def test():
     print(result["source_documents"])
     pdf_pages = [1, 2, 3]
 
+    base64_images = get_images(result["answer"])
+
     return {
         "status": 200,
         "answer": result["answer"],
         "source_documents": result["source_documents"],
+        "base64_images": base64_images,
         "pdf_pages": pdf_pages,
     }
 
@@ -247,3 +250,34 @@ class CustomOpenAIEmbeddings(OpenAIEmbeddings):
 
     def __call__(self, input):
         return self._embed_documents(input)
+
+
+
+
+# @app.get("/test3")
+def get_images(answer):
+    # answer = 'Sパラメータ解析を実行するには、まず図33のSパラメータ解析設定画面で解析を設定します。その後、解析実行ボタンを押して解析を開始します。解析が進むにつれてログダイアローグに途中経過が表示されます。解析が完了すると、図19のようにS11特性が表示されます。解析が終了したら、解析ボタンを押してください。';
+
+    import re
+    import base64
+    from  api.models.s3 import S3
+
+    try:
+
+        paths = re.findall(r'図\d+', answer)
+        base64_images = []
+        for path in paths:
+            binary = S3().get_s3_object(f"outputs/{path}.jpg")
+            # 画像データをBase64エンコードしてフォーマットする
+            image_data = base64.b64encode(binary).decode("utf-8")
+            base64_images.append({'path': path, 'base64': image_data})
+
+        return base64_images
+
+    except Exception as e:
+        print(e)
+        return {
+            "status": 500,
+            "message": "gpt_engine Internal Server Error",
+            "errors": e,
+        }
