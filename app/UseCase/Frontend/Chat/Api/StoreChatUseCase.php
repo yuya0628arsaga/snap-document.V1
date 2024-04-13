@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\UseCase\Frontend\Chat\Api;
 
 use App\Exceptions\GptEngineProcessException;
-use App\Models\Page;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\Document\DocumentRepository;
@@ -39,9 +38,9 @@ class StoreChatUseCase
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
-     * @return \Illuminate\Http\Client\Response
+     * @return array
      */
-    public function execute(string $question, string $documentName): Response
+    public function execute(string $question, string $documentName): array
     {
         $responseFromGptEngine = $this->getAnswerFromGptEngine();
 
@@ -85,7 +84,7 @@ class StoreChatUseCase
             ]);
         });
 
-        return $responseFromGptEngine;
+        return ['answer' => $answer, 'pdfPages' => $pdfPages];
     }
 
     /**

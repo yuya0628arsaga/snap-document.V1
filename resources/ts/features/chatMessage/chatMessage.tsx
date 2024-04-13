@@ -180,7 +180,7 @@ const ChatMessage = () => {
         })
         .then((res: AxiosResponse): void => {
             const { data } = res
-            console.log(data.answer)
+            console.log(data)
 
             const lastChat: Chat = newChats.slice(-1)[0];
             lastChat.answer = data.answer
