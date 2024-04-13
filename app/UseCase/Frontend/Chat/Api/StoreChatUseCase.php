@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace App\UseCase\Frontend\Chat\Api;
 
 use App\Exceptions\GptEngineProcessException;
-use App\Models\Page;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
 
 class StoreChatUseCase
@@ -39,19 +37,11 @@ class StoreChatUseCase
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
-     * @return \Illuminate\Http\Client\Response
+     * @return array
      */
-    public function execute(string $question, string $documentName): Response
+    public function execute(string $question, string $documentName): array
     {
-        $responseFromGptEngine = $this->getAnswerFromGptEngine();
-
-        if ($responseFromGptEngine["status"] !== SymfonyResponse::HTTP_OK) {
-            ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
-
-            throw new GptEngineProcessException(message: $errorMessage, code: $status);
-        }
-
-        ['answer' => $answer, 'pdf_pages' => $pdfPages] = $responseFromGptEngine;
+        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine();
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -85,17 +75,27 @@ class StoreChatUseCase
             ]);
         });
 
-        return $responseFromGptEngine;
+        return ['answer' => $answer, 'base64Images' => $base64Images, 'pdfPages' => $pdfPages];
     }
 
     /**
      * gpt_engine から回答を取得
      *
-     * @return \Illuminate\Http\Client\Response
+     * @throws \App\Exceptions\GptEngineProcessException
+     *
+     * @return array
      */
-    private function getAnswerFromGptEngine(): Response
+    private function getAnswerFromGptEngine(): array
     {
-        return Http::timeout(-1)->get('http://gpt_engine:8000/hello');
+        $responseFromGptEngine = Http::timeout(-1)->get('http://gpt_engine:8000/test2');
+
+        if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
+            ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
+
+            throw new GptEngineProcessException(message: $errorMessage, code: $status);
+        };
+
+        return [$responseFromGptEngine['answer'], $responseFromGptEngine['base64_images'], $responseFromGptEngine['pdf_pages']];
     }
 
     /**

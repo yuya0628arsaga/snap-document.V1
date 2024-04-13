@@ -1,4 +1,5 @@
 import boto3
+import botocore.exceptions
 import base64
 import uuid
 
@@ -61,10 +62,33 @@ class S3(object):
 
     # 画像のbinaryデータを取得
     def get_s3_object(self, s3_img_path):
-        # S3からオブジェクトを取得
-        response = self.s3.get_object(
-            Bucket=settings.BUCKET_NAME,
-            Key=s3_img_path
-        )
-        binary_data = response["Body"].read()
-        return binary_data
+        if (self.check_s3_key_exists(s3_img_path)):
+            try:
+                # S3からオブジェクトを取得
+                response = self.s3.get_object(
+                    Bucket=settings.BUCKET_NAME,
+                    Key=s3_img_path
+                )
+            except Exception as e:
+                raise e
+
+            binary_data = response["Body"].read()
+            return binary_data
+        else:
+            raise S3KeyNotExistsError(f"S3キー: {s3_img_path} が存在しません。")
+
+
+    def check_s3_key_exists(self, key):
+        """S3キーの存在チェック"""
+        try:
+            self.s3.head_object(Bucket=settings.BUCKET_NAME, Key=key)
+            return True
+        except botocore.exceptions.ClientError as e:
+            if e.response["Error"]["Code"] == "404":
+                return False
+            else:
+                raise e
+
+
+class S3KeyNotExistsError(Exception):
+    pass
