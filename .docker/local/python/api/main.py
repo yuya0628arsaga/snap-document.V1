@@ -223,8 +223,14 @@ async def test():
 
     print(result["answer"])
     print(result["source_documents"])
+    pdf_pages = [1, 2, 3]
 
-    return result["answer"], result["source_documents"]
+    return {
+        "status": 200,
+        "answer": result["answer"],
+        "source_documents": result["source_documents"],
+        "pdf_pages": pdf_pages,
+    }
 
 
 class CustomOpenAIEmbeddings(OpenAIEmbeddings):

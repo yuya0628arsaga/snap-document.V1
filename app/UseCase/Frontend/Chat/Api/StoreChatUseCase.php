@@ -11,11 +11,10 @@ use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
 
 class StoreChatUseCase
@@ -42,15 +41,7 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName): array
     {
-        $responseFromGptEngine = $this->getAnswerFromGptEngine();
-
-        if ($responseFromGptEngine["status"] !== SymfonyResponse::HTTP_OK) {
-            ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
-
-            throw new GptEngineProcessException(message: $errorMessage, code: $status);
-        }
-
-        ['answer' => $answer, 'pdf_pages' => $pdfPages] = $responseFromGptEngine;
+        [$answer, $pdfPages] = $this->getAnswerFromGptEngine();
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -90,11 +81,21 @@ class StoreChatUseCase
     /**
      * gpt_engine から回答を取得
      *
-     * @return \Illuminate\Http\Client\Response
+     * @throws \App\Exceptions\GptEngineProcessException
+     *
+     * @return array
      */
-    private function getAnswerFromGptEngine(): Response
+    private function getAnswerFromGptEngine(): array
     {
-        return Http::timeout(-1)->get('http://gpt_engine:8000/hello');
+        $responseFromGptEngine = Http::timeout(-1)->get('http://gpt_engine:8000/hello');
+
+        if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
+            ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
+
+            throw new GptEngineProcessException(message: $errorMessage, code: $status);
+        };
+
+        return [$responseFromGptEngine['answer'], $responseFromGptEngine['pdf_pages']];
     }
 
     /**

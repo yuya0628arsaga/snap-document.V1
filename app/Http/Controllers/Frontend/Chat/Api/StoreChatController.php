@@ -9,7 +9,7 @@ use App\Http\Requests\Frontend\Chat\StoreChatRequest;
 use App\Http\Resources\Frontend\Chat\StoreChatResource;
 use App\UseCase\Frontend\Chat\Api\StoreChatUseCase;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class StoreChatController extends Controller
 {
@@ -30,6 +30,6 @@ class StoreChatController extends Controller
     {
         $response = $this->storeChatUseCase->execute($request->getQuestion(), $request->getManualName());
 
-        return response()->json(new StoreChatResource($response), SymfonyResponse::HTTP_OK);
+        return response()->json(new StoreChatResource($response), Response::HTTP_OK);
     }
 }
