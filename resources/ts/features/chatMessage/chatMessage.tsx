@@ -234,7 +234,8 @@ const ChatMessage = () => {
         // エラーメッセージを空に
         setErrorMessage('')
 
-        const elementId = crypto.randomUUID();
+        // const elementId = crypto.randomUUID();
+        const elementId = Math.random().toString(36).slice(-8);
         const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], isGenerating: true }]
         setChats(newChats)
 
