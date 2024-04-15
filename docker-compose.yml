@@ -24,7 +24,7 @@ services:
 
   nginx:
     build: ".docker/local/nginx"
-    platform: linux/arm64/v8
+    # platform: linux/arm64/v8  # MEMO::EC2でコンテナ起動した際に Nginxが「exec /docker-entrypoint.sh: exec format error」となるため一旦削除
     container_name: snap-document-nginx
     ports:
       - "80:80"
