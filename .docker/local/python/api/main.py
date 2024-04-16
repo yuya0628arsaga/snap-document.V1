@@ -49,7 +49,8 @@ import chromadb
 from chromadb.config import Settings
 from api.models.s3 import S3
 import uuid
-from langchain.embeddings import OpenAIEmbeddings
+# from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 import settings
 
 MANUAL = 'Man_Digest_v9'
@@ -121,8 +122,10 @@ class Chat(BaseModel):
 
 
 # from api.models.rag_2 import Rag_2
-from langchain.vectorstores import Chroma
-from langchain.chat_models import ChatOpenAI
+# from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
+# from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT

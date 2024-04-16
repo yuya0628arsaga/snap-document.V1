@@ -5,7 +5,8 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 # from langchain.chat_models import ChatOpenAI
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+# from langchain_community.chat_models import ChatOpenAI
 from langchain.schema.messages import HumanMessage
 from google.cloud.firestore_v1.base_query import FieldFilter
 
