@@ -1,8 +1,8 @@
 from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
-from langchain.chat_models import ChatOpenAI
 from langchain.schema.output_parser import StrOutputParser
 from base64 import b64decode
-from langchain.chat_models import ChatOpenAI
+# from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.schema.messages import HumanMessage
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
