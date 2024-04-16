@@ -41,7 +41,7 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName): array
     {
-        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine();
+        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine($question, $documentName);
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -75,19 +75,32 @@ class StoreChatUseCase
             ]);
         });
 
-        return ['answer' => $answer, 'base64Images' => $base64Images, 'pdfPages' => $pdfPages];
+        return [
+            'answer' => $answer,
+            'base64Images' => $base64Images,
+            'pdfPages' => $pdfPages
+        ];
     }
 
     /**
      * gpt_engine から回答を取得
      *
+     * @param string $question
+     * @param string $documentName
+     *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(): array
+    private function getAnswerFromGptEngine(string $question, string $documentName): array
     {
-        $responseFromGptEngine = Http::timeout(-1)->get('http://gpt_engine:8000/test2');
+        $responseFromGptEngine =
+            Http::timeout(-1)->withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post('http://gpt_engine:8000/test2', [
+                'question' => $question,
+                'document_name' => $documentName,
+            ]);
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
             ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
@@ -95,7 +108,11 @@ class StoreChatUseCase
             throw new GptEngineProcessException(message: $errorMessage, code: $status);
         };
 
-        return [$responseFromGptEngine['answer'], $responseFromGptEngine['base64_images'], $responseFromGptEngine['pdf_pages']];
+        return [
+            $responseFromGptEngine['answer'],
+            $responseFromGptEngine['base64_images'],
+            $responseFromGptEngine['pdf_pages']
+        ];
     }
 
     /**

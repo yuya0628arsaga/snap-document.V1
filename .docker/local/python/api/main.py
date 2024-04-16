@@ -112,6 +112,14 @@ async def test():
 
 
 
+from pydantic import BaseModel
+from typing import Union
+
+class Chat(BaseModel):
+    question: str
+    document_name: str
+
+
 # from api.models.rag_2 import Rag_2
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
@@ -124,10 +132,13 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.chains import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 
-@app.get("/test2")
-async def test():
+@app.post("/test2")
+async def test(chat: Chat):
 
     GPT_MODEL = 'gpt-3.5-turbo'
+    # question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
+    # question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
+    question = chat.dict()['question']
 
 
     # Question generator （質問・履歴を投げる段階）で投げるプロンプトの作成
@@ -211,8 +222,6 @@ async def test():
     # return_source_documents=True でソースも取得
     #### qa = ConversationalRetrievalChain.from_llm(LLM, retriever=retriever, return_source_documents=True)
 
-    question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
-    # question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
     chat_history = []
 
     # ベクトル間の距離を閾値としたフィルターを設定し、関連度がより強いものしか参照しないようにできます。ここでは、 vectordbkwargs 内のdictに、 search_distance というキー名で格納します。 vector store が探していれば、 search distance に閾値を設定してフィルタがかけられる

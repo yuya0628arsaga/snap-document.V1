@@ -22,11 +22,11 @@ install:
 	make build
 	cp .env.example .env
 	make up
-	docker compose exec app sed -e 's/APP_ENV=local/APP_ENV=testing/' -e 's/DB_DATABASE=.*/DB_DATABASE=snap_document_test/' .env.example > .env.testing
+	# docker compose exec app sed -e 's/APP_ENV=local/APP_ENV=testing/' -e 's/DB_DATABASE=.*/DB_DATABASE=snap_document_test/' .env.example > .env.testing
 	docker compose exec app composer install
 	docker compose exec app npm install
 	docker compose exec app php artisan key:generate
-	docker compose exec app php artisan key:generate --env=testing
+	# docker compose exec app php artisan key:generate --env=testing
 	sudo chmod -fR 777 storage bootstrap
 
 up:
