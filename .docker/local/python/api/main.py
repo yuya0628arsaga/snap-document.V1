@@ -145,11 +145,9 @@ async def test(chat: Chat):
     # question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
     question = chat.dict()['question']
     document_name = chat.dict()['document_name']
-
-    # chat_history = [('私は医者です。医者の平均収入を教えて下さい。', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の間になることがあります。'), ('具体的にいくらですか？', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の範囲になることがあります。例えば、一般開業医の場合、年収は1000万円以上になることが一般的です。特に専門医や大学病院の医師などは、それ以上の高収入を得ることもあります。')]
     chat_history = chat.dict()['chat_history']
+
     chat_history = [tuple(history) for history in chat_history]
-    # chat_history = []
 
 
     # Question generator （質問・履歴を投げる段階）で投げるプロンプトの作成

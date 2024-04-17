@@ -99,14 +99,10 @@ class StoreChatUseCase
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post('http://gpt_engine:8000/test3', [
+            ])->post('http://gpt_engine:8000/test2', [
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
-                // 'chat_history' => [
-                //     ['質問１', '回答１'],
-                //     ['質問２', '回答２'],
-                // ],
             ]);
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {

@@ -24,7 +24,7 @@ class StoreChatRequest extends FormRequest
         return [
             'question' => ['required', 'string'], // TODO::質問のMaxトークン数のバリデーションを決める必要あり
             'manualName' => ['required', 'string', 'exists:documents,name'],
-            'chatHistory' => ['required', 'array'],
+            'chatHistory' => ['array'],
         ];
     }
 
