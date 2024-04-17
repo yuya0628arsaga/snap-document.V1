@@ -28,7 +28,11 @@ class StoreChatController extends Controller
      */
     public function __invoke(StoreChatRequest $request): JsonResponse
     {
-        $response = $this->storeChatUseCase->execute($request->getQuestion(), $request->getManualName());
+        $response = $this->storeChatUseCase->execute(
+            $request->getQuestion(),
+            $request->getManualName(),
+            $request->getChatHistory(),
+        );
 
         return response()->json(new StoreChatResource($response), Response::HTTP_OK);
     }
