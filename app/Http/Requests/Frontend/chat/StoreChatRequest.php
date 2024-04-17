@@ -24,6 +24,7 @@ class StoreChatRequest extends FormRequest
         return [
             'question' => ['required', 'string'], // TODO::質問のMaxトークン数のバリデーションを決める必要あり
             'manualName' => ['required', 'string', 'exists:documents,name'],
+            'chatHistory' => ['required', 'array'],
         ];
     }
 
@@ -35,6 +36,7 @@ class StoreChatRequest extends FormRequest
         return [
             'question' => __('chats.question'),
             'manualName' => __('documents.name'),
+            'chatHistory' => __('chats.history'),
         ];
     }
 
@@ -56,5 +58,15 @@ class StoreChatRequest extends FormRequest
     public function getManualName(): string
     {
         return $this->input('manualName');
+    }
+
+     /**
+     * チャット履歴を取得
+     *
+     * @return array
+     */
+    public function getChatHistory(): array
+    {
+        return $this->input('chatHistory');
     }
 }

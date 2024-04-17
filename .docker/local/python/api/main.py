@@ -61,7 +61,8 @@ async def test():
     """ChromaDB にドキュメントのベクトルデータを永久保存する
     """
 
-    client = chromadb.PersistentClient(path=f"./chromadb_data/{MANUAL}")
+    # client = chromadb.PersistentClient(path=f"./chromadb_data/{MANUAL}")
+    client = chromadb.PersistentClient(path=f"./chromadb_datas/{MANUAL}")
 
     # openai_ef = embedding_functions.OpenAIEmbeddingFunction(
     #     api_key='',
@@ -119,6 +120,7 @@ from typing import Union
 class Chat(BaseModel):
     question: str
     document_name: str
+    chat_history: list
 
 
 # from api.models.rag_2 import Rag_2
@@ -142,6 +144,12 @@ async def test(chat: Chat):
     # question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
     # question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
     question = chat.dict()['question']
+    document_name = chat.dict()['document_name']
+
+    # chat_history = [('私は医者です。医者の平均収入を教えて下さい。', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の間になることがあります。'), ('具体的にいくらですか？', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の範囲になることがあります。例えば、一般開業医の場合、年収は1000万円以上になることが一般的です。特に専門医や大学病院の医師などは、それ以上の高収入を得ることもあります。')]
+    chat_history = chat.dict()['chat_history']
+    chat_history = [tuple(history) for history in chat_history]
+    # chat_history = []
 
 
     # Question generator （質問・履歴を投げる段階）で投げるプロンプトの作成
@@ -190,7 +198,7 @@ async def test(chat: Chat):
 
 
     vectordb = Chroma(
-        persist_directory=f"./chromadb_data/{MANUAL}",
+        persist_directory=f"./chromadb_datas/{document_name}",
         embedding_function=CustomOpenAIEmbeddings(openai_api_key=settings.OPENAI_API_KEY)
     )
 
@@ -225,7 +233,6 @@ async def test(chat: Chat):
     # return_source_documents=True でソースも取得
     #### qa = ConversationalRetrievalChain.from_llm(LLM, retriever=retriever, return_source_documents=True)
 
-    chat_history = []
 
     # ベクトル間の距離を閾値としたフィルターを設定し、関連度がより強いものしか参照しないようにできます。ここでは、 vectordbkwargs 内のdictに、 search_distance というキー名で格納します。 vector store が探していれば、 search distance に閾値を設定してフィルタがかけられる
     vectordbkwargs = {"search_distance": 0.9}
@@ -293,3 +300,16 @@ def get_images(answer):
             "message": "gpt_engine Internal Server Error",
             "errors": e,
         }
+
+
+@app.post("/test3")
+async def test3(chat: Chat):
+    chat_history = chat.dict()['chat_history']
+    chat_history = [tuple(history) for history in chat_history]
+
+    print(chat_history)
+    return {
+        "status": 500,
+        "message": "gpt_engine Internal Server Error",
+        "errors": '',
+    }

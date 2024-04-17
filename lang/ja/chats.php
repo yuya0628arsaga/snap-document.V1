@@ -15,5 +15,7 @@ return [
     'document_id' => 'ドキュメントID',
     'user_id' => 'ユーザーID',
     'page_id' => 'ページID',
+
+    'history' => 'チャット履歴',
 ];
 

@@ -191,7 +191,7 @@ const ChatMessage = () => {
         axios({
             url: '/api/v1/chats/',
             method: 'POST',
-            data: { question: inputQuestion, manualName: manual }
+            data: { question: inputQuestion, manualName: manual, chatHistory: [['question1', 'answer1'], ['question2', 'answer2']] }
         })
         .then((res: AxiosResponse): void => {
             const { data } = res

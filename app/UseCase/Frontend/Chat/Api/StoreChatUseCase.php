@@ -34,14 +34,15 @@ class StoreChatUseCase
     /**
      * @param string $question 質問
      * @param string $documentName 使用するドキュメント名
+     * @param array $chatHistory チャット履歴
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    public function execute(string $question, string $documentName): array
+    public function execute(string $question, string $documentName, array $chatHistory): array
     {
-        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine($question, $documentName);
+        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -87,19 +88,25 @@ class StoreChatUseCase
      *
      * @param string $question
      * @param string $documentName
+     * @param array $chatHistory
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(string $question, string $documentName): array
+    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory): array
     {
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post('http://gpt_engine:8000/test2', [
+            ])->post('http://gpt_engine:8000/test3', [
                 'question' => $question,
                 'document_name' => $documentName,
+                'chat_history' => $chatHistory,
+                // 'chat_history' => [
+                //     ['質問１', '回答１'],
+                //     ['質問２', '回答２'],
+                // ],
             ]);
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
