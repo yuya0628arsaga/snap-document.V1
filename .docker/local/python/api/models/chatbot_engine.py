@@ -14,7 +14,7 @@ from api.models.rag import Rag
 from api.models.s3 import S3
 from api.models.images_store import ImageStore
 from api.models.voctor_store import VectorStore
-from api.models.pdf_helper import PdfHelper
+from api.services.pdf_helper import PdfHelper
 
 
 class ChatbotEngine(object):
