@@ -15,6 +15,7 @@ return [
     'document_id' => 'ドキュメントID',
     'user_id' => 'ユーザーID',
     'page_id' => 'ページID',
+    'cost' => 'GPTの料金',
 
     'history' => 'チャット履歴',
 ];
