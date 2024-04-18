@@ -258,6 +258,7 @@ async def test(chat: Chat):
                 'prompt_tokens': cb.prompt_tokens,
                 'completion_tokens': cb.completion_tokens,
             },
+            "cost": cb.total_cost
         }
 
 

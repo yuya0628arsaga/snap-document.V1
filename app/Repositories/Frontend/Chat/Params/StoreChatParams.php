@@ -13,6 +13,7 @@ class StoreChatParams
     private readonly string $answer;
     private readonly int $questionTokenCount;
     private readonly int $answerTokenCount;
+    private readonly float $cost;
     private readonly ?string $userId;
     private readonly string $documentId;
 
@@ -22,6 +23,7 @@ class StoreChatParams
      * @param string $answer
      * @param int $questionTokenCount
      * @param int $answerTokenCount
+     * @param float $cost
      * @param string $userId
      * @param string $documentId
      *
@@ -33,6 +35,7 @@ class StoreChatParams
         string $answer,
         int $questionTokenCount,
         int $answerTokenCount,
+        float $cost,
         ?string $userId,
         string $documentId,
     ) {
@@ -41,6 +44,7 @@ class StoreChatParams
         $this->answer = $answer;
         $this->questionTokenCount = $questionTokenCount;
         $this->answerTokenCount = $answerTokenCount;
+        $this->cost = $cost;
         $this->userId = $userId;
         $this->documentId = $documentId;
     }
@@ -56,6 +60,7 @@ class StoreChatParams
             'answer' => $this->answer,
             'question_token_count' => $this->questionTokenCount,
             'answer_token_count' => $this->answerTokenCount,
+            'cost' => $this->cost,
             'user_id' => $this->userId,
             'document_id' => $this->documentId,
         ];

@@ -42,12 +42,12 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName, array $chatHistory): array
     {
-        [$answer, $base64Images, $pdfPages, $tokenCounts] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
+        [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
 
-        DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts) {
+        DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
-            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts);
+            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost);
 
             Log::info('[Start] チャットの保存処理を開始します。', [
                 'method' => __METHOD__,
@@ -121,6 +121,7 @@ class StoreChatUseCase
             $responseFromGptEngine['base64_images'],
             $responseFromGptEngine['pdf_pages'],
             $tokenCounts,
+            $responseFromGptEngine['cost'],
         ];
     }
 
@@ -134,7 +135,7 @@ class StoreChatUseCase
      *
      * @return StoreChatParams
      */
-    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts): StoreChatParams
+    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost): StoreChatParams
     {
         return
             new StoreChatParams(
@@ -143,6 +144,7 @@ class StoreChatUseCase
                 answer: $answer,
                 questionTokenCount: $tokenCounts['promptTokens'],
                 answerTokenCount: $tokenCounts['completionTokens'],
+                cost: $cost,
                 userId: null,
                 documentId: $documentId,
             );
