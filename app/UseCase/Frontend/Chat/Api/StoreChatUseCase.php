@@ -42,12 +42,12 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName, array $chatHistory): array
     {
-        [$answer, $base64Images, $pdfPages] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
+        [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
 
-        DB::transaction(function () use ($question, $documentName, $answer, $pdfPages) {
+        DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
-            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id);
+            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost);
 
             Log::info('[Start] チャットの保存処理を開始します。', [
                 'method' => __METHOD__,
@@ -111,10 +111,17 @@ class StoreChatUseCase
             throw new GptEngineProcessException(message: $errorMessage, code: $status);
         };
 
+        $tokenCounts = [
+            'promptTokens' => $responseFromGptEngine['token_counts']['prompt_tokens'],
+            'completionTokens' => $responseFromGptEngine['token_counts']['completion_tokens'],
+        ];
+
         return [
             $responseFromGptEngine['answer'],
             $responseFromGptEngine['base64_images'],
-            $responseFromGptEngine['pdf_pages']
+            $responseFromGptEngine['pdf_pages'],
+            $tokenCounts,
+            $responseFromGptEngine['cost'],
         ];
     }
 
@@ -124,18 +131,20 @@ class StoreChatUseCase
      * @param string $question
      * @param string $answer
      * @param string $documentId
+     * @param array $tokenCounts
      *
      * @return StoreChatParams
      */
-    private function makeStoreChatParams($question, $answer, $documentId): StoreChatParams
+    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost): StoreChatParams
     {
         return
             new StoreChatParams(
-                question: $question,
-                questionTokenCount: 12,
-                answer: $answer,
-                answerTokenCount: 28,
                 date: CarbonImmutable::now(),
+                question: $question,
+                answer: $answer,
+                questionTokenCount: $tokenCounts['promptTokens'],
+                answerTokenCount: $tokenCounts['completionTokens'],
+                cost: $cost,
                 userId: null,
                 documentId: $documentId,
             );

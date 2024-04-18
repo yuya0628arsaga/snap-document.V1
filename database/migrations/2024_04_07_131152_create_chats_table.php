@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->ulid('id')->primary()->comment(__('chats.id'));
-            $table->text('question')->comment(__('chats.question'));
-            $table->integer('question_token_count')->nullable()->default(0)->comment(__('chats.question_token_count'));
-            $table->text('answer')->comment(__('chats.answer'));
-            $table->integer('answer_token_count')->nullable()->default(0)->comment(__('chats.answer_token_count'));
             $table->dateTime('date')->comment(__('chats.date'));
+            $table->text('question')->comment(__('chats.question'));
+            $table->text('answer')->comment(__('chats.answer'));
+            $table->integer('question_token_count')->comment(__('chats.question_token_count'));
+            $table->integer('answer_token_count')->comment(__('chats.answer_token_count'));
+            $table->double('cost', 10, 7)->comment(__('chats.cost'));
 
-            $table->string('user_id', 26)->nullable()->comment(__('users.id')); # MEMO::未ログインUserによる質問も許容するため一旦外部キー制約は貼らない
+            $table->string('user_id', 26)->nullable()->comment(__('users.id')); # MEMO::未ログインUserによる質問も許容する予定のため一旦外部キー制約は貼らない
             $table->foreignUlid('document_id')->constrained('documents')->comment(__('documents.id'));
             $table->timestamps();
             $table->softDeletes();
