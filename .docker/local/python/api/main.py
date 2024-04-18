@@ -289,11 +289,14 @@ def get_images(answer):
     from  api.models.s3 import S3
 
     try:
-
         paths = re.findall(r'図\d+', answer)
         base64_images = []
+        s3 = S3()
         for path in paths:
-            binary = S3().get_s3_object(f"outputs/{path}.jpg")
+            key = f"outputs/{path}.jpg"
+            if s3.check_s3_key_exists(key) is False: continue
+
+            binary = s3.get_s3_object(key)
             # 画像データをBase64エンコードしてフォーマットする
             image_data = base64.b64encode(binary).decode("utf-8")
             base64_images.append({'path': path, 'base64': image_data})
