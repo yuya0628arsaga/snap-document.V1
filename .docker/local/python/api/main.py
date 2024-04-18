@@ -235,22 +235,30 @@ async def test(chat: Chat):
     # ベクトル間の距離を閾値としたフィルターを設定し、関連度がより強いものしか参照しないようにできます。ここでは、 vectordbkwargs 内のdictに、 search_distance というキー名で格納します。 vector store が探していれば、 search distance に閾値を設定してフィルタがかけられる
     vectordbkwargs = {"search_distance": 0.9}
 
-    result = qa({"question": question, "chat_history": chat_history})
-    # result = qa({"question": question, "chat_history": chat_history, "vectordbkwargs": vectordbkwargs})
+    from langchain.callbacks import get_openai_callback
+    with get_openai_callback() as cb:
 
-    print(result["answer"])
-    print(result["source_documents"])
-    pdf_pages = [1, 2, 3]
+        result = qa({"question": question, "chat_history": chat_history})
+        # result = qa({"question": question, "chat_history": chat_history, "vectordbkwargs": vectordbkwargs})
 
-    base64_images = get_images(result["answer"])
+        print(result["answer"])
 
-    return {
-        "status": 200,
-        "answer": result["answer"],
-        "source_documents": result["source_documents"],
-        "base64_images": base64_images,
-        "pdf_pages": pdf_pages,
-    }
+        # print(result["source_documents"])
+        pdf_pages = [1, 2, 3]
+
+        base64_images = get_images(result["answer"])
+
+        return {
+            "status": 200,
+            "answer": result["answer"],
+            "source_documents": result["source_documents"],
+            "base64_images": base64_images,
+            "pdf_pages": pdf_pages,
+            "token_counts": {
+                'prompt_tokens': cb.prompt_tokens,
+                'completion_tokens': cb.completion_tokens,
+            },
+        }
 
 
 class CustomOpenAIEmbeddings(OpenAIEmbeddings):
