@@ -138,11 +138,11 @@ class StoreChatUseCase
     {
         return
             new StoreChatParams(
-                question: $question,
-                questionTokenCount: $tokenCounts['promptTokens'],
-                answer: $answer,
-                answerTokenCount: $tokenCounts['completionTokens'],
                 date: CarbonImmutable::now(),
+                question: $question,
+                answer: $answer,
+                questionTokenCount: $tokenCounts['promptTokens'],
+                answerTokenCount: $tokenCounts['completionTokens'],
                 userId: null,
                 documentId: $documentId,
             );
