@@ -7,15 +7,8 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
-# PDFファイルが保存されているフォルダのパスを記入
-PDF_DIRPATH = pathlib.Path(
-    'documents/Man_Digest_v9.pdf'
-    )
 
-# 出力先フォルダのパス
-OUTPUT_DIRPATH = pathlib.Path(
-    '<変換した画像を保存したいフォルダのパス>'
-    )
+PDF_DIRPATH = 'api/documents'
 
 
 class PdfHelper(object):
@@ -25,17 +18,30 @@ class PdfHelper(object):
         pass
 
     # search_text = 'ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ'
-    def get_page_from_pdf(self, search_text: str) -> list[int]:
+    def __get_page_from_pdf(self, search_text: str, document_name: str) -> list[int]:
+        """検索ワードに一致するPDFのページを出力する
 
+        Args:
+            search_text (str): 検索ワード
+            document_name (str): 検索対象のPDF名
+
+        Returns:
+            list[int]: 検索にヒットしたPDFのページ
+        """
         # pdfminerの設定
         rsrcmgr = PDFResourceManager()
         codec = 'utf-8'
         laparams = LAParams()
         laparams.detext_vertical=True
 
+        pdf_path = pathlib.Path(
+            # 'api/documents/Man_Digest_v9.pdf'
+            f"{PDF_DIRPATH}/{document_name}.pdf"
+        )
+
         # PDFファイルを1ページずつ見て該当するかチェック
         pages = []
-        with open(PDF_DIRPATH, 'rb') as fp:
+        with open(pdf_path, 'rb') as fp:
             for i, page in enumerate(PDFPage.get_pages(fp)):
                 outfp = StringIO()
                 device = TextConverter(
@@ -43,7 +49,7 @@ class PdfHelper(object):
                     outfp=outfp, # 出力先のストリームオブジェクトを設定する
                     codec=codec,
                     laparams=laparams # LAParamsオブジェクトを設定する
-                    )
+                )
                 interpreter = PDFPageInterpreter(rsrcmgr, device)
                 interpreter.process_page(page)
 
@@ -61,37 +67,52 @@ class PdfHelper(object):
 
                 # extracted_page.group() は 検索文字(「S パラメータ」)
                 if extracted_page:
+                    print(search_text)
+                    print(i + 1)
                     pages.append(i + 1)
         return pages
 
+    # texts = ['図 19 解析結果（S パラメータ特性）', 'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。', 'パラメータの選択', '図 20']
+    def __get_the_longest_text(self, texts: list[str]) -> str:
+        """最も文字数の多いtextを取得
+
+        Args:
+            texts (list[str]): textの配列
+
+        Returns:
+            str: 最も文字数の多いtext
+        """
+
+        sorted_texts = sorted(texts, key=len, reverse=True)
+        the_longest_text = sorted_texts[0]
+
+        return the_longest_text
 
     # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出し、PDF検索できる形の配列に変換する
-    def extract_main_text(self, text_with_noise: str) -> list[str]:
+    def __extract_main_sentence_list(self, reference_text: str) -> list[str]:
+        """最も長い文章を抽出し、PDF検索できる形の配列に変換する
 
-        # str = '図 19 解析結果（S パラメータ特性）\n\nもしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。\n\nパラメータの選択\n\n図 20'
+        Args:
+            reference_text (str): 回答に参照されたtext（例. AA \n\n BBBBB \n\n CCC \n\n DD）
+
+        Returns:
+            list[str]:
+        """
+
+        # reference_text = '図 19 解析結果（S パラメータ特性）\n\nもしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。\n\nパラメータの選択\n\n図 20'
 
         # 文字列を \n\n で分割して配列化
-        list_text_with_noise = text_with_noise.split('\n\n')
+        noise = '\n\n'
+        texts = reference_text.split(noise)
 
-        # arrs = ['図 19 解析結果（S パラメータ特性）', 'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。', 'パラメータの選択', '図 20']
+        the_longest_text = self.__get_the_longest_text(texts)
 
-        # { '文字列' : 文字数 }の形にする。{ 'aaa' : 3 , 'bbbb' : 4 } の形
-        str_counts = dict()
-        for index, arr in enumerate(list_text_with_noise):
-          str_count = len(arr)
-          str = arr
-          str_counts[str] = str_count
+        # MEMO::PDF内に改行が存在する場合、改行をまたぐ検索ができないから以下の処理が必要
+        main_sentence_list = the_longest_text.split(' ')
 
-        # { 'aaa' : 3 , 'bbbb' : 4 } の中で一番文字列が長いものを抽出
-        sorted_str_counts = sorted(str_counts.items(), key=lambda x:x[1], reverse=True)
-        # logger.info(sorted_str_counts[0][0])
+        return main_sentence_list
 
-        # spl = arrs[1].split(' ')
-        main_text_list = sorted_str_counts[0][0].split(' ')
-
-        return main_text_list
-
-        # result = [
+        # sentence_list = [
         #   'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ',
         #   'ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ',
         #   'ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして',
@@ -99,19 +120,30 @@ class PdfHelper(object):
         # ]
 
     # ベクトル検索で取得したtextを元に、そのtextがpdfのどこに書いてあるのか文字列一致検索をかけてpdfページを取得
-    def get_pdf_pages(self, reference_texts: list[str]) -> list[int]:
+    def get_pdf_pages(self, reference_texts: list[str], document_name: str) -> list[int]:
+        """PDFページを取得する
+
+        Args:
+            reference_texts (list[str]): 回答のために参照したPDFの文章
+            document_name (str): 検索対象のドキュメント名
+
+        Returns:
+            list[int]: PDFのページ
+        """
         pdf_pages = []
-        # reference_texts は docs_by_type["texts"] のこと
+
         for reference_text in reference_texts:
             # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出し、PDF検索できる形の配列に変換する
-            main_text_list = self.extract_main_text(reference_text)
+            main_sentence_list = self.__extract_main_sentence_list(reference_text)
+
+            # 最も長い sentence だけで検索をかける（全部かけると処理が遅くなるから）
+            main_sentence = self.__get_the_longest_text(main_sentence_list)
 
             # 0番目のやつだけで検索かければよい（他のでかけても同じ結果が出るはずだから）
-            pages = self.get_page_from_pdf(main_text_list[0])
+            pages = self.__get_page_from_pdf(main_sentence, document_name)
 
-            # 0番目のページだけ入れてる（全部入れた方がいい？）
-            pdf_pages.append(pages[0])
-
-            # self.logger.info(f"pages: {pages}")
+            # もしも検索がヒットしなかった場合、page が[]となり、page[0]でエラーが出る
+            if pages:
+                pdf_pages.append(pages[0])
 
         return pdf_pages
