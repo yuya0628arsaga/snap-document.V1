@@ -41,36 +41,43 @@ class PdfHelper(object):
 
         # PDFファイルを1ページずつ見て該当するかチェック
         pages = []
-        with open(pdf_path, 'rb') as fp:
-            for i, page in enumerate(PDFPage.get_pages(fp)):
-                outfp = StringIO()
-                device = TextConverter(
-                    rsrcmgr=rsrcmgr, # PDFResourceManagerオブジェクトを設定する
-                    outfp=outfp, # 出力先のストリームオブジェクトを設定する
-                    codec=codec,
-                    laparams=laparams # LAParamsオブジェクトを設定する
-                )
-                interpreter = PDFPageInterpreter(rsrcmgr, device)
-                interpreter.process_page(page)
+        try:
+            with open(pdf_path, 'rb') as fp:
+                for i, page in enumerate(PDFPage.get_pages(fp)):
+                    outfp = StringIO()
+                    device = TextConverter(
+                        rsrcmgr=rsrcmgr, # PDFResourceManagerオブジェクトを設定する
+                        outfp=outfp, # 出力先のストリームオブジェクトを設定する
+                        codec=codec,
+                        laparams=laparams # LAParamsオブジェクトを設定する
+                    )
+                    interpreter = PDFPageInterpreter(rsrcmgr, device)
+                    interpreter.process_page(page)
 
-                # 1ページ分のPDF（for文で回しているため i+1 ページ目のPDF）を文字列化したもの
-                extracted_text = outfp.getvalue()
+                    # 1ページ分のPDF（for文で回しているため i+1 ページ目のPDF）を文字列化したもの
+                    extracted_text = outfp.getvalue()
 
-                # logger.info(f"{i+1}ページ目のPDF(extracted_text): {extracted_text}")
+                    # logger.info(f"{i+1}ページ目のPDF(extracted_text): {extracted_text}")
 
-                # ページ抽出：抽出条件（演習問題のページ）に該当すればTrue
-                # 一致した場合：<re.Match object; span=(27, 34), match='S パラメータ'>
-                # 一致しなかった場合: None
-                extracted_page = re.search(search_text, extracted_text)
+                    # ページ抽出：抽出条件（演習問題のページ）に該当すればTrue
+                    # 一致した場合：<re.Match object; span=(27, 34), match='S パラメータ'>
+                    # 一致しなかった場合: None
+                    extracted_page = re.search(search_text, extracted_text)
 
-                # logger.info(f"extracted_page: {extracted_page}")
+                    # logger.info(f"extracted_page: {extracted_page}")
 
-                # extracted_page.group() は 検索文字(「S パラメータ」)
-                if extracted_page:
-                    print(search_text)
-                    print(i + 1)
-                    pages.append(i + 1)
-        return pages
+                    # extracted_page.group() は 検索文字(「S パラメータ」)
+                    if extracted_page:
+                        print(search_text)
+                        print(i + 1)
+                        pages.append(i + 1)
+            return pages
+        except FileNotFoundError:
+            print(f"PDF: {document_name} が存在しません。")
+            raise
+        except Exception:
+            print(f"PDF 検索エラー")
+            raise
 
     # texts = ['図 19 解析結果（S パラメータ特性）', 'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。', 'パラメータの選択', '図 20']
     def __get_the_longest_text(self, texts: list[str]) -> str:
