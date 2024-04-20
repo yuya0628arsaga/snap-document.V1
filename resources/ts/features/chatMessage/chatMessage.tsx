@@ -107,6 +107,14 @@ const AiAnswer = styled('div')`
             >.img-text{
             }
         }
+        >.url-title {
+            margin-top: 32px;
+        }
+        >.url {
+            > a {
+                color: ${borderColor.blue};
+            }
+        }
     }
 `
 
@@ -141,7 +149,9 @@ type Chat = {
     id: string
     question: string,
     answer: string,
-    base64Images: {path: string, base64: string}[],
+    base64Images: { path: string, base64: string }[],
+    documentName: string,
+    pdfPages: number[],
     isGenerating: boolean,
 }
 
@@ -220,6 +230,7 @@ const ChatMessage = () => {
             const lastChat: Chat = newChats.slice(-1)[0];
             lastChat.answer = data.answer
             lastChat.base64Images = data.base64Images
+            lastChat.pdfPages = data.pdfPages
             lastChat.isGenerating = false
 
             setChats(newChats)
@@ -256,7 +267,7 @@ const ChatMessage = () => {
 
         // const elementId = crypto.randomUUID();
         const elementId = Math.random().toString(36).slice(-8);
-        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], isGenerating: true }]
+        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true }]
         setChats(newChats)
 
         // ローディング表示
@@ -332,6 +343,22 @@ const ChatMessage = () => {
                                                             <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
                                                             <div className='img-text'>{base64Image.path}</div>
                                                         </div>
+                                                    )
+                                                })
+                                            }
+                                            {(!chat.isGenerating && chat.pdfPages) &&
+                                                <div className='url-title'>
+                                                    {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
+                                                </div>
+                                            }
+                                            {chat.pdfPages &&
+                                                chat.pdfPages.map((pdfPage: number, i: number) => {
+                                                    return (
+                                                        <React.Fragment key={i}>
+                                                            <div className='url'>
+                                                                ・<a target="_blank" href={`https://mel-document-public.s3.ap-northeast-1.amazonaws.com/${chat.documentName}.pdf#page=${pdfPage}`}>{pdfPage}ページ</a>
+                                                            </div>
+                                                        </React.Fragment>
                                                     )
                                                 })
                                             }
