@@ -137,6 +137,8 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.chains import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 
+from api.services.pdf_helper import PdfHelper
+
 @app.post("/test2")
 async def test(chat: Chat):
 
@@ -242,9 +244,14 @@ async def test(chat: Chat):
         # result = qa({"question": question, "chat_history": chat_history, "vectordbkwargs": vectordbkwargs})
 
         print(result["answer"])
+        print(result["source_documents"])
 
-        # print(result["source_documents"])
-        pdf_pages = [1, 2, 3]
+        source_documents = result["source_documents"]
+        source_texts = [document.page_content for document in source_documents]
+
+        pdf_pages = PdfHelper().get_pdf_pages(source_texts, document_name)
+
+        print(pdf_pages)
 
         base64_images = get_images(result["answer"])
 

@@ -153,4 +153,19 @@ class PdfHelper(object):
             if pages:
                 pdf_pages.append(pages[0])
 
+        pdf_pages = self.__remove_duplicates(pdf_pages)
+
         return pdf_pages
+
+    def __remove_duplicates(self, pdf_pages):
+        """配列の重複削除
+
+        Args:
+            pdf_pages (list[int]): PDFページの配列
+
+        Returns:
+            list[int]: PDFページの配列
+        """
+        pdf_page_set = set(pdf_pages)
+
+        return list(pdf_page_set)
