@@ -297,6 +297,10 @@ def get_images(answer):
 
     try:
         paths = re.findall(r'図\d+', answer)
+
+        paths_set = set(paths) # 配列の重複削除
+        paths = list(paths_set)
+
         base64_images = []
         s3 = S3()
         for path in paths:
