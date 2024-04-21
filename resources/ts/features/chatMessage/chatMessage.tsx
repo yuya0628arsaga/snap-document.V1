@@ -118,6 +118,9 @@ const AiAnswer = styled('div')`
         }
         >.checkbox-container {
             margin-top: 32px;
+            >.MuiFormGroup-root >.MuiFormControlLabel-root >.MuiTypography-root {
+                margin-top: 3px;
+            }
         }
     }
 `
