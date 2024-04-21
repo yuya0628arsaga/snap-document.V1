@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontWeight } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,6 +9,7 @@ import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
 import { StatusCode } from '../../utils/statusCode';
+import CheckboxLabels from '../../components/Checkbox';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -115,6 +116,12 @@ const AiAnswer = styled('div')`
                 color: ${borderColor.blue};
             }
         }
+        >.checkbox-container {
+            margin-top: 32px;
+            >.MuiFormGroup-root >.MuiFormControlLabel-root >.MuiTypography-root {
+                margin-top: 3px;
+            }
+        }
     }
 `
 
@@ -153,6 +160,7 @@ type Chat = {
     documentName: string,
     pdfPages: number[],
     isGenerating: boolean,
+    isIncludeToHistory: boolean,
 }
 
 const ChatMessage = () => {
@@ -166,6 +174,9 @@ const ChatMessage = () => {
 
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
+
+    // chatsの更新によるautoScroll()制御のため
+    const [isChecking, setIsChecking] = useState(false)
 
     const [errorMessage, setErrorMessage] = useState('')
 
@@ -195,21 +206,18 @@ const ChatMessage = () => {
     }
 
     /**
-     * チャット履歴を取得（2個前まで含める）
+     * 質問に含めるチャット履歴を取得
      */
     const getChatHistory = (chats: Chat[]): string[][] => {
-        let chat_history: string[][] = []
+        const includedChatHistory = chats.filter((chat: Chat) => {
+            return chat.isIncludeToHistory
+        })
 
-        chat_history = chats.map((chat: Chat): string[] => {
+        const chatHistory = includedChatHistory.map((chat: Chat): string[] => {
             return [chat.question, chat.answer]
         })
-        chat_history = chat_history.filter((chat: string[], i: number) => {
-            const oneBeforeChatNumber = chats.length - 1
-            const twoBeforeChatNumber = chats.length - 2
-            return i === oneBeforeChatNumber || i === twoBeforeChatNumber
-        })
 
-        return chat_history
+        return chatHistory
     }
 
     /**
@@ -267,7 +275,7 @@ const ChatMessage = () => {
 
         // const elementId = crypto.randomUUID();
         const elementId = Math.random().toString(36).slice(-8);
-        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true }]
+        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}]
         setChats(newChats)
 
         // ローディング表示
@@ -298,8 +306,32 @@ const ChatMessage = () => {
     }
 
     useEffect(() => {
-        autoScroll()
+        // MEMO::chatのチェックボックスにチェック入れた場合もchatsが更新され、autoScroll()が実行されてしまうため制御
+        if (!isChecking) {
+            autoScroll()
+        }
+
+        setIsChecking(false)
+
     }, [chats])
+
+    /**
+     * チェックボックスにチェックを入れた(外した)chatの isIncludeToHistory を更新
+     */
+    const includeToHistory = (targetChat: Chat, chats: Chat[]) => {
+        setIsChecking(true)
+
+        const newChats: Chat[] =
+            chats.map((chat: Chat): Chat => {
+                if (chat.id !== targetChat.id) return chat
+
+                chat.isIncludeToHistory = !chat.isIncludeToHistory
+                return chat
+            })
+
+        setChats(newChats)
+    }
+
 
     return (
         <>
@@ -361,6 +393,15 @@ const ChatMessage = () => {
                                                         </React.Fragment>
                                                     )
                                                 })
+                                            }
+                                            {!chat.isGenerating &&
+                                                <div className='checkbox-container'>
+                                                    <CheckboxLabels
+                                                        targetChat={chat}
+                                                        chats={chats}
+                                                        includeToHistory={includeToHistory}
+                                                    />
+                                                </div>
                                             }
                                         </div>
                                     </AiAnswer>
