@@ -323,14 +323,24 @@ def get_images(answer):
         }
 
 
+# サンプルデータを返却
 @app.post("/test3")
 async def test3(chat: Chat):
-    chat_history = chat.dict()['chat_history']
-    chat_history = [tuple(history) for history in chat_history]
-
-    print(chat_history)
+    result = {
+        "answer": "Sパラメータ解析を実行するには、まず図33のSパラメータ解析設定画面で解析を設定します。その後、解析実行ボタンを押して解析を開始します。解析が進むにつれてログダイアローグに途中経過が表示されます。解析が完了すると、図19のようにS11特性が表示されます。解析が終了したら、解析ボタンを押してください。",
+        "source_documents": ""
+    }
+    base64_images = get_images(result["answer"])
+    pdf_pages = [1, 2, 3]
     return {
-        "status": 500,
-        "message": "gpt_engine Internal Server Error",
-        "errors": '',
+            "status": 200,
+            "answer": result["answer"],
+            "source_documents": result["source_documents"],
+            "base64_images": base64_images,
+            "pdf_pages": pdf_pages,
+            "token_counts": {
+                'prompt_tokens': 6,
+                'completion_tokens': 28,
+            },
+            "cost": 0.00628
     }
