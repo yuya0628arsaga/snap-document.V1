@@ -203,21 +203,18 @@ const ChatMessage = () => {
     }
 
     /**
-     * チャット履歴を取得（2個前まで含める）
+     * 質問に含めるチャット履歴を取得
      */
     const getChatHistory = (chats: Chat[]): string[][] => {
-        let chat_history: string[][] = []
+        const includedChatHistory = chats.filter((chat: Chat) => {
+            return chat.isIncludeToHistory
+        })
 
-        chat_history = chats.map((chat: Chat): string[] => {
+        const chatHistory = includedChatHistory.map((chat: Chat): string[] => {
             return [chat.question, chat.answer]
         })
-        chat_history = chat_history.filter((chat: string[], i: number) => {
-            const oneBeforeChatNumber = chats.length - 1
-            const twoBeforeChatNumber = chats.length - 2
-            return i === oneBeforeChatNumber || i === twoBeforeChatNumber
-        })
 
-        return chat_history
+        return chatHistory
     }
 
     /**
