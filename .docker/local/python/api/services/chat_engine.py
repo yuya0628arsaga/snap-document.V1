@@ -13,12 +13,15 @@ from langchain.chains.question_answering import load_qa_chain
 from api.services.chroma_engine import ChromaEngine
 from api.services.pdf_helper import PdfHelper
 from api.models.s3 import S3
+import settings
 
 
 GPT_MODEL = 'gpt-3.5-turbo'
 MAX_TOKENS = 1024
 TEMPERATURE = 0
 
+IMG_STORE_S3_DIR = settings.IMG_STORE_S3_DIR or 'outputs'
+IMG_EXTENSION = settings.IMG_EXTENSION or 'jpg'
 
 class ChatEngine(object):
     """GPTと通信するクラス"""
@@ -146,9 +149,7 @@ class ChatEngine(object):
         qa = self._make_qa(prompt_qg, prompt_qa, retriever)
 
         result = self._get_answer_from_gpt(qa, question, chat_history)
-
         pdf_pages = self._get_pdf_pages(result['source_documents'], document_name)
-
         base64_images = self._get_images(result['answer'])
 
         return {
@@ -175,7 +176,7 @@ class ChatEngine(object):
         base64_images = []
         s3 = S3()
         for path in paths:
-            key = f"outputs/{path}.jpg"
+            key = f"{IMG_STORE_S3_DIR}/{path}.{IMG_EXTENSION}"
             if s3.check_s3_key_exists(key) is False: continue
 
             binary = s3.get_s3_object(key)
