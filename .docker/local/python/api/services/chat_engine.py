@@ -34,6 +34,8 @@ class ChatEngine(object):
             temperature=temperature,
         )
 
+        self.chroma_engine = ChromaEngine()
+
     def _make_prompt_qg(self):
         """Question generator （質問・履歴を投げる段階）で投げるプロンプトの作成
             (デフォルトでは CONDENSE_QUESTION_PROMPT が使われる)
@@ -145,7 +147,7 @@ class ChatEngine(object):
 
         prompt_qg = self._make_prompt_qg()
         prompt_qa = self._make_prompt_qa()
-        retriever = ChromaEngine(document_name).get_retriever()
+        retriever = self.chroma_engine.get_retriever(document_name)
 
         qa = self._make_qa(prompt_qg, prompt_qa, retriever)
 
