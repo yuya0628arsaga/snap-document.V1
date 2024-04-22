@@ -18,7 +18,7 @@ class PdfHelper(object):
         pass
 
     # search_text = 'ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ'
-    def __get_page_from_pdf(self, search_text: str, document_name: str) -> list[int]:
+    def _get_page_from_pdf(self, search_text: str, document_name: str) -> list[int]:
         """検索ワードに一致するPDFのページを出力する
 
         Args:
@@ -80,7 +80,7 @@ class PdfHelper(object):
             raise
 
     # texts = ['図 19 解析結果（S パラメータ特性）', 'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。', 'パラメータの選択', '図 20']
-    def __get_the_longest_text(self, texts: list[str]) -> str:
+    def _get_the_longest_text(self, texts: list[str]) -> str:
         """最も文字数の多いtextを取得
 
         Args:
@@ -96,7 +96,7 @@ class PdfHelper(object):
         return the_longest_text
 
     # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出し、PDF検索できる形の配列に変換する
-    def __extract_main_sentence_list(self, reference_text: str) -> list[str]:
+    def _extract_main_sentence_list(self, reference_text: str) -> list[str]:
         """最も長い文章を抽出し、PDF検索できる形の配列に変換する
 
         Args:
@@ -112,7 +112,7 @@ class PdfHelper(object):
         noise = '\n\n'
         texts = reference_text.split(noise)
 
-        the_longest_text = self.__get_the_longest_text(texts)
+        the_longest_text = self._get_the_longest_text(texts)
 
         # MEMO::PDF内に改行が存在する場合、改行をまたぐ検索ができないから以下の処理が必要
         main_sentence_list = the_longest_text.split(' ')
@@ -141,23 +141,23 @@ class PdfHelper(object):
 
         for reference_text in reference_texts:
             # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出し、PDF検索できる形の配列に変換する
-            main_sentence_list = self.__extract_main_sentence_list(reference_text)
+            main_sentence_list = self._extract_main_sentence_list(reference_text)
 
             # 最も長い sentence だけで検索をかける（全部かけると処理が遅くなるから）
-            main_sentence = self.__get_the_longest_text(main_sentence_list)
+            main_sentence = self._get_the_longest_text(main_sentence_list)
 
             # 0番目のやつだけで検索かければよい（他のでかけても同じ結果が出るはずだから）
-            pages = self.__get_page_from_pdf(main_sentence, document_name)
+            pages = self._get_page_from_pdf(main_sentence, document_name)
 
             # もしも検索がヒットしなかった場合、page が[]となり、page[0]でエラーが出る
             if pages:
                 pdf_pages.append(pages[0])
 
-        pdf_pages = self.__remove_duplicates(pdf_pages)
+        pdf_pages = self._remove_duplicates(pdf_pages)
 
         return pdf_pages
 
-    def __remove_duplicates(self, pdf_pages):
+    def _remove_duplicates(self, pdf_pages):
         """配列の重複削除
 
         Args:
