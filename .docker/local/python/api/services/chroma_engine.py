@@ -47,6 +47,7 @@ class ChromaEngine(object):
         """ChromaDB にドキュメントのベクトルデータを永久保存する"""
         vector_data_store_dir = f"{VECTOR_DATA_STORE_BASE_DIR}/{document_name}"
         if os.path.isdir(vector_data_store_dir):
+            print(f"Warning: ベクトルデータが既に存在します。{vector_data_store_dir} を一旦削除してから再度お試しください。")
             shutil.rmtree(vector_data_store_dir)
 
         client = chromadb.PersistentClient(path=f"./chromadb_datas/{document_name}")
