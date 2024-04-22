@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from api.schemas.chat import Chat
 from api.services.chat_engine import ChatEngine
@@ -22,9 +22,17 @@ async def answer(chat: Chat):
             **data,
         }
 
+    except HTTPException as e:
+        # raise HTTPException(status_code=404, detail="python エラー")
+        print(e)
+        return {
+            "status": e.status_code,
+            "message": e.detail,
+            "errors": e,
+        }
+
     except Exception as e:
         print(e)
-
         return {
             "status": 500,
             "message": "gpt_engine Internal Server Error",
