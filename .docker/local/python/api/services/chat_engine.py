@@ -23,6 +23,7 @@ TEMPERATURE = 0
 IMG_STORE_S3_DIR = settings.IMG_STORE_S3_DIR or 'outputs'
 IMG_EXTENSION = settings.IMG_EXTENSION or 'jpg'
 
+
 class ChatEngine(object):
     """GPTと通信するクラス"""
 

@@ -6,6 +6,7 @@ import settings
 
 DATA_STORE_DIR = './chromadb_datas'
 
+
 class ChromaEngine(object):
     """Chromaを操作するクラス"""
 

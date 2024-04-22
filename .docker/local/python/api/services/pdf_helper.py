@@ -8,7 +8,7 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
 
-PDF_DIRPATH = 'api/documents'
+PDF_STORE_LOCAL_DIR = 'api/documents'
 
 
 class PdfHelper(object):
@@ -36,7 +36,7 @@ class PdfHelper(object):
 
         pdf_path = pathlib.Path(
             # 'api/documents/Man_Digest_v9.pdf'
-            f"{PDF_DIRPATH}/{document_name}.pdf"
+            f"{PDF_STORE_LOCAL_DIR}/{document_name}.pdf"
         )
 
         # PDFファイルを1ページずつ見て該当するかチェック
