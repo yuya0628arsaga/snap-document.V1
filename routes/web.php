@@ -15,9 +15,25 @@ use Illuminate\Support\Facades\Log;
 |
 */
 
-// Route::get('/', function () {
-//     // $resp = Http::get('http://gpt_engine:8000/hello');
-//     // $resp = $resp->json();
-//     // Log::debug($resp);
-//     return view('frontend.home.index');
-// });
+// デプロイテスト用
+Route::get('/welcome', function () {
+    Log::debug('/welcome にアクセス');
+    return view('welcome', [
+        "message" => "メッセージ",
+    ]);
+});
+
+Route::get('/test', function () {
+    Log::debug('/test にアクセス');
+    return view('frontend.home.index');
+});
+
+Route::get('/test/gpt', function () {
+    Log::debug('/test/gpt にアクセス');
+    $resp = Http::get('http://gpt_engine:8000/hello');
+    $resp = $resp->json();
+    Log::debug($resp);
+    return view('welcome', [
+        'message' => $resp['message']
+    ]);
+});
