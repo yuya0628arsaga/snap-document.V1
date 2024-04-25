@@ -51,14 +51,22 @@ async def test3(chat: Chat):
     base64_images = ChatEngine()._get_images(result["answer"])
     pdf_pages = [1, 2, 3]
     return {
-            "status": 200,
-            "answer": result["answer"],
-            "source_documents": result["source_documents"],
-            "base64_images": base64_images,
-            "pdf_pages": pdf_pages,
-            "token_counts": {
-                'prompt_tokens': 6,
-                'completion_tokens': 28,
-            },
-            "cost": 0.00628
+        "status": 200,
+        "answer": result["answer"],
+        "source_documents": result["source_documents"],
+        "base64_images": base64_images,
+        "pdf_pages": pdf_pages,
+        "token_counts": {
+            'prompt_tokens': 6,
+            'completion_tokens': 28,
+        },
+        "cost": 0.00628
+    }
+
+# デプロイテスト用
+@router.get("/hello")
+async def hello():
+    return {
+        "status": 200,
+        "message": "GPT接続成功",
     }
