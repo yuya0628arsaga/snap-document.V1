@@ -35,3 +35,6 @@ COPY .docker/dev/app/www.conf.patch /usr/local/etc/php-fpm.d/www.conf.patch
 RUN patch /usr/local/etc/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/www.conf.patch
 
 RUN chmod -R a+w /app/storage /app/bootstrap/cache
+
+RUN cp .env.dev.example .env
+RUN php artisan key:generate
