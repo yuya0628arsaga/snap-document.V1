@@ -68,7 +68,7 @@ jobs:
       with:
         push: true
         file: .docker/$ENV/nginx/Dockerfile
-        tags: $ECR_REGISTRY/$NGINX_CONTAINER_NAME:$NGINX_TAG, $ECR_REGISTRY/$NGINX_CONTAINER_NAME:latest
+        tags: $ECR_REGISTRY/$NGINX_CONTAINER_NAME:$NGINX_TAG,$ECR_REGISTRY/$NGINX_CONTAINER_NAME:latest
         context: .
 
     - name: Build and push app image
@@ -76,7 +76,7 @@ jobs:
       with:
         push: true
         file: .docker/$ENV/app/Dockerfile
-        tags: $ECR_REGISTRY/$APP_CONTAINER_NAME:$APP_TAG, $ECR_REGISTRY/$APP_CONTAINER_NAME:latest
+        tags: $ECR_REGISTRY/$APP_CONTAINER_NAME:$APP_TAG,$ECR_REGISTRY/$APP_CONTAINER_NAME:latest
         context: .
 
     - name: Deploy to ECS
