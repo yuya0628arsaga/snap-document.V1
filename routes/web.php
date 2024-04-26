@@ -37,3 +37,21 @@ Route::get('/test/gpt', function () {
         'message' => $resp['message']
     ]);
 });
+
+Route::get('/test/gpt3', function () {
+    Log::debug('/test/gpt3 にアクセス');
+    Log::debug('アクセス先：'.config('api.gpt_engine.endpoint').'/test3');
+
+    $resp = Http::timeout(-1)->withHeaders([
+        'Content-Type' => 'application/json',
+    ])->post(config('api.gpt_engine.endpoint').'/test3', [
+        'question' => 'sample質問',
+        'document_name' => 'sampleドキュメント',
+        'chat_history' => [],
+    ]);
+    $resp = $resp->json();
+    Log::debug($resp);
+    return view('welcome', [
+        'message' => $resp['answer']
+    ]);
+});
