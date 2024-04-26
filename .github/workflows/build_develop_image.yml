@@ -10,6 +10,7 @@ env:
   AWS_REGION: ap-northeast-1
   ECS_CLUSTER_NAME: udemy-ecs-lesson-cluster
   ECS_WEBAPP_SERVICE: snap-test01-nginx-service-main
+  ECS_GPT_ENGINE_SERVICE: gpt-engine-dev-service
   NGINX_CONTAINER_NAME: nginx-dev-test01
   APP_CONTAINER_NAME: snap-test01
   NGINX_TAG: 1.0.1
@@ -90,7 +91,7 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       with:
         push: true
-        file: .docker/local/python/Dockerfile
+        file: .docker/dev/gpt_engine/Dockerfile
         # target: ${{ env.ECR_REGISTRY }}
         tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/gpt-engine-dev:${{ env.APP_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/gpt-engine-dev:latest
         context: ./.docker/local/python
@@ -98,3 +99,4 @@ jobs:
     - name: Deploy to ECS
       run: |
         aws ecs update-service --service $ECS_WEBAPP_SERVICE --cluster $ECS_CLUSTER_NAME --force-new-deployment
+        aws ecs update-service --service $ECS_GPT_ENGINE_SERVICE --cluster $ECS_CLUSTER_NAME --force-new-deployment
