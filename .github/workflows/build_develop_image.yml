@@ -67,7 +67,7 @@ jobs:
       with:
         push: true
         file: .docker/dev/nginx/Dockerfile
-        target: $ECR_REGISTRY
+        target: ${{ env.ECR_REGISTRY }}
         tags: ${{ env.NGINX_TAG }},latest
         context: .
 
@@ -78,7 +78,7 @@ jobs:
       with:
         push: true
         file: .docker/dev/app/Dockerfile
-        target: $ECR_REGISTRY
+        target: ${{ env.ECR_REGISTRY }}
         tags: ${{ env.APP_TAG }},latest
         context: .
 
