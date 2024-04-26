@@ -72,12 +72,12 @@ jobs:
         context: .
 
     - name: Build and push app image
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          file: .docker/$ENV/app/Dockerfile
-          tags: $ECR_REGISTRY/$APP_CONTAINER_NAME:$APP_TAG, $ECR_REGISTRY/$APP_CONTAINER_NAME:latest
-          context: .
+      uses: docker/build-push-action@v4
+      with:
+        push: true
+        file: .docker/$ENV/app/Dockerfile
+        tags: $ECR_REGISTRY/$APP_CONTAINER_NAME:$APP_TAG, $ECR_REGISTRY/$APP_CONTAINER_NAME:latest
+        context: .
 
     - name: Deploy to ECS
       run: |
