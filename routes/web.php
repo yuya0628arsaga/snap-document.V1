@@ -30,7 +30,7 @@ Route::get('/test', function () {
 
 Route::get('/test/gpt', function () {
     Log::debug('/test/gpt にアクセス');
-    $resp = Http::get('http://gpt_engine:8000/hello');
+    $resp = Http::get(config('api.gpt_engine.endpoint').'/hello');
     $resp = $resp->json();
     Log::debug($resp);
     return view('welcome', [

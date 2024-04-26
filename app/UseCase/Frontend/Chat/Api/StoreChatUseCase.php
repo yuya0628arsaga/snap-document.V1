@@ -99,7 +99,7 @@ class StoreChatUseCase
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post('http://gpt_engine:8000/test2', [
+            ])->post(config('api.gpt_engine.endpoint').'/test3', [
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
