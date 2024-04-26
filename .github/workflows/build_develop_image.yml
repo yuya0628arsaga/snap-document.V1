@@ -67,8 +67,8 @@ jobs:
       with:
         push: true
         file: .docker/dev/nginx/Dockerfile
-        target: ${{ env.ECR_REGISTRY }}
-        tags: ${{ env.NGINX_TAG }},latest
+        # target: ${{ env.ECR_REGISTRY }}
+        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/nginx-dev-test01:${{ env.NGINX_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/nginx-dev-test01:latest
         context: .
 
     - name: Build and push app image
@@ -78,8 +78,8 @@ jobs:
       with:
         push: true
         file: .docker/dev/app/Dockerfile
-        target: ${{ env.ECR_REGISTRY }}
-        tags: ${{ env.APP_TAG }},latest
+        # target: ${{ env.ECR_REGISTRY }}
+        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-test01-3:${{ env.APP_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-test01-3:latest
         context: .
 
     - name: Deploy to ECS
