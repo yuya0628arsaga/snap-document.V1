@@ -42,9 +42,19 @@ Route::get('/test-api2', function() {
 
 Route::get('/test-api3', function() {
     Log::debug('apiのtest3/');
-    $res = DB::table('users')->get();
+    $res = DB::table('documents')->get();
     Log::debug($res);
-    return 'DB接続成功';
+    $name = ($res[0])->name;
+    Log::debug($name);
+    return 'DB接続成功: '.$name;
+});
+
+Route::post('/test-api4', function(Request $request) {
+    Log::debug('apiのtest4/');
+    Log::debug($request->input('testParam'));
+    $res = Http::timeout(-1)->get(config('api.gpt_engine.endpoint').'/hello');
+    Log::debug($res);
+    return 'レスポンンス: '.$res.', パラメータ:'.$request->input('testParam');
 });
 
 // Route::post('/question', function (Request $request) {
