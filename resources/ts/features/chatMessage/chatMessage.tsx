@@ -372,11 +372,32 @@ const ChatMessage = () => {
         })
     }
 
+    const test3 = () => {
+        console.log('test3')
+        axios({
+            url: '/api/v1/test-api3/',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+        })
+        .catch((e: AxiosError): void => {
+            if (axios.isAxiosError(e) && e.response) {
+                console.error(e)
+            } else {
+                // general error
+                console.error(e)
+            }
+        })
+    }
+
 
     return (
         <>
             <button onClick={test}>リクエストテストボタン</button>
             <button onClick={test2}>リクエストテストボタン2</button>
+            <button onClick={test3}>リクエストテストボタン3</button>
             <Wrapper>
                 <SidebarContainer>
                 </SidebarContainer>

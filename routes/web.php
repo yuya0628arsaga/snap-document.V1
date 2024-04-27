@@ -23,6 +23,13 @@ Route::get('/welcome', function () {
     ]);
 });
 
+Route::get('/', function () {
+    Log::debug('/ にアクセス');
+    return view('welcome', [
+        "message" => "ルート /",
+    ]);
+});
+
 Route::get('/test', function () {
     Log::debug('/test にアクセス');
     return view('frontend.home.index');
