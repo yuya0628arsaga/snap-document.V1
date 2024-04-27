@@ -22,8 +22,9 @@ class StoreChatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'question' => ['required', 'string'], // TODO::質問のMaxトークン数のバリデーションを決める必要あり
-            'manualName' => ['required', 'string', 'exists:documents,name'],
+            // TODO::質問のMaxトークン数のバリデーションを決める必要あり
+            'question' => ['required', 'string'],
+            'manualName' => ['required', 'string'],
             'chatHistory' => ['array'],
         ];
     }
