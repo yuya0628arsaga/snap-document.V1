@@ -332,9 +332,51 @@ const ChatMessage = () => {
         setChats(newChats)
     }
 
+    const test = () => {
+        console.log('test')
+        axios({
+            url: '/api/v1/test-api/',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+        })
+        .catch((e: AxiosError): void => {
+            if (axios.isAxiosError(e) && e.response) {
+                console.error(e)
+            } else {
+                // general error
+                console.error(e)
+            }
+        })
+    }
+
+    const test2 = () => {
+        console.log('test2')
+        axios({
+            url: '/api/v1/test-api2/',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+        })
+        .catch((e: AxiosError): void => {
+            if (axios.isAxiosError(e) && e.response) {
+                console.error(e)
+            } else {
+                // general error
+                console.error(e)
+            }
+        })
+    }
+
 
     return (
         <>
+            <button onClick={test}>リクエストテストボタン</button>
+            <button onClick={test2}>リクエストテストボタン2</button>
             <Wrapper>
                 <SidebarContainer>
                 </SidebarContainer>

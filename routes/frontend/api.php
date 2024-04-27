@@ -27,6 +27,18 @@ Route::middleware([])->group(function () {
     });
 });
 
+Route::get('/test-api', function() {
+    Log::debug('apiのtest/');
+    return response()->json('test-api成功', 200);
+});
+
+Route::get('/test-api2', function() {
+    Log::debug('apiのtest2/');
+    $res = Http::timeout(-1)->get(config('api.gpt_engine.endpoint').'/hello');
+    Log::debug($res);
+    return $res;
+});
+
 // Route::post('/question', function (Request $request) {
 //     $res = Http::timeout(-1)->get('http://gpt_engine:8000/hello');
 //     Log::debug($res->json());
