@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Frontend\Chat\Api\StoreChatController;
 use App\Models\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -37,6 +38,13 @@ Route::get('/test-api2', function() {
     $res = Http::timeout(-1)->get(config('api.gpt_engine.endpoint').'/hello');
     Log::debug($res);
     return $res;
+});
+
+Route::get('/test-api3', function() {
+    Log::debug('apiのtest3/');
+    $res = DB::table('users')->get();
+    Log::debug($res);
+    return 'DB接続成功';
 });
 
 // Route::post('/question', function (Request $request) {
