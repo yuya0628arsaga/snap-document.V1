@@ -24,7 +24,7 @@ Route::get('/welcome', function () {
 });
 
 Route::get('/', function () {
-    Log::debug('/ にアクセス');
+    // Log::debug('/ にアクセス');
     return view('welcome', [
         "message" => "ルート /",
     ]);

@@ -42,11 +42,9 @@ Route::get('/test-api2', function() {
 
 Route::get('/test-api3', function() {
     Log::debug('apiのtest3/');
-    $res = DB::table('documents')->get();
+    $res = DB::table('chats')->get();
     Log::debug($res);
-    $name = ($res[0])->name;
-    Log::debug($name);
-    return 'DB接続成功: '.$name;
+    return 'DB接続成功: '.$res->collect();
 });
 
 Route::post('/test-api4', function(Request $request) {
@@ -56,6 +54,20 @@ Route::post('/test-api4', function(Request $request) {
     Log::debug($res);
     return 'レスポンンス: '.$res.', パラメータ:'.$request->input('testParam');
 });
+
+Route::get('/test-api5', function() {
+    Log::debug('apiのtest5/');
+    $res = Http::timeout(-1)->withHeaders([
+        'Content-Type' => 'application/json',
+    ])->post(config('api.gpt_engine.endpoint').'/chat/answer', [
+        'question' => 'Sパラメータ解析のやり方は？',
+        'document_name' => 'Man_Digest_v9',
+        'chat_history' => [],
+    ]);
+    Log::debug($res);
+    return 'レスポンンス: '.$res;
+});
+
 
 // Route::post('/question', function (Request $request) {
 //     $res = Http::timeout(-1)->get('http://gpt_engine:8000/hello');
