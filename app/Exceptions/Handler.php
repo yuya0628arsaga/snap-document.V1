@@ -88,7 +88,7 @@ class Handler extends ExceptionHandler
                 default:
                     // 上記以外の例外では一律で 500 Server Error を返すようにする
                     $status = SymfonyResponse::HTTP_INTERNAL_SERVER_ERROR;
-                    $msg = 'Server Error';
+                    $msg = 'Server Error: '.$e->getMessage();
             }
 
             Log::info("{$status}エラーが発生しました。", [
