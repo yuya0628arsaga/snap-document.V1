@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Frontend\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,7 +24,6 @@ class StoreChatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // TODO::質問のMaxトークン数のバリデーションを決める必要あり
             'question' => ['required', 'string'],
             'manualName' => ['required', 'string'],
             'chatHistory' => ['array'],
@@ -61,7 +62,7 @@ class StoreChatRequest extends FormRequest
         return $this->input('manualName');
     }
 
-     /**
+    /**
      * チャット履歴を取得
      *
      * @return array
