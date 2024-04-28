@@ -1,0 +1,20 @@
+--- /usr/local/etc/php-fpm.d/www.conf.default
++++ /usr/local/etc/php-fpm.d/www.conf
+@@ -137,7 +137,7 @@
+ ; This can be useful to work around memory leaks in 3rd party libraries. For
+ ; endless request processing specify '0'. Equivalent to PHP_FCGI_MAX_REQUESTS.
+ ; Default Value: 0
+-;pm.max_requests = 500
++pm.max_requests = 500
+
+ ; The URI to view the FPM status page. If this value is not set, no URI will be
+ ; recognized as a status page. It shows the following informations:
+@@ -316,7 +316,7 @@
+ ;  %u: remote user
+ ;
+ ; Default: "%R - %u %t \"%m %r\" %s"
+-;access.format = "%R - %u %t \"%m %r%Q%q\" %s %f %{milli}d %{kilo}M %C%%"
++access.format='{"log_type":"php-fpm","time_local":"%{%Y-%m-%dT%H:%M:%S%z}T","client_ip":"%{HTTP_X_FORWARDED_FOR}e","remote_addr":"%R","remote_user":"%u","request":"%m %{REQUEST_URI}e %{SERVER_PROTOCOL}e","status":"%s","body_bytes_sent":"%l","request_time":"%d","http_referrer":"%{HTTP_REFERER}e","http_user_agent":"%{HTTP_USER_AGENT}e","request_id":"%{HTTP_X_REQUEST_ID}e"}'
+
+ ; The log file for slow requests
+ ; Default Value: not set

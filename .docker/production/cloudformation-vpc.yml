@@ -1,0 +1,125 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for Snap-Prod by Ogawa
+
+Mappings:
+  StackConfig:
+    VPC:
+      CIDR: 10.1.0.0/16
+    SnapProdPublicSubnet1:
+      CIDR: 10.1.0.0/24
+    SnapProdPublicSubnet2:
+      CIDR: 10.1.1.0/24
+    SnapProdPrivateSubnet1:
+      CIDR: 10.1.2.0/24
+    SnapProdPrivateSubnet2:
+      CIDR: 10.1.3.0/24
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !FindInMap [ StackConfig, VPC, CIDR ]
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: snap-prod-vpc
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: snap-prod-vpc-igw
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  SnapProdPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: snap-prod-public-route-table
+  SnapProdPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref SnapProdPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  SnapProdPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      CidrBlock: !FindInMap [ StackConfig, SnapProdPublicSubnet1, CIDR ]
+      Tags:
+        - Key: Name
+          Value: Snap Prod Public Subnet 1
+  SnapProdPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SnapProdPublicSubnet1
+      RouteTableId: !Ref SnapProdPublicRouteTable
+  SnapProdPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs "" ]
+      CidrBlock: !FindInMap [ StackConfig, SnapProdPublicSubnet2, CIDR ]
+      Tags:
+        - Key: Name
+          Value: Snap Prod Public Subnet 2
+  SnapProdPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SnapProdPublicSubnet2
+      RouteTableId: !Ref SnapProdPublicRouteTable
+  SnapProdPrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: snap-prod-private-route-table-1
+  SnapProdPrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: snap-prod-private-route-table-2
+  SnapProdPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      CidrBlock: !FindInMap [ StackConfig , SnapProdPrivateSubnet1 , CIDR ]
+      Tags:
+        - Key: Name
+          Value: Snap Prod Private Subnet 1
+  SnapProdPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SnapProdPrivateSubnet1
+      RouteTableId: !Ref SnapProdPrivateRouteTable1
+  SnapProdPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs "" ]
+      CidrBlock: !FindInMap [ StackConfig , SnapProdPrivateSubnet2 , CIDR ]
+      Tags:
+        - Key: Name
+          Value: Snap Prod Private Subnet 2
+  SnapProdPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SnapProdPrivateSubnet2
+      RouteTableId: !Ref SnapProdPrivateRouteTable2
