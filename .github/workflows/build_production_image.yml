@@ -3,19 +3,19 @@ name: Deploy work flow for Amazon ECS
 on:
   pull_request:
     branches:
-      - develop
+      - main
     types: [closed]
 
 env:
   AWS_REGION: ap-northeast-1
-  ECS_CLUSTER_NAME: udemy-ecs-lesson-cluster
-  ECS_WEBAPP_SERVICE: snap-test01-nginx-service-main
-  ECS_GPT_ENGINE_SERVICE: gpt-engine-dev-service
-  NGINX_CONTAINER_NAME: nginx-dev-test01
-  APP_CONTAINER_NAME: snap-test01
-  NGINX_TAG: 1.0.1
-  APP_TAG: 1.0.1
-  GPT_ENGINE_TAG: 1.0.1
+  ECS_CLUSTER_NAME: snap-prod-cluster
+  ECS_WEBAPP_SERVICE: snap-prod-app-and-nginx-service
+  ECS_GPT_ENGINE_SERVICE: snap-prod-gpt-engine-service
+  NGINX_CONTAINER_NAME: nginx
+  APP_CONTAINER_NAME: app
+  NGINX_TAG: 1.0.0
+  APP_TAG: 1.0.0
+  GPT_ENGINE_TAG: 1.0.0
 
 jobs:
   deploy:
@@ -68,9 +68,9 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       with:
         push: true
-        file: .docker/dev/nginx/Dockerfile
+        file: .docker/production/nginx/Dockerfile
         # target: ${{ env.ECR_REGISTRY }}
-        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/nginx-dev-test01:${{ env.NGINX_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/nginx-dev-test01:latest
+        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-prod-nginx:${{ env.NGINX_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-prod-nginx:latest
         context: .
 
     - name: Build and push app image
@@ -79,9 +79,9 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       with:
         push: true
-        file: .docker/dev/app/Dockerfile
+        file: .docker/production/app/Dockerfile
         # target: ${{ env.ECR_REGISTRY }}
-        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-test01-3:${{ env.APP_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-test01-3:latest
+        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-prod-app:${{ env.APP_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-prod-app:latest
         context: .
 
     # gpt_engine のイメージ作成と ECRへのpush
@@ -91,9 +91,9 @@ jobs:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       with:
         push: true
-        file: .docker/dev/gpt_engine/Dockerfile
+        file: .docker/production/gpt_engine/Dockerfile
         # target: ${{ env.ECR_REGISTRY }}
-        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/gpt-engine-dev:${{ env.APP_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/gpt-engine-dev:latest
+        tags: 531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-prod-gpt-engine:${{ env.APP_TAG }},531087524630.dkr.ecr.ap-northeast-1.amazonaws.com/snap-prod-gpt-engine:latest
         context: ./.docker/local/python
 
     - name: Deploy to ECS
