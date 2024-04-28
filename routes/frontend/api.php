@@ -22,10 +22,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware([])->group(function () {
-    Route::prefix('chats')->name('chat.')->group(function () {
-        Route::post('/', StoreChatController::class)->name('store');
-    });
+Route::prefix('chats')->name('chat.')->group(function () {
+    Route::post('/', StoreChatController::class)->name('store');
 });
 
 Route::get('/test-api', function() {
