@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Frontend\Chat\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Frontend\Chat\StoreChatRequest;
+use App\Http\Requests\Frontend\Chats\StoreChatRequest;
 use App\Http\Resources\Frontend\Chat\StoreChatResource;
 use App\UseCase\Frontend\Chat\Api\StoreChatUseCase;
 use Illuminate\Http\JsonResponse;

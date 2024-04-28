@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Frontend\Chat;
+namespace App\Http\Requests\Frontend\Chats;
 
 use Illuminate\Foundation\Http\FormRequest;
 
