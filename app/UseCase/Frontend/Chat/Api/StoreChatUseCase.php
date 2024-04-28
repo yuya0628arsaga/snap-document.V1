@@ -42,6 +42,8 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName, array $chatHistory): array
     {
+        Log::debug('/api/v1/chats にアクセス');
+
         [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
 
         DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost) {
