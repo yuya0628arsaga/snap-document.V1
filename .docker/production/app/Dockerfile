@@ -36,5 +36,8 @@ RUN patch /usr/local/etc/php-fpm.d/www.conf /usr/local/etc/php-fpm.d/www.conf.pa
 
 RUN chmod -R a+w /app/storage /app/bootstrap/cache
 
+
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_NO_INTERACTION 1
 RUN cp .env.production.example .env
 RUN php artisan key:generate
