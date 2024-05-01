@@ -34,7 +34,7 @@ const SidebarContainer = styled('div')`
     height: 100vh;
     background: yellow;
     @media (max-width: ${responsive.sp}) {
-        background: red;
+        background: ${borderColor.blue};
         position: fixed;
         width: 100%;
         height: 100vh;
@@ -50,9 +50,9 @@ const SidebarContainer = styled('div')`
 const Header = styled('div')`
     display: flex;
     align-items: center;
-    gap: 40%;
+    gap: 28%;
     >.select-box {
-        min-width: 50%;
+        min-width: 60%;
     }
     >.hamburger {
         display: none;
