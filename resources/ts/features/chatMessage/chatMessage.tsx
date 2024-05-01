@@ -10,14 +10,18 @@ import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
+// 検索フォーム
+import Paper from '@mui/material/Paper';
+import InputBase from '@mui/material/InputBase';
+import SearchIcon from '@mui/icons-material/Search';
 
 const Wrapper = styled('div')`
     display: flex;
 `
 
 const MainContainer = styled('div')`
-    /* background: green; */
-    flex-grow: 8;
+    /* flex-grow: 8; */
+    width: 80%;
     display: flex;
     flex-direction: column;
     /* padding-top: 48px; */
@@ -29,10 +33,12 @@ const MainContainer = styled('div')`
 `
 
 const SidebarContainer = styled('div')`
-    flex-grow: 2;
-    min-width: 220px;
+    /* flex-grow: 2; */
+    /* min-width: 220px; */
+    width: 20%;
     height: 100vh;
-    background: yellow;
+    /* background: yellow; */
+    background: ${bgColor.lightGray};
     @media (max-width: ${responsive.sp}) {
         background: ${borderColor.blue};
         position: fixed;
@@ -44,6 +50,60 @@ const SidebarContainer = styled('div')`
         &.open {
             right: 0;
         }
+    }
+
+    display: flex;
+    flex-direction: column;
+    >.contents {
+        height: calc(100vh - 120px);
+        width: 100%;
+        >.new-chat-button {
+            background: blue;
+            height: 80px;
+            width: 100%;
+        }
+        >.past-chats-container {
+            height: calc(100vh - 120px - 80px);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: scroll;
+
+            >.search {
+                margin: 10px;
+            }
+            >.past-chats {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                >.date {
+                    margin: 0 8px;
+                }
+                >.past-chat {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    background: ${bgColor.lightGray};
+                    height: 50px;
+                    padding: 8px;
+
+                    > button {
+                        background: lightblue;
+                        padding: 10px;
+                        border: 1px solid ${borderColor.gray};
+                        border-radius: 5px;
+                    }
+                }
+            }
+        }
+    }
+    >.account {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 20%;
+        background: red;
+        height: 120px;
     }
 `
 
@@ -410,7 +470,89 @@ const ChatMessage = () => {
     return (
         <>
             <Wrapper>
-                <SidebarContainer className={ isSpMenuOpen ? 'open' : ''}>
+                <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
+                    <div className='contents'>
+                        <div className='new-chat-button'></div>
+                        <div className='past-chats-container'>
+                            <div className='search'>
+                                <Paper
+                                component="form"
+                                sx={{ p: '2px 4px', display: 'flex', alignItems: 'center'}}
+                                >
+                                    <SearchIcon />
+                                    <InputBase
+                                        sx={{ ml: 1, flex: 1, mt: 1 }}
+                                        placeholder="質問を検索"
+                                        inputProps={{ 'aria-label': 'search google maps' }}
+                                    />
+                                </Paper>
+                            </div>
+
+                            <div className='past-chats'>
+                                <div className='date'>
+                                    2024年1月
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className='past-chats'>
+                                <div className='date'>
+                                    2024年2月
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                                <div className='past-chat'>
+                                    <button>
+                                        質問タイトル１
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className='account'></div>
                 </SidebarContainer>
 
                 <MainContainer>
