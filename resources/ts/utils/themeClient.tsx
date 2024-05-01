@@ -35,13 +35,19 @@ const color = {
     },
   }
 
-  // color
-  export const bgColor = color.background
-  export const borderColor = color.border
+export const responsive = {
+    pc: '960px',
+    tab: '768px',
+    sp: '520px',
+}
 
-  // font
-  export const fontSize = font.size
-  export const fontWeight = font.weight
+// color
+export const bgColor = color.background
+export const borderColor = color.border
 
-  // line
-  export const lineHeight = line.height
+// font
+export const fontSize = font.size
+export const fontWeight = font.weight
+
+// line
+export const lineHeight = line.height

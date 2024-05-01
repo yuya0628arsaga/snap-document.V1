@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
-import { bgColor, borderColor, fontWeight } from '../../utils/themeClient';
+import { bgColor, borderColor, fontWeight, responsive } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
@@ -33,6 +33,71 @@ const SidebarContainer = styled('div')`
     min-width: 220px;
     height: 100vh;
     background: yellow;
+    @media (max-width: ${responsive.sp}) {
+        background: ${borderColor.blue};
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        top: 80px;
+        transition: all 0.5s;
+        right: -120%;
+        &.open {
+            right: 0;
+        }
+    }
+`
+
+const Header = styled('div')`
+    display: flex;
+    align-items: center;
+    gap: 28%;
+    >.select-box {
+        min-width: 60%;
+    }
+    >.hamburger {
+        display: none;
+        @media (max-width: ${responsive.sp}) {
+            display: block;
+            width: 32px;
+            height: 32px;
+            position: relative;
+            appearance: none;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            background-color: ${borderColor.white};
+            cursor: pointer;
+            z-index: 300;
+            span, span::after, span::before {
+                position: absolute;
+                display: block;
+                content: "";
+                width: 100%;
+                height: 2px;
+                background-color: ${borderColor.blue};
+                transition: all 0.5s;
+            }
+            span {
+                &::before {
+                    top: -10px;
+                }
+                &::after {
+                    bottom: -10px;
+                }
+            }
+            &.open span {
+                background-color: transparent;
+                &::before {
+                    top: 0;
+                    transform: rotate(45deg);
+                }
+                &::after {
+                    bottom: 0;
+                    transform: rotate(-45deg);
+                }
+            }
+        }
+    }
 `
 
 const MessageContainer = styled('div')`
@@ -332,15 +397,26 @@ const ChatMessage = () => {
         setChats(newChats)
     }
 
+    // ハンバーガーボタン押下時のメニューの開閉
+    const [isSpMenuOpen, setIsSpMenuOpen] = useState(false)
+    const openSpMenu = () => {
+        setIsSpMenuOpen(prev => !prev)
+    }
+
 
     return (
         <>
             <Wrapper>
-                <SidebarContainer>
+                <SidebarContainer className={ isSpMenuOpen ? 'open' : ''}>
                 </SidebarContainer>
 
                 <MainContainer>
-                    <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
+                    <Header>
+                        <div className='select-box'>
+                            <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
+                        </div>
+                        <button className={ `hamburger ${ isSpMenuOpen ? 'open' : ''}` } onClick={openSpMenu}><span></span></button>
+                    </Header>
                     <div className="messages" id="scroll-target">
                         {chats.map((chat: Chat, i: number) => {
                             return (<MessageContainer id={chat.id} key={i}>
