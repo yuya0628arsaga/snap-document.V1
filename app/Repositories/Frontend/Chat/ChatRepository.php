@@ -6,6 +6,7 @@ namespace App\Repositories\Frontend\Chat;
 
 use App\Models\Chat;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
+use Illuminate\Support\Collection;
 
 interface ChatRepository
 {
@@ -16,4 +17,14 @@ interface ChatRepository
      * @return Chat
      */
     public function store(StoreChatParams $params): Chat;
+
+    /**
+     * 質問一覧を取得
+     *
+     * @param array $with
+     * @param array $columns
+     * @param array $whereParams
+     * @return Collection
+     */
+    public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): Collection;
 }

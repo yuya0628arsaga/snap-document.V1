@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Frontend\Chat\Api\FetchChatsController;
 use App\Http\Controllers\Frontend\Chat\Api\StoreChatController;
 use App\Models\Document;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('chats')->name('chat.')->group(function () {
     Route::post('/', StoreChatController::class)->name('store');
+    Route::get('/', FetchChatsController::class)->name('fetch');
 });
 
 
