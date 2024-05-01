@@ -108,6 +108,9 @@ const MessageContainer = styled('div')`
     ::-webkit-scrollbar {
         display:none;
     }
+    @media (max-width: ${responsive.sp}) {
+        max-width: 90%;
+    }
 `
 
 const UsersQuestion = styled('div')`
