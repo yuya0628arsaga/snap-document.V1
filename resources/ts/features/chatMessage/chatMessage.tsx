@@ -30,6 +30,9 @@ const MainContainer = styled('div')`
         flex: 1;
         overflow-y: scroll;
     }
+    @media (max-width: ${responsive.sp}) {
+        width: 100%;
+    }
 `
 
 const SidebarContainer = styled('div')`
@@ -40,7 +43,6 @@ const SidebarContainer = styled('div')`
     /* background: yellow; */
     background: ${bgColor.lightGray};
     @media (max-width: ${responsive.sp}) {
-        background: ${borderColor.blue};
         position: fixed;
         width: 100%;
         height: 100vh;
@@ -58,7 +60,7 @@ const SidebarContainer = styled('div')`
         height: calc(100vh - 120px);
         width: 100%;
         >.new-chat-button {
-            background: blue;
+            background: lightblue;
             height: 80px;
             width: 100%;
         }
@@ -78,20 +80,35 @@ const SidebarContainer = styled('div')`
                 gap: 16px;
                 >.date {
                     margin: 0 8px;
+                    @media (max-width: ${responsive.sp}) {
+                        text-align: center;
+                    }
                 }
                 >.past-chat {
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
                     background: ${bgColor.lightGray};
-                    height: 50px;
+                    height: 70px;
                     padding: 8px;
 
                     > button {
-                        background: lightblue;
-                        padding: 10px;
+                        background: ${bgColor.white};
+                        padding: 5px 15px;
                         border: 1px solid ${borderColor.gray};
                         border-radius: 5px;
+                        height: 100%;
+                        width: 100%;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        &:hover {
+                            background: #EEEEEE;
+                        }
+                        @media (max-width: ${responsive.sp}) {
+                            width: 90%;
+                            margin: 0 auto;
+                        }
                     }
                 }
             }
@@ -104,6 +121,9 @@ const SidebarContainer = styled('div')`
         width: 20%;
         background: red;
         height: 120px;
+        @media (max-width: ${responsive.sp}) {
+            width: 0;
+        }
     }
 `
 
@@ -254,7 +274,13 @@ const AiAnswer = styled('div')`
 `
 
 const FormContainer = styled('div')`
-    position: relative;
+    margin: 48px;
+    @media (max-width: ${responsive.sp}) {
+        margin: 16px 8px;
+    }
+    > div {
+        position: relative;
+    }
 `
 
 const InputText = styled('textarea')`
@@ -269,6 +295,10 @@ const InputText = styled('textarea')`
     padding: 8px;
     :focus {
         outline: 1px ${borderColor.blue} solid;
+    }
+    @media (max-width: ${responsive.sp}) {
+        width: 90%;
+        /* margin: 0 auto; */
     }
 `
 
@@ -524,6 +554,7 @@ const ChatMessage = () => {
             setChats(data)
             setChatGroupId(chatGroupId)
             setIsDisplayChatGPT(true)
+            setIsSpMenuOpen(prev => !prev)
         })
         .catch((e: AxiosError): void => {
             console.error(e)
@@ -714,8 +745,8 @@ const ChatMessage = () => {
                         })}
                     </div>
 
-                    <div className='m_48'>
-                        <FormContainer className='ta_c'>
+                    <FormContainer>
+                        <div className='ta_c'>
                             <InputText
                                 onChange={handleChangeInput}
                                 value={inputQuestion}
@@ -734,8 +765,8 @@ const ChatMessage = () => {
                             </InputText>
 
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
-                        </FormContainer>
-                    </div>
+                        </div>
+                    </FormContainer>
                     {errorMessage &&
                         <ErrorMessageContainer>
                             <div className='error-message'>{errorMessage}</div>
