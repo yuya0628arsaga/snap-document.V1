@@ -291,6 +291,16 @@ type Chat = {
     isIncludeToHistory: boolean,
 }
 
+type ChatGroup = {
+    id: string,
+    title: string,
+    lastChatDate: string,
+}
+
+type ResChatGroup = {
+    [key: string]: ChatGroup[]
+}
+
 const ChatMessage = () => {
 
     const [inputQuestion, setInputQuestion] = useState('')
@@ -469,6 +479,32 @@ const ChatMessage = () => {
     }
 
 
+    const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
+
+    useEffect(() => {
+        getChatGroups()
+    }, [])
+
+    /**
+     * サーバからチャットグループを取得
+     */
+    const getChatGroups = (): void => {
+        axios({
+            url: '/api/v1/chat-groups/',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+
+            setChatGroups(data)
+        })
+        .catch((e: AxiosError): void => {
+            console.error(e)
+        })
+    }
+
+
     return (
         <>
             <Wrapper>
@@ -491,6 +527,24 @@ const ChatMessage = () => {
                             </div>
 
                             <div className='past-chats'>
+                                {Object.keys(chatGroups).map((date: string, i: number) => {
+                                    return (
+                                        <React.Fragment key={i}>
+                                            <div className='date'>
+                                                {date}
+                                            </div>
+                                            {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
+                                                return (
+                                                    <div key={i} className='past-chat'>
+                                                        <button>
+                                                            {chatGroup.title}
+                                                        </button>
+                                                    </div>
+                                                )
+                                            })}
+                                        </React.Fragment>
+                                    )
+                                })}
                                 <div className='date'>
                                     2024年1月
                                 </div>
