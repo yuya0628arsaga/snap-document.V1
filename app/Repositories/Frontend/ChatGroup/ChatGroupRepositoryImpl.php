@@ -25,7 +25,10 @@ class ChatGroupRepositoryImpl implements ChatGroupRepository
      */
     public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): Collection
     {
-        return ChatGroup::with($with)->where($whereParams)->get($columns);
+        return ChatGroup::with($with)
+            ->where($whereParams)
+            ->orderBy('last_chat_date', 'desc')
+            ->get($columns);
     }
 
     /**
