@@ -602,65 +602,6 @@ const ChatMessage = () => {
                                         </React.Fragment>
                                     )
                                 })}
-                                <div className='date'>
-                                    2024年1月
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className='past-chats'>
-                                <div className='date'>
-                                    2024年2月
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
-                                <div className='past-chat'>
-                                    <button>
-                                        質問タイトル１
-                                    </button>
-                                </div>
                             </div>
 
                         </div>
