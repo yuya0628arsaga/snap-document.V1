@@ -21,6 +21,7 @@ class FetchChatsResource extends JsonResource
             'question' => $this['question'],
             'answer' => $this['answer'],
             'pages' => static::getPages($this['pages']),
+            'documentName' => $this['document_name'],
         ];
     }
 
