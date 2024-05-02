@@ -32,6 +32,7 @@ class StoreChatController extends Controller
             $request->getQuestion(),
             $request->getManualName(),
             $request->getChatHistory(),
+            $request->getChatGroupId(),
         );
 
         return response()->json(new StoreChatResource($response), Response::HTTP_OK);

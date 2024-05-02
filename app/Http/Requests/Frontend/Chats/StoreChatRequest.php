@@ -27,6 +27,8 @@ class StoreChatRequest extends FormRequest
             'question' => ['required', 'string'], // TODO::質問のMaxトークン数のバリデーションを決める必要あり
             'manualName' => ['required', 'string', 'exists:documents,name'],
             'chatHistory' => ['array'],
+
+            // chatGroupId について、nullじゃない場合、DBにそのIDが存在するかのチェックする
         ];
     }
 
@@ -70,5 +72,15 @@ class StoreChatRequest extends FormRequest
     public function getChatHistory(): array
     {
         return $this->input('chatHistory');
+    }
+
+    /**
+     * チャットグループIDを取得
+     *
+     * @return ?string
+     */
+    public function getChatGroupId(): string | null
+    {
+        return $this->input('chatGroupId');
     }
 }

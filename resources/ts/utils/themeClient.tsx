@@ -1,6 +1,7 @@
 const color = {
     background: {
         lightGray: '#F5F5F7',
+        white: '#FFFFFF',
         blue: '#00A4FF'
     },
 

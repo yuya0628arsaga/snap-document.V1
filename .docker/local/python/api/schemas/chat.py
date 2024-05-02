@@ -5,3 +5,6 @@ class Chat(BaseModel):
     question: str
     document_name: str
     chat_history: list
+
+class GetImagesParams(BaseModel):
+    answer: str

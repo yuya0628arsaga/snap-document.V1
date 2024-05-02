@@ -10,14 +10,18 @@ import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
+// 検索フォーム
+import Paper from '@mui/material/Paper';
+import InputBase from '@mui/material/InputBase';
+import SearchIcon from '@mui/icons-material/Search';
 
 const Wrapper = styled('div')`
     display: flex;
 `
 
 const MainContainer = styled('div')`
-    /* background: green; */
-    flex-grow: 8;
+    /* flex-grow: 8; */
+    width: 80%;
     display: flex;
     flex-direction: column;
     /* padding-top: 48px; */
@@ -26,15 +30,19 @@ const MainContainer = styled('div')`
         flex: 1;
         overflow-y: scroll;
     }
+    @media (max-width: ${responsive.sp}) {
+        width: 100%;
+    }
 `
 
 const SidebarContainer = styled('div')`
-    flex-grow: 2;
-    min-width: 220px;
+    /* flex-grow: 2; */
+    /* min-width: 220px; */
+    width: 20%;
     height: 100vh;
-    background: yellow;
+    /* background: yellow; */
+    background: ${bgColor.lightGray};
     @media (max-width: ${responsive.sp}) {
-        background: ${borderColor.blue};
         position: fixed;
         width: 100%;
         height: 100vh;
@@ -43,6 +51,78 @@ const SidebarContainer = styled('div')`
         right: -120%;
         &.open {
             right: 0;
+        }
+    }
+
+    display: flex;
+    flex-direction: column;
+    >.contents {
+        height: calc(100vh - 120px);
+        width: 100%;
+        >.new-chat-button {
+            background: lightblue;
+            height: 80px;
+            width: 100%;
+        }
+        >.past-chats-container {
+            height: calc(100vh - 120px - 80px);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: scroll;
+
+            >.search {
+                margin: 10px;
+            }
+            >.past-chats {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                >.date {
+                    margin: 0 8px;
+                    @media (max-width: ${responsive.sp}) {
+                        text-align: center;
+                    }
+                }
+                >.past-chat {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    background: ${bgColor.lightGray};
+                    height: 70px;
+                    padding: 8px;
+
+                    > button {
+                        background: ${bgColor.white};
+                        padding: 5px 15px;
+                        border: 1px solid ${borderColor.gray};
+                        border-radius: 5px;
+                        height: 100%;
+                        width: 100%;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        &:hover {
+                            background: #EEEEEE;
+                        }
+                        @media (max-width: ${responsive.sp}) {
+                            width: 90%;
+                            margin: 0 auto;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    >.account {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 20%;
+        background: red;
+        height: 120px;
+        @media (max-width: ${responsive.sp}) {
+            width: 0;
         }
     }
 `
@@ -107,6 +187,9 @@ const MessageContainer = styled('div')`
     overflow-y: scroll;
     ::-webkit-scrollbar {
         display:none;
+    }
+    @media (max-width: ${responsive.sp}) {
+        max-width: 90%;
     }
 `
 
@@ -191,7 +274,13 @@ const AiAnswer = styled('div')`
 `
 
 const FormContainer = styled('div')`
-    position: relative;
+    margin: 48px;
+    @media (max-width: ${responsive.sp}) {
+        margin: 16px 8px;
+    }
+    > div {
+        position: relative;
+    }
 `
 
 const InputText = styled('textarea')`
@@ -206,6 +295,10 @@ const InputText = styled('textarea')`
     padding: 8px;
     :focus {
         outline: 1px ${borderColor.blue} solid;
+    }
+    @media (max-width: ${responsive.sp}) {
+        width: 90%;
+        /* margin: 0 auto; */
     }
 `
 
@@ -228,6 +321,16 @@ type Chat = {
     isIncludeToHistory: boolean,
 }
 
+type ChatGroup = {
+    id: string,
+    title: string,
+    lastChatDate: string,
+}
+
+type ResChatGroup = {
+    [key: string]: ChatGroup[]
+}
+
 const ChatMessage = () => {
 
     const [inputQuestion, setInputQuestion] = useState('')
@@ -236,6 +339,7 @@ const ChatMessage = () => {
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
     const [chats, setChats] = useState<Chat[]>([])
+    const [chatGroupId, setChatGroupId] = useState<string | null>(null)
 
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
@@ -288,11 +392,11 @@ const ChatMessage = () => {
     /**
      * サーバに質問を投げて回答を取得
      */
-    const postChats = (inputQuestion: string, manual: string, newChats: Chat[], chats: Chat[]): void => {
+    const postChats = (inputQuestion: string, manual: string, newChats: Chat[], chats: Chat[], chatGroupId: string | null): void => {
         axios({
             url: '/api/v1/chats/',
             method: 'POST',
-            data: { question: inputQuestion, manualName: manual, chatHistory: getChatHistory(chats) }
+            data: { question: inputQuestion, manualName: manual, chatHistory: getChatHistory(chats), chatGroupId: chatGroupId }
             // data: { question: inputQuestion, manualName: manual, chatHistory: [['question1', 'answer1'], ['question2', 'answer2']] }
             // data: { question: '具体的にどの学部に行けばいいか教えてください。', manualName: manual, chatHistory: [['私は医者です。医者の平均収入を教えて下さい。', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の間になることがあります。'], ['具体的にいくらですか？', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の範囲になることがあります。例えば、一般開業医の場合、年収は1000万円以上になることが一般的です。特に専門医や大学病院の医師などは、それ以上の高収入を得ることもあります。']] }
         })
@@ -307,6 +411,8 @@ const ChatMessage = () => {
             lastChat.isGenerating = false
 
             setChats(newChats)
+            setChatGroupId(data.chatGroupId)
+            if (!chatGroupId) getChatGroups() // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
         })
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
@@ -350,7 +456,7 @@ const ChatMessage = () => {
         setIsDisplayChatGPT(true)
 
         // API通信
-        postChats(inputQuestion, manual, newChats, chats)
+        postChats(inputQuestion, manual, newChats, chats, chatGroupId)
 
         // 質問入力欄を空に
         setInputQuestion('')
@@ -404,10 +510,103 @@ const ChatMessage = () => {
     }
 
 
+    const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
+
+    useEffect(() => {
+        getChatGroups()
+    }, [])
+
+    /**
+     * サーバからチャットグループを取得
+     */
+    const getChatGroups = (): void => {
+        axios({
+            url: '/api/v1/chat-groups/',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+
+            setChatGroups(data)
+        })
+        .catch((e: AxiosError): void => {
+            console.error(e)
+        })
+    }
+
+    /**
+     * チャットグループIDでチャットを取得
+     */
+    const getChats = (chatGroupId: string): void => {
+        axios({
+            url: '/api/v1/chats/',
+            method: 'GET',
+            params: {
+                'chat_group_id': chatGroupId
+            }
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+
+            // [{ id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}, {...}, {...}]
+            setChats(data)
+            setChatGroupId(chatGroupId)
+            setIsDisplayChatGPT(true)
+            setIsSpMenuOpen(prev => !prev)
+        })
+        .catch((e: AxiosError): void => {
+            console.error(e)
+        })
+    }
+
+
     return (
         <>
             <Wrapper>
-                <SidebarContainer className={ isSpMenuOpen ? 'open' : ''}>
+                <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
+                    <div className='contents'>
+                        <div className='new-chat-button'></div>
+                        <div className='past-chats-container'>
+                            <div className='search'>
+                                <Paper
+                                component="form"
+                                sx={{ p: '2px 4px', display: 'flex', alignItems: 'center'}}
+                                >
+                                    <SearchIcon />
+                                    <InputBase
+                                        sx={{ ml: 1, flex: 1, mt: 1 }}
+                                        placeholder="質問を検索"
+                                        inputProps={{ 'aria-label': 'search google maps' }}
+                                    />
+                                </Paper>
+                            </div>
+
+                            <div className='past-chats'>
+                                {Object.keys(chatGroups).map((date: string, i: number) => {
+                                    return (
+                                        <React.Fragment key={i}>
+                                            <div className='date'>
+                                                {date}
+                                            </div>
+                                            {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
+                                                return (
+                                                    <div key={i} className='past-chat'>
+                                                        <button onClick={() => {getChats(chatGroup.id)}}>
+                                                            {chatGroup.title}
+                                                        </button>
+                                                    </div>
+                                                )
+                                            })}
+                                        </React.Fragment>
+                                    )
+                                })}
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className='account'></div>
                 </SidebarContainer>
 
                 <MainContainer>
@@ -487,8 +686,8 @@ const ChatMessage = () => {
                         })}
                     </div>
 
-                    <div className='m_48'>
-                        <FormContainer className='ta_c'>
+                    <FormContainer>
+                        <div className='ta_c'>
                             <InputText
                                 onChange={handleChangeInput}
                                 value={inputQuestion}
@@ -507,8 +706,8 @@ const ChatMessage = () => {
                             </InputText>
 
                             <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
-                        </FormContainer>
-                    </div>
+                        </div>
+                    </FormContainer>
                     {errorMessage &&
                         <ErrorMessageContainer>
                             <div className='error-message'>{errorMessage}</div>
