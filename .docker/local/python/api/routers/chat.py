@@ -58,7 +58,7 @@ async def test3(chat: Chat):
         "source_documents": ""
     }
     from api.services.chat_engine import ChatEngine
-    base64_images = ChatEngine()._get_images(result["answer"])
+    base64_images = ChatEngine().get_images(result["answer"])
     pdf_pages = [1, 2, 3]
     return {
         "status": 200,
