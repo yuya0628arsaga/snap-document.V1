@@ -7,6 +7,7 @@ namespace App\UseCase\Frontend\Chat\Api;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Document\DocumentRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 
 class FetchChatsUseCase
 {
@@ -35,6 +36,7 @@ class FetchChatsUseCase
         );
 
         $chats = $this->addDocumentNameToChats($chats);
+        $chats = $this->addImagesToChats($chats);
 
         return $chats;
     }
@@ -56,5 +58,44 @@ class FetchChatsUseCase
 
             return $chat;
         });
+    }
+
+    /**
+     * chatで表示する画像を追加
+     *
+     * @param Collection $chats
+     *
+     * @return Collection
+     */
+    private function addImagesToChats(Collection $chats): Collection
+    {
+        return $chats->map(function ($chat) {
+            $answer = $chat->answer;
+            $isIncludeImage = preg_match('/図\d+/', $answer);
+
+            $chat->base64_images =
+                $isIncludeImage ? $this->getBase64Images($answer) : [];
+
+            return $chat;
+        });
+    }
+
+    /**
+     * gpt_engineからbase64を取得
+     *
+     * @param string $answer
+     *
+     * @return array
+     */
+    private function getBase64Images(string $answer): array
+    {
+        $response =
+            Http::timeout(-1)->withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post(config('api.gpt_engine.endpoint').'/chat/get-images', [
+                'answer' => $answer,
+            ]);
+
+        return $response['base64_images'];
     }
 }

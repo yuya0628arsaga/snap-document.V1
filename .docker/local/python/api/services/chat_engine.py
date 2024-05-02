@@ -153,7 +153,7 @@ class ChatEngine(object):
 
         result = self._get_answer_from_gpt(qa, question, chat_history)
         pdf_pages = self._get_pdf_pages(result['source_documents'], document_name)
-        base64_images = self._get_images(result['answer'])
+        base64_images = self.get_images(result['answer'])
 
         return {
             **result,
@@ -161,7 +161,7 @@ class ChatEngine(object):
             "pdf_pages": pdf_pages,
         }
 
-    def _get_images(self, answer):
+    def get_images(self, answer):
         """回答の画像データを取得
 
         Args:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from api.schemas.chat import Chat
+from api.schemas.chat import Chat, GetImagesParams
 from api.services.chat_engine import ChatEngine
 
 
@@ -38,6 +38,16 @@ async def answer(chat: Chat):
             "message": "gpt_engine Internal Server Error",
             "errors": e,
         }
+
+@router.post("/chat/get-images")
+async def get_images(params: GetImagesParams):
+    from api.services.chat_engine import ChatEngine
+    base64_images = ChatEngine().get_images(params.dict()['answer'])
+
+    return {
+        "status": 200,
+        "base64_images": base64_images,
+    }
 
 # サンプルデータを返却
 @router.post("/test3")
