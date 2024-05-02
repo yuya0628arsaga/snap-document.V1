@@ -505,6 +505,31 @@ const ChatMessage = () => {
         })
     }
 
+    /**
+     * チャットグループIDでチャットを取得
+     */
+    const getChats = (chatGroupId: string): void => {
+        axios({
+            url: '/api/v1/chats/',
+            method: 'GET',
+            params: {
+                'chat_group_id': chatGroupId
+            }
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+
+            // [{ id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}, {...}, {...}]
+            setChats(data)
+            setChatGroupId(chatGroupId)
+            setIsDisplayChatGPT(true)
+        })
+        .catch((e: AxiosError): void => {
+            console.error(e)
+        })
+    }
+
 
     return (
         <>
@@ -537,7 +562,7 @@ const ChatMessage = () => {
                                             {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button>
+                                                        <button onClick={() => {getChats(chatGroup.id)}}>
                                                             {chatGroup.title}
                                                         </button>
                                                     </div>

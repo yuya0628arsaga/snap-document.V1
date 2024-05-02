@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Frontend\Chat\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Frontend\Chats\FetchChatsRequest;
 use App\Http\Resources\Frontend\Chat\FetchChatsResource;
 use App\UseCase\Frontend\Chat\Api\FetchChatsUseCase;
 use Illuminate\Http\JsonResponse;
@@ -24,9 +25,11 @@ class FetchChatsController extends Controller
      *
      * @return JsonResponse
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(FetchChatsRequest $request): JsonResponse
     {
-        $chats = $this->fetchChatsUseCase->execute();
+        $chats = $this->fetchChatsUseCase->execute(
+            $request->getChatGroupId()
+        );
 
         return response()->json(FetchChatsResource::collection($chats), Response::HTTP_OK);
     }
