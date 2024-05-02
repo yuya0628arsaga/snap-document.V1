@@ -16,6 +16,7 @@ class StoreChatParams
     private readonly float $cost;
     private readonly ?string $userId;
     private readonly string $documentId;
+    private readonly string $chatGroupId;
 
     /**
      * @param CarbonImmutable $date
@@ -26,6 +27,7 @@ class StoreChatParams
      * @param float $cost
      * @param string $userId
      * @param string $documentId
+     * @param string $chatGroupId
      *
      * @return void
      */
@@ -38,6 +40,7 @@ class StoreChatParams
         float $cost,
         ?string $userId,
         string $documentId,
+        string $chatGroupId,
     ) {
         $this->date = $date;
         $this->question = $question;
@@ -47,6 +50,7 @@ class StoreChatParams
         $this->cost = $cost;
         $this->userId = $userId;
         $this->documentId = $documentId;
+        $this->chatGroupId = $chatGroupId;
     }
 
     /**
@@ -63,6 +67,7 @@ class StoreChatParams
             'cost' => $this->cost,
             'user_id' => $this->userId,
             'document_id' => $this->documentId,
+            'chat_group_id' => $this->chatGroupId,
         ];
     }
 }

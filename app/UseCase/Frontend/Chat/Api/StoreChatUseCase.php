@@ -7,6 +7,9 @@ namespace App\UseCase\Frontend\Chat\Api;
 use App\Exceptions\GptEngineProcessException;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
+use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
+use App\Repositories\Frontend\ChatGroup\Params\StoreChatGroupParams;
+use App\Repositories\Frontend\ChatGroup\Params\UpdateChatGroupParams;
 use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
@@ -20,11 +23,13 @@ use Illuminate\Support\Str;
 class StoreChatUseCase
 {
     /**
+     * @param ChatGroupRepository $chatGroupRepository
      * @param ChatRepository $chatRepository
      * @param DocumentRepository $documentRepository
      * @param PageRepository $pageRepository
      */
     public function __construct(
+        private readonly ChatGroupRepository $chatGroupRepository,
         private readonly ChatRepository $chatRepository,
         private readonly DocumentRepository $documentRepository,
         private readonly PageRepository $pageRepository,
@@ -35,25 +40,48 @@ class StoreChatUseCase
      * @param string $question 質問
      * @param string $documentName 使用するドキュメント名
      * @param array $chatHistory チャット履歴
+     * @param ?string $chatGroupId
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    public function execute(string $question, string $documentName, array $chatHistory): array
+    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId): array
     {
         [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
 
-        DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost) {
+        $chatGroupId = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
-            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost);
+            if (! $chatGroupId) {
+                // chatGroupの中で初めての質問の場合
+                Log::info('[Start] チャットグループの保存処理を開始します。', [
+                    'method' => __METHOD__,
+                    'user_id' => $userId ?? null,
+                ]);
+
+                $title = '質問_'.((string) Str::uuid());
+                $lastChatDate = $this->getTodaysDate();
+
+                $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate);
+                $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
+                $chatGroupId = $chatGroup->id;
+            } else {
+                // chatGroupの中で２回目以降の質問の場合
+                $lastChatDate = $this->getTodaysDate();
+                $params = new UpdateChatGroupParams(
+                    lastChatDate: $lastChatDate
+                );
+                $this->chatGroupRepository->update($chatGroupId, $params);
+            }
 
             Log::info('[Start] チャットの保存処理を開始します。', [
                 'method' => __METHOD__,
                 'question' => $question,
                 'user_id' => $userId ?? null,
             ]);
+
+            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId);
 
             $chat = $this->chatRepository->store($storeChatParams);
 
@@ -74,12 +102,15 @@ class StoreChatUseCase
                 'chat_id' => $chat->id,
                 'user_id' => $userId ?? null,
             ]);
+
+            return $chatGroupId;
         });
 
         return [
             'answer' => $answer,
             'base64Images' => $base64Images,
-            'pdfPages' => $pdfPages
+            'pdfPages' => $pdfPages,
+            'chatGroupId' => $chatGroupId,
         ];
     }
 
@@ -132,10 +163,11 @@ class StoreChatUseCase
      * @param string $answer
      * @param string $documentId
      * @param array $tokenCounts
+     * @param string $chatGroupId
      *
      * @return StoreChatParams
      */
-    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost): StoreChatParams
+    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId): StoreChatParams
     {
         return
             new StoreChatParams(
@@ -147,6 +179,7 @@ class StoreChatUseCase
                 cost: $cost,
                 userId: null,
                 documentId: $documentId,
+                chatGroupId: $chatGroupId,
             );
     }
 
@@ -176,5 +209,32 @@ class StoreChatUseCase
             $insertPageParams[] = $storePageParams->toArrayForInsert();
         }
         return $insertPageParams;
+    }
+
+    /**
+     * チャットグループを保存するためのオブジェクト作成
+     *
+     * @param string $title
+     * @param string $lastChatDate
+     *
+     * @return StoreChatGroupParams
+     */
+    private function makeStoreChatGroupParams(string $title, string $lastChatDate): StoreChatGroupParams
+    {
+        return
+            new StoreChatGroupParams(
+                title: $title,
+                lastChatDate: $lastChatDate,
+            );
+    }
+
+    /**
+     * 今日の日付を取得
+     *
+     * @return string
+     */
+    private function getTodaysDate(): string
+    {
+        return (CarbonImmutable::now())->toDateString();
     }
 }
