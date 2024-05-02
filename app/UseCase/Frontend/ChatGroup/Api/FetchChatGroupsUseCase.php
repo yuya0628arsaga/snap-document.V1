@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCase\Frontend\ChatGroup\Api;
 
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class FetchChatGroupsUseCase
@@ -23,8 +24,17 @@ class FetchChatGroupsUseCase
      */
     public function execute(): Collection
     {
-        return $this->chatGroupRepository->fetch(
+        $chatGroups = $this->chatGroupRepository->fetch(
             with: ['chats.pages'],
         );
+
+        $chatGroups->map(function ($chatGroup) {
+            $formatLastChatDate = (new CarbonImmutable($chatGroup->last_chat_date))->format('Y年m月');
+            $chatGroup->last_chat_date = $formatLastChatDate;
+
+            return $chatGroup;
+        });
+
+        return $chatGroups->groupBy('last_chat_date');
     }
 }

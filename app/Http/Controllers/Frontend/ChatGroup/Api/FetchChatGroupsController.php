@@ -27,7 +27,10 @@ class FetchChatGroupsController extends Controller
     public function __invoke(): JsonResponse
     {
         $chatGroups = $this->fetchChatGroupsUseCase->execute();
+        $response = $chatGroups->map(function($chatGroup) {
+            return FetchChatGroupsResource::collection($chatGroup);
+        });
 
-        return response()->json(FetchChatGroupsResource::collection($chatGroups), Response::HTTP_OK);
+        return response()->json($response, Response::HTTP_OK);
     }
 }

@@ -68,6 +68,12 @@ class StoreChatUseCase
                 $chatGroupId = $chatGroup->id;
             } else {
                 // chatGroupの中で２回目以降の質問の場合
+                Log::info('[Start] チャットグループの更新処理を開始します。', [
+                    'method' => __METHOD__,
+                    'chat_group_id' => $chatGroupId,
+                    'user_id' => $userId ?? null,
+                ]);
+
                 $lastChatDate = $this->getTodaysDate();
                 $params = new UpdateChatGroupParams(
                     lastChatDate: $lastChatDate
@@ -130,7 +136,7 @@ class StoreChatUseCase
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post(config('api.gpt_engine.endpoint').'/chat/answer', [
+            ])->post(config('api.gpt_engine.endpoint').'/test3', [
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
