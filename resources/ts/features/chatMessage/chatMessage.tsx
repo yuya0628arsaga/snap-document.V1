@@ -382,6 +382,7 @@ const ChatMessage = () => {
 
             setChats(newChats)
             setChatGroupId(data.chatGroupId)
+            if (!chatGroupId) getChatGroups() // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
         })
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
