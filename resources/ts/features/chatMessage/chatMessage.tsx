@@ -513,25 +513,30 @@ const ChatMessage = () => {
     const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
 
     useEffect(() => {
-        getChatGroups()
+        (async (): Promise<void> => {
+            const chatGroups = await getChatGroups()
+            setChatGroups(chatGroups)
+        })()
     }, [])
 
     /**
      * サーバからチャットグループを取得
      */
-    const getChatGroups = (): void => {
-        axios({
-            url: '/api/v1/chat-groups/',
-            method: 'GET',
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
-
-            setChatGroups(data)
-        })
-        .catch((e: AxiosError): void => {
-            console.error(e)
+    const getChatGroups = (): Promise<ResChatGroup[]> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: '/api/v1/chat-groups/',
+                method: 'GET',
+            })
+            .then((res: AxiosResponse): void => {
+                const { data } = res
+                console.log(data)
+                resolve(data)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
         })
     }
 
@@ -562,6 +567,25 @@ const ChatMessage = () => {
     }
 
 
+    /**
+     * 質問を検索
+     */
+    const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const searchWord: string = e.target.value
+        const chatGroups: ResChatGroup[] = await getChatGroups()
+        const searchedChatGroups: ResChatGroup[] = []
+
+        Object.keys(chatGroups).map((date) => {
+            const filteredChangeGroup = chatGroups[date].filter((chatGroup) => {
+                const isMatch = chatGroup.title.indexOf(searchWord) !== -1
+                return isMatch
+            })
+            searchedChatGroups[date] = filteredChangeGroup
+        })
+
+        setChatGroups(searchedChatGroups)
+    }
+
     return (
         <>
             <Wrapper>
@@ -578,7 +602,7 @@ const ChatMessage = () => {
                                     <InputBase
                                         sx={{ ml: 1, flex: 1, mt: 1 }}
                                         placeholder="質問を検索"
-                                        inputProps={{ 'aria-label': 'search google maps' }}
+                                        onChange={searchChatGroups}
                                     />
                                 </Paper>
                             </div>
