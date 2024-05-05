@@ -1,8 +1,9 @@
 const color = {
     background: {
-        lightGray: '#F5F5F7',
+        lightGray: '#f9f9f9',
         white: '#FFFFFF',
-        blue: '#00A4FF'
+        blue: '#00A4FF',
+        buttonGray: '#ececec',
     },
 
     border: {

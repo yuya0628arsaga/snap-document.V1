@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Repositories\Frontend\ChatGroup\Params;
 
+use Carbon\CarbonImmutable;
 
 class UpdateChatGroupParams
 {
     /**
      * @param ?string $title
-     * @param ?string $lastChatDate
+     * @param ?CarbonImmutable $lastChatDate
      *
      * @return void
      */
     public function __construct(
         private readonly ?string $title = null,
-        private readonly ?string $lastChatDate = null,
+        private readonly ?CarbonImmutable $lastChatDate = null,
     ) {
     }
 

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('chat_groups', function (Blueprint $table) {
             $table->ulid('id')->primary()->comment(__('chat_groups.id'));
             $table->string('title', 255)->comment(__('chat_groups.title'));
-            $table->date('last_chat_date')->comment(__('chat_groups.last_chat_date'));
+            $table->dateTime('last_chat_date')->comment(__('chat_groups.last_chat_date'));
 
             $table->string('user_id', 26)->nullable()->comment(__('users.id')); # MEMO::未ログインUserによる質問も許容する予定のため一旦外部キー制約は貼らない
 

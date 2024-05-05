@@ -14,6 +14,7 @@ import CheckboxLabels from '../../components/Checkbox';
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
+import { FiEdit } from "react-icons/fi";
 
 const Wrapper = styled('div')`
     display: flex;
@@ -59,10 +60,40 @@ const SidebarContainer = styled('div')`
     >.contents {
         height: calc(100vh - 120px);
         width: 100%;
-        >.new-chat-button {
-            background: lightblue;
+        >.new-chat-container {
             height: 80px;
             width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            >.new-chat-button {
+                width: 80%;
+                height: 50%;
+                padding: 0 5px;
+                display: flex;
+                :hover {
+                    cursor: pointer;
+                    background: ${bgColor.buttonGray};
+                    border-radius: 5px;
+                }
+                >.img {
+                    flex-grow: 1;
+                    display: flex;
+                    align-items: center;
+                }
+                >.text{
+                    flex-grow: 5;
+                    display: flex;
+                    align-items: center;
+                    font-weight: ${fontWeight.bold};
+                }
+                >.icon{
+                    flex-grow: 1;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
         }
         >.past-chats-container {
             height: calc(100vh - 120px - 80px);
@@ -103,7 +134,10 @@ const SidebarContainer = styled('div')`
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         &:hover {
-                            background: #EEEEEE;
+                            background: ${bgColor.buttonGray};
+                        }
+                        &.active {
+                            background: ${bgColor.buttonGray};
                         }
                         @media (max-width: ${responsive.sp}) {
                             width: 90%;
@@ -325,10 +359,11 @@ type ChatGroup = {
     id: string,
     title: string,
     lastChatDate: string,
+    isActive: boolean,
 }
 
 type ResChatGroup = {
-    [key: string]: ChatGroup[]
+    [k in string]: ChatGroup[]
 }
 
 const ChatMessage = () => {
@@ -460,6 +495,35 @@ const ChatMessage = () => {
 
         // 質問入力欄を空に
         setInputQuestion('')
+
+        // 質問があったchatGroupをサイドバーのトップに移動
+        if (chatGroupId) {
+            const chatGroupsCopy = { ...chatGroups }
+            const sortedChatGroups = sortChatGroups(chatGroupsCopy)
+            setChatGroups(sortedChatGroups)
+        }
+    }
+
+    /**
+     * chatGroupに新しい質問を投稿した場合に、サイドバーにてそのchatGroupを一番上に持ってくる
+     */
+    const sortChatGroups = (chatGroups: ResChatGroup[]) => {
+        Object.keys(chatGroups).map((date: string) => {
+            const otherChatGroups = chatGroups[date].filter((chatGroup: ChatGroup) => {
+                return chatGroup.id !== chatGroupId
+            })
+            const targetChatGroup = chatGroups[date].filter((chatGroup: ChatGroup) => {
+                return chatGroup.id === chatGroupId
+            })
+
+            chatGroups[date] = otherChatGroups
+
+            if (!targetChatGroup.length) return
+            const firstOfChatGroups: ChatGroup[] = Object.entries<ChatGroup[]>(chatGroups)[0][1]
+            firstOfChatGroups.unshift(targetChatGroup[0])
+        })
+
+        return chatGroups
     }
 
     /**
@@ -513,25 +577,30 @@ const ChatMessage = () => {
     const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
 
     useEffect(() => {
-        getChatGroups()
+        (async (): Promise<void> => {
+            const chatGroups = await getChatGroups()
+            setChatGroups(chatGroups)
+        })()
     }, [])
 
     /**
      * サーバからチャットグループを取得
      */
-    const getChatGroups = (): void => {
-        axios({
-            url: '/api/v1/chat-groups/',
-            method: 'GET',
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
-
-            setChatGroups(data)
-        })
-        .catch((e: AxiosError): void => {
-            console.error(e)
+    const getChatGroups = (): Promise<ResChatGroup[]> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: '/api/v1/chat-groups/',
+                method: 'GET',
+            })
+            .then((res: AxiosResponse): void => {
+                const { data } = res
+                console.log(data)
+                resolve(data)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
         })
     }
 
@@ -562,12 +631,76 @@ const ChatMessage = () => {
     }
 
 
+    /**
+     * 質問を検索
+     */
+    const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const searchWord: string = e.target.value
+        const chatGroups: ResChatGroup[] = await getChatGroups()
+        const searchedChatGroups: ResChatGroup[] = []
+
+        Object.keys(chatGroups).map((date) => {
+            const filteredChangeGroup = chatGroups[date].filter((chatGroup) => {
+                const isMatch = chatGroup.title.indexOf(searchWord) !== -1
+                return isMatch
+            })
+            searchedChatGroups[date] = filteredChangeGroup
+        })
+
+        setChatGroups(searchedChatGroups)
+    }
+
+    /**
+     * 過去の質問を表示
+     */
+    const displayPastChat = async (chatGroupId: string) => {
+        getChats(chatGroupId)
+
+        const chatGroups = await getChatGroups()
+        const newChatGroups: ResChatGroup[] = []
+
+        // isActiveを切り替える
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isActive =
+                    chatGroup.id === chatGroupId
+                    ? true
+                    : false
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    /**
+     * 新しい質問を開始
+     */
+    const displayNewChat = async () => {
+        setChats([])
+        setChatGroupId('')
+
+        const chatGroups = await getChatGroups()
+        setChatGroups(chatGroups)
+    }
+
     return (
         <>
             <Wrapper>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
-                        <div className='new-chat-button'></div>
+                        <div className='new-chat-container'>
+                            <div onClick={displayNewChat} className='new-chat-button'>
+                                <div className='img'>
+                                    <img src="/images/icon/logo.png" alt=""/>
+                                </div>
+                                <div className='text'>New Chat</div>
+                                <div className='icon'><FiEdit /></div>
+                            </div>
+                        </div>
                         <div className='past-chats-container'>
                             <div className='search'>
                                 <Paper
@@ -578,7 +711,7 @@ const ChatMessage = () => {
                                     <InputBase
                                         sx={{ ml: 1, flex: 1, mt: 1 }}
                                         placeholder="質問を検索"
-                                        inputProps={{ 'aria-label': 'search google maps' }}
+                                        onChange={searchChatGroups}
                                     />
                                 </Paper>
                             </div>
@@ -593,7 +726,9 @@ const ChatMessage = () => {
                                             {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button onClick={() => {getChats(chatGroup.id)}}>
+                                                        <button className={ chatGroup.isActive ? 'active' : ''} onClick={() => {
+                                                            displayPastChat(chatGroup.id)
+                                                        }}>
                                                             {chatGroup.title}
                                                         </button>
                                                     </div>
