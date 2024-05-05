@@ -14,6 +14,7 @@ import CheckboxLabels from '../../components/Checkbox';
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
+import { FiEdit } from "react-icons/fi";
 
 const Wrapper = styled('div')`
     display: flex;
@@ -59,10 +60,40 @@ const SidebarContainer = styled('div')`
     >.contents {
         height: calc(100vh - 120px);
         width: 100%;
-        >.new-chat-button {
-            background: lightblue;
+        >.new-chat-container {
             height: 80px;
             width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            >.new-chat-button {
+                width: 80%;
+                height: 50%;
+                padding: 0 5px;
+                display: flex;
+                :hover {
+                    cursor: pointer;
+                    background: ${bgColor.buttonGray};
+                    border-radius: 5px;
+                }
+                >.img {
+                    flex-grow: 1;
+                    display: flex;
+                    align-items: center;
+                }
+                >.text{
+                    flex-grow: 5;
+                    display: flex;
+                    align-items: center;
+                    font-weight: ${fontWeight.bold};
+                }
+                >.icon{
+                    flex-grow: 1;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
         }
         >.past-chats-container {
             height: calc(100vh - 120px - 80px);
@@ -103,7 +134,7 @@ const SidebarContainer = styled('div')`
                         text-overflow: ellipsis;
                         white-space: nowrap;
                         &:hover {
-                            background: #EEEEEE;
+                            background: ${bgColor.buttonGray};
                         }
                         @media (max-width: ${responsive.sp}) {
                             width: 90%;
@@ -591,7 +622,15 @@ const ChatMessage = () => {
             <Wrapper>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
-                        <div className='new-chat-button'></div>
+                        <div className='new-chat-container'>
+                            <div className='new-chat-button'>
+                                <div className='img'>
+                                    <img src="/images/icon/logo.png" alt=""/>
+                                </div>
+                                <div className='text'>New Chat</div>
+                                <div className='icon'><FiEdit /></div>
+                            </div>
+                        </div>
                         <div className='past-chats-container'>
                             <div className='search'>
                                 <Paper
