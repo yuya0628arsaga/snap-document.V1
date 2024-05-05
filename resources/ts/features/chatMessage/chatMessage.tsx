@@ -136,6 +136,9 @@ const SidebarContainer = styled('div')`
                         &:hover {
                             background: ${bgColor.buttonGray};
                         }
+                        &.active {
+                            background: ${bgColor.buttonGray};
+                        }
                         @media (max-width: ${responsive.sp}) {
                             width: 90%;
                             margin: 0 auto;
@@ -356,6 +359,7 @@ type ChatGroup = {
     id: string,
     title: string,
     lastChatDate: string,
+    isActive: boolean,
 }
 
 type ResChatGroup = {
@@ -653,7 +657,23 @@ const ChatMessage = () => {
         getChats(chatGroupId)
 
         const chatGroups = await getChatGroups()
-        setChatGroups(chatGroups)
+        const newChatGroups: ResChatGroup[] = []
+
+        // isActiveを切り替える
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isActive =
+                    chatGroup.id === chatGroupId
+                    ? true
+                    : false
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
     }
 
     /**
@@ -706,7 +726,9 @@ const ChatMessage = () => {
                                             {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button onClick={() => {displayPastChat(chatGroup.id)}}>
+                                                        <button className={ chatGroup.isActive ? 'active' : ''} onClick={() => {
+                                                            displayPastChat(chatGroup.id)
+                                                        }}>
                                                             {chatGroup.title}
                                                         </button>
                                                     </div>
