@@ -61,7 +61,7 @@ class StoreChatUseCase
                 ]);
 
                 $title = '質問_'.((string) Str::uuid());
-                $lastChatDate = $this->getTodaysDate();
+                $lastChatDate = $this->getCurrentTime();
 
                 $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate);
                 $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
@@ -74,7 +74,7 @@ class StoreChatUseCase
                     'user_id' => $userId ?? null,
                 ]);
 
-                $lastChatDate = $this->getTodaysDate();
+                $lastChatDate = $this->getCurrentTime();
                 $params = new UpdateChatGroupParams(
                     lastChatDate: $lastChatDate
                 );
@@ -136,7 +136,7 @@ class StoreChatUseCase
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post(config('api.gpt_engine.endpoint').'/chat/answer', [
+            ])->post(config('api.gpt_engine.endpoint').'/test3', [
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
@@ -177,7 +177,7 @@ class StoreChatUseCase
     {
         return
             new StoreChatParams(
-                date: CarbonImmutable::now(),
+                date: $this->getCurrentTime(),
                 question: $question,
                 answer: $answer,
                 questionTokenCount: $tokenCounts['promptTokens'],
@@ -221,11 +221,11 @@ class StoreChatUseCase
      * チャットグループを保存するためのオブジェクト作成
      *
      * @param string $title
-     * @param string $lastChatDate
+     * @param CarbonImmutable $lastChatDate
      *
      * @return StoreChatGroupParams
      */
-    private function makeStoreChatGroupParams(string $title, string $lastChatDate): StoreChatGroupParams
+    private function makeStoreChatGroupParams(string $title, CarbonImmutable $lastChatDate): StoreChatGroupParams
     {
         return
             new StoreChatGroupParams(
@@ -235,12 +235,12 @@ class StoreChatUseCase
     }
 
     /**
-     * 今日の日付を取得
+     * 今の日時を取得
      *
-     * @return string
+     * @return CarbonImmutable
      */
-    private function getTodaysDate(): string
+    private function getCurrentTime(): CarbonImmutable
     {
-        return (CarbonImmutable::now())->toDateString();
+        return CarbonImmutable::now();
     }
 }

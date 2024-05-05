@@ -359,7 +359,7 @@ type ChatGroup = {
 }
 
 type ResChatGroup = {
-    [key: string]: ChatGroup[]
+    [k in string]: ChatGroup[]
 }
 
 const ChatMessage = () => {
@@ -491,6 +491,35 @@ const ChatMessage = () => {
 
         // 質問入力欄を空に
         setInputQuestion('')
+
+        // 質問があったchatGroupをサイドバーのトップに移動
+        if (chatGroupId) {
+            const chatGroupsCopy = { ...chatGroups }
+            const sortedChatGroups = sortChatGroups(chatGroupsCopy)
+            setChatGroups(sortedChatGroups)
+        }
+    }
+
+    /**
+     * chatGroupに新しい質問を投稿した場合に、サイドバーにてそのchatGroupを一番上に持ってくる
+     */
+    const sortChatGroups = (chatGroups: ResChatGroup[]) => {
+        Object.keys(chatGroups).map((date: string) => {
+            const otherChatGroups = chatGroups[date].filter((chatGroup: ChatGroup) => {
+                return chatGroup.id !== chatGroupId
+            })
+            const targetChatGroup = chatGroups[date].filter((chatGroup: ChatGroup) => {
+                return chatGroup.id === chatGroupId
+            })
+
+            chatGroups[date] = otherChatGroups
+
+            if (!targetChatGroup.length) return
+            const firstOfChatGroups: ChatGroup[] = Object.entries<ChatGroup[]>(chatGroups)[0][1]
+            firstOfChatGroups.unshift(targetChatGroup[0])
+        })
+
+        return chatGroups
     }
 
     /**

@@ -8,5 +8,5 @@ return [
     'table_description' => "${tableLabel}テーブル",
     'id' => "${tableLabel}ID",
     'title' => 'タイトル',
-    'last_chat_date' => '最後のチャットの日付',
+    'last_chat_date' => '最後のチャットの日時',
 ];
