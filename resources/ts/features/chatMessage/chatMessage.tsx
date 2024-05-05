@@ -617,13 +617,34 @@ const ChatMessage = () => {
         setChatGroups(searchedChatGroups)
     }
 
+    /**
+     * 過去の質問を表示
+     */
+    const displayPastChat = async (chatGroupId: string) => {
+        getChats(chatGroupId)
+
+        const chatGroups = await getChatGroups()
+        setChatGroups(chatGroups)
+    }
+
+    /**
+     * 新しい質問を開始
+     */
+    const displayNewChat = async () => {
+        setChats([])
+        setChatGroupId('')
+
+        const chatGroups = await getChatGroups()
+        setChatGroups(chatGroups)
+    }
+
     return (
         <>
             <Wrapper>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
                         <div className='new-chat-container'>
-                            <div className='new-chat-button'>
+                            <div onClick={displayNewChat} className='new-chat-button'>
                                 <div className='img'>
                                     <img src="/images/icon/logo.png" alt=""/>
                                 </div>
@@ -656,7 +677,7 @@ const ChatMessage = () => {
                                             {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button onClick={() => {getChats(chatGroup.id)}}>
+                                                        <button onClick={() => {displayPastChat(chatGroup.id)}}>
                                                             {chatGroup.title}
                                                         </button>
                                                     </div>
