@@ -100,7 +100,24 @@ const SidebarContainer = styled('div')`
             display: flex;
             flex-direction: column;
             gap: 10px;
+
+            // スクロールバー
             overflow-y: scroll;
+            &::-webkit-scrollbar {
+                visibility: hidden;
+                width: 10px;
+            }
+            &::-webkit-scrollbar-thumb {
+                visibility: hidden;
+                border-radius: 20px;
+            }
+            &:hover::-webkit-scrollbar {
+                visibility: visible;
+            }
+            &:hover::-webkit-scrollbar-thumb {
+                visibility: visible;
+                background: ${bgColor.buttonGray};
+            }
 
             >.search {
                 margin: 10px;
@@ -108,7 +125,7 @@ const SidebarContainer = styled('div')`
             >.past-chats {
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: 8px;
                 >.date {
                     margin: 0 8px;
                     @media (max-width: ${responsive.sp}) {
@@ -122,17 +139,34 @@ const SidebarContainer = styled('div')`
                     background: ${bgColor.lightGray};
                     height: 70px;
                     padding: 8px;
+                    position: relative;
+
+                    > .past-chat-menu {
+                        position: absolute;
+                        width: 30%;
+                        height: 50px;
+                        background: skyblue;
+                        top: 70%;
+                        left: 70%;
+                        z-index: 999;
+                        display: none;
+                    }
+                    >.display {
+                        display: block;
+                    }
 
                     > button {
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+
                         background: ${bgColor.white};
-                        padding: 5px 15px;
+                        padding: 5px 10px;
                         border: 1px solid ${borderColor.gray};
                         border-radius: 5px;
                         height: 100%;
                         width: 100%;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
+
                         &:hover {
                             background: ${bgColor.buttonGray};
                         }
@@ -142,6 +176,25 @@ const SidebarContainer = styled('div')`
                         @media (max-width: ${responsive.sp}) {
                             width: 90%;
                             margin: 0 auto;
+                        }
+
+                        >.text {
+                            width: 90%;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        >.icon {
+                            border-radius: 50%;
+                            width: 20px;
+                            height: 20px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            :hover {
+                                border: 1px solid #EFF5F8;
+                                background: #EFF5F8;
+                            }
                         }
                     }
                 }
@@ -360,6 +413,7 @@ type ChatGroup = {
     title: string,
     lastChatDate: string,
     isActive: boolean,
+    isDisplayPastChatMenu: boolean,
 }
 
 type ResChatGroup = {
@@ -687,9 +741,62 @@ const ChatMessage = () => {
         setChatGroups(chatGroups)
     }
 
+    // ポップアップメニューが表示中か否か
+    const [displayingPastChatMenu, setDisplayingPastChatMenu] = useState(false)
+
+    /**
+     * pastChatのポップアップメニューを開く
+     */
+    const displayPastChatMenu = (e, chatGroupId: string) => {
+        e.stopPropagation()
+        setDisplayingPastChatMenu(true)
+        const newChatGroups: ResChatGroup[] = []
+
+        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isDisplayPastChatMenu =
+                        chatGroup.id === chatGroupId
+                            ? true
+                            : false
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    /**
+     * pastChatのポップアップメニューを閉じる
+     */
+    const closePastChatMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        // MEMO::なぜかref.current.contains()が使えなかったためこのように実装した
+        const isClickedPostChatMenuElement = e.target.classList[0] === 'past-chat-menu'
+        if (isClickedPostChatMenuElement) return
+        if (!displayingPastChatMenu) return
+
+        const newChatGroups: ResChatGroup[] = []
+
+        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isDisplayPastChatMenu = false
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+        setDisplayingPastChatMenu(false)
+    }
+
     return (
         <>
-            <Wrapper>
+            <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
                         <div className='new-chat-container'>
@@ -726,11 +833,19 @@ const ChatMessage = () => {
                                             {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button className={ chatGroup.isActive ? 'active' : ''} onClick={() => {
-                                                            displayPastChat(chatGroup.id)
-                                                        }}>
-                                                            {chatGroup.title}
+                                                        <button className={ chatGroup.isActive ? 'active' : ''}>
+                                                            <div className='text' onClick={() => { displayPastChat(chatGroup.id) }}>
+                                                                {chatGroup.title}
+                                                            </div>
+                                                            <div className='icon' onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
+                                                                <svg width="3" height="14" viewBox="0 0 3 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <circle cx="1.5" cy="2" r="1.5" transform="rotate(90 1.5 2)" fill="gray"/>
+                                                                    <circle cx="1.5" cy="7" r="1.5" transform="rotate(90 1.5 7)" fill="gray"/>
+                                                                    <circle cx="1.5" cy="12" r="1.5" transform="rotate(90 1.5 12)" fill="gray"/>
+                                                                </svg>
+                                                            </div>
                                                         </button>
+                                                        <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>aaa</div>
                                                     </div>
                                                 )
                                             })}
