@@ -25,7 +25,7 @@ class UpdateChatGroupRequest extends FormRequest
     {
         return [
             'chatGroupId' => ['required', 'string', 'exists:chat_groups,id'],
-            'title' => ['required', 'string'],
+            'title' => ['required', 'string', 'max:255'],
         ];
     }
 

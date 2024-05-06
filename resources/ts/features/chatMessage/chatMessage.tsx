@@ -898,9 +898,10 @@ const ChatMessage = () => {
     const outOfTitleInput = () => {
         const chatGroupId = chatGroupTitleInputRef.current.id
         const title = chatGroupTitleInputRef.current.value
+        const MAX_STR_COUNT = 255
 
-        if (!title) {
-            setValidationMessageOfTitle('タイトルは1文字以上入力してください。')
+        if (!title || title.length > MAX_STR_COUNT) {
+            setValidationMessageOfTitle('1~255文字以内で入力してください。')
             return
         }
         // titleのupdate（サーバー）
