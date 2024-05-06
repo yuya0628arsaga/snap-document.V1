@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
-import { bgColor, borderColor, fontSize, fontWeight, responsive } from '../../utils/themeClient';
+import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
@@ -236,6 +236,11 @@ const SidebarContainer = styled('div')`
                             }
                         }
                     }
+
+                    >.validation-message {
+                        color: ${textColor.error};
+                        font-size: ${fontSize.sm};
+                    }
                 }
             }
         }
@@ -432,7 +437,7 @@ const ErrorMessageContainer = styled('div')`
     padding: 24px;
     text-align: center;
     > .error-message {
-        color: red;
+        color: ${textColor.error};
     }
 `
 
@@ -885,20 +890,21 @@ const ChatMessage = () => {
         setChatGroups(newChatGroups)
     }
 
+    const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
+
     /**
      * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
      */
     const outOfTitleInput = () => {
-        // titleのupdate（サーバー）
-        Object.keys(chatGroups).map((date) => {
-            const updatedChatGroup = chatGroups[date].filter((chatGroup: ChatGroup) => {
-                return chatGroup.isEditingRename
-            })
+        const chatGroupId = chatGroupTitleInputRef.current.id
+        const title = chatGroupTitleInputRef.current.value
 
-            if (updatedChatGroup.length) {
-                updateChatGroupTitle(updatedChatGroup[0].id, updatedChatGroup[0].title)
-            }
-        })
+        if (!title) {
+            setValidationMessageOfTitle('タイトルは1文字以上入力してください。')
+            return
+        }
+        // titleのupdate（サーバー）
+        updateChatGroupTitle(chatGroupId, title)
 
 
         const newChatGroups: ResChatGroup[] = []
@@ -984,7 +990,7 @@ const ChatMessage = () => {
                                                         <button className={ chatGroup.isActive ? 'active' : ''}>
                                                             <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
                                                                 {chatGroup.isEditingRename
-                                                                    ? <input type="text" value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
+                                                                    ? <input type="text" id={chatGroup.id} value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
                                                                     : chatGroup.title
                                                                 }
                                                             </div>
@@ -996,6 +1002,9 @@ const ChatMessage = () => {
                                                                 </svg>
                                                             </div>
                                                         </button>
+                                                        {(chatGroup.isEditingRename && validationMessageOfTitle) &&
+                                                            <div className='validation-message'>{validationMessageOfTitle}</div>
+                                                        }
                                                         <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
                                                             <div className='rename' onClick={() => {convertTitleToInput(chatGroup.id)}}>
                                                                 <FiEdit3 />

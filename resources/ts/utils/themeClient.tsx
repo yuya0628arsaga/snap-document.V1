@@ -11,6 +11,10 @@ const color = {
         blue: '#00A4FF',
         white: '#FFFFFF',
     },
+
+    text: {
+        error: '#ff0000'
+    }
 }
 
   const font = {
@@ -46,6 +50,7 @@ export const responsive = {
 // color
 export const bgColor = color.background
 export const borderColor = color.border
+export const textColor = color.text
 
 // font
 export const fontSize = font.size
