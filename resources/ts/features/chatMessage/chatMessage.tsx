@@ -145,11 +145,14 @@ const SidebarContainer = styled('div')`
                         position: absolute;
                         width: 30%;
                         height: 50px;
-                        background: skyblue;
+                        background: ${bgColor.white};
                         top: 70%;
                         left: 70%;
                         z-index: 999;
                         display: none;
+                        border: 1px solid ${borderColor.gray};
+                        border-radius: 5px;
+                        box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.35);
                     }
                     >.display {
                         display: block;
@@ -192,6 +195,10 @@ const SidebarContainer = styled('div')`
                             align-items: center;
                             justify-content: center;
                             :hover {
+                                border: 1px solid #EFF5F8;
+                                background: #EFF5F8;
+                            }
+                            &.display {
                                 border: 1px solid #EFF5F8;
                                 background: #EFF5F8;
                             }
@@ -837,11 +844,11 @@ const ChatMessage = () => {
                                                             <div className='text' onClick={() => { displayPastChat(chatGroup.id) }}>
                                                                 {chatGroup.title}
                                                             </div>
-                                                            <div className='icon' onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
+                                                            <div className={`icon ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`} onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
                                                                 <svg width="3" height="14" viewBox="0 0 3 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <circle cx="1.5" cy="2" r="1.5" transform="rotate(90 1.5 2)" fill="gray"/>
-                                                                    <circle cx="1.5" cy="7" r="1.5" transform="rotate(90 1.5 7)" fill="gray"/>
-                                                                    <circle cx="1.5" cy="12" r="1.5" transform="rotate(90 1.5 12)" fill="gray"/>
+                                                                    <circle cx="1.5" cy="2" r="1.5" transform="rotate(90 1.5 2)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'} />
+                                                                    <circle cx="1.5" cy="7" r="1.5" transform="rotate(90 1.5 7)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
+                                                                    <circle cx="1.5" cy="12" r="1.5" transform="rotate(90 1.5 12)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
                                                                 </svg>
                                                             </div>
                                                         </button>
