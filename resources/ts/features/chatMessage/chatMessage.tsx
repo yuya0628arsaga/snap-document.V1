@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
-import { bgColor, borderColor, fontWeight, responsive } from '../../utils/themeClient';
+import { bgColor, borderColor, fontSize, fontWeight, responsive } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
@@ -14,7 +14,8 @@ import CheckboxLabels from '../../components/Checkbox';
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiEdit3 } from "react-icons/fi";
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 const Wrapper = styled('div')`
     display: flex;
@@ -153,6 +154,37 @@ const SidebarContainer = styled('div')`
                         border: 1px solid ${borderColor.gray};
                         border-radius: 5px;
                         box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.35);
+
+                        >.rename {
+                            width: 100%;
+                            height: 50%;
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            padding: 0 8px;
+                            cursor: pointer;
+                            &:hover {
+                                background: ${bgColor.buttonGray};
+                            }
+                            > p {
+                                font-size: ${fontSize.sm};
+                            }
+                        }
+                        >.delete {
+                            width: 100%;
+                            height: 50%;
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            padding: 0 8px;
+                            cursor: pointer;
+                            &:hover {
+                                background: ${bgColor.buttonGray};
+                            }
+                            > p {
+                                font-size: ${fontSize.sm};
+                            }
+                        }
                     }
                     >.display {
                         display: block;
@@ -801,6 +833,10 @@ const ChatMessage = () => {
         setDisplayingPastChatMenu(false)
     }
 
+    const renameTitle = () => {
+        console.log(111)
+    }
+
     return (
         <>
             <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
@@ -852,7 +888,16 @@ const ChatMessage = () => {
                                                                 </svg>
                                                             </div>
                                                         </button>
-                                                        <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>aaa</div>
+                                                        <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
+                                                            <div className='rename' onClick={renameTitle}>
+                                                                <FiEdit3 />
+                                                                <p>編集</p>
+                                                            </div>
+                                                            <div className='delete'>
+                                                                <RiDeleteBin5Line />
+                                                                <p>削除</p>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 )
                                             })}
