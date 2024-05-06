@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontSize, fontWeight, responsive } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -453,6 +453,7 @@ type ChatGroup = {
     lastChatDate: string,
     isActive: boolean,
     isDisplayPastChatMenu: boolean,
+    isEditingRename: boolean,
 }
 
 type ResChatGroup = {
@@ -746,7 +747,11 @@ const ChatMessage = () => {
     /**
      * 過去の質問を表示
      */
-    const displayPastChat = async (chatGroupId: string) => {
+    const displayPastChat = async (chatGroup: ChatGroup) => {
+        const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
+        const chatGroupId = chatGroup.id
+        if (isEditingRename) return
+
         getChats(chatGroupId)
 
         const chatGroups = await getChatGroups()
@@ -833,9 +838,76 @@ const ChatMessage = () => {
         setDisplayingPastChatMenu(false)
     }
 
-    const renameTitle = () => {
-        console.log(111)
+    const chatGroupTitleInputRef = useRef(null)
+
+    /**
+     * titleをinputタグに変換する
+     */
+    const convertTitleToInput = (chatGroupId: string) => {
+        const newChatGroups: ResChatGroup[] = []
+
+        // isEditingRename（title編集中フラグ）を切り替える
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isEditingRename =
+                        chatGroup.id === chatGroupId
+                            ? true
+                            : false
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
     }
+
+    /**
+     * chatGroupのtitle名を修正する
+     */
+    const renameTitle = (e: ChangeEvent<HTMLInputElement>, chatGroupId: string) => {
+        const newChatGroups: ResChatGroup[] = []
+
+        // titleの更新
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                if (chatGroup.id === chatGroupId) {
+                    chatGroup.title = e.target.value
+                }
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    /**
+     * chatGroupのtitleの編集モードを解除
+     */
+    const outOfTitleInput = () => {
+        const newChatGroups: ResChatGroup[] = []
+
+        // isEditingRename（title編集中フラグ）を元に戻す
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isEditingRename = false
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    // 編集ボタン押下時にtitleのinputタグにフォーカスを自動で当てる
+    useEffect(() => {
+        chatGroupTitleInputRef.current?.focus()
+    }, [chatGroups])
 
     return (
         <>
@@ -877,8 +949,11 @@ const ChatMessage = () => {
                                                 return (
                                                     <div key={i} className='past-chat'>
                                                         <button className={ chatGroup.isActive ? 'active' : ''}>
-                                                            <div className='text' onClick={() => { displayPastChat(chatGroup.id) }}>
-                                                                {chatGroup.title}
+                                                            <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
+                                                                {chatGroup.isEditingRename
+                                                                    ? <input type="text" value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
+                                                                    : chatGroup.title
+                                                                }
                                                             </div>
                                                             <div className={`icon ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`} onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
                                                                 <svg width="3" height="14" viewBox="0 0 3 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -889,7 +964,7 @@ const ChatMessage = () => {
                                                             </div>
                                                         </button>
                                                         <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
-                                                            <div className='rename' onClick={renameTitle}>
+                                                            <div className='rename' onClick={() => {convertTitleToInput(chatGroup.id)}}>
                                                                 <FiEdit3 />
                                                                 <p>編集</p>
                                                             </div>
