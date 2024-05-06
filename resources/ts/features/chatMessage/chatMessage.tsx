@@ -886,9 +886,21 @@ const ChatMessage = () => {
     }
 
     /**
-     * chatGroupのtitleの編集モードを解除
+     * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
      */
     const outOfTitleInput = () => {
+        // titleのupdate（サーバー）
+        Object.keys(chatGroups).map((date) => {
+            const updatedChatGroup = chatGroups[date].filter((chatGroup: ChatGroup) => {
+                return chatGroup.isEditingRename
+            })
+
+            if (updatedChatGroup.length) {
+                updateChatGroupTitle(updatedChatGroup[0].id, updatedChatGroup[0].title)
+            }
+        })
+
+
         const newChatGroups: ResChatGroup[] = []
 
         // isEditingRename（title編集中フラグ）を元に戻す
@@ -902,6 +914,27 @@ const ChatMessage = () => {
         })
 
         setChatGroups(newChatGroups)
+    }
+
+    /**
+     * チャットグループtitleを更新
+     */
+    const updateChatGroupTitle = (chatGroupId: string, title: string): void => {
+        axios({
+            url: '/api/v1/chat-groups/',
+            method: 'POST',
+            params: {
+                'chatGroupId': chatGroupId,
+                'title': title,
+            }
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+        })
+        .catch((e: AxiosError): void => {
+            console.error(e)
+        })
     }
 
     // 編集ボタン押下時にtitleのinputタグにフォーカスを自動で当てる
