@@ -969,7 +969,7 @@ const ChatMessage = () => {
     /**
      * chatGroupを削除しサイドバー更新
      */
-    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string) => {
+    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
         await deleteChatGroup(deleteTargetChatGroupId)
 
         const chatGroups: ResChatGroup[] = await getChatGroups()
@@ -1001,7 +1001,7 @@ const ChatMessage = () => {
     /**
      * 削除したchatGroupの画面を削除時に開いていた場合に、chat画面を初期化
      */
-    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string) => {
+    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
         if (deleteTargetChatGroupId === currentlyOpenChatGroupId) {
             setChats([])
             setChatGroupId('')
