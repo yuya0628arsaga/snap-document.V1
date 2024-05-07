@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Frontend\Chats;
 
+use App\Rules\StoreChatRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreChatRequest extends FormRequest
@@ -27,8 +28,7 @@ class StoreChatRequest extends FormRequest
             'question' => ['required', 'string'], // TODO::質問のMaxトークン数のバリデーションを決める必要あり
             'manualName' => ['required', 'string', 'exists:documents,name'],
             'chatHistory' => ['array'],
-
-            // chatGroupId について、nullじゃない場合、DBにそのIDが存在するかのチェックする
+            'chatGroupId' => [new StoreChatRule()],
         ];
     }
 
@@ -41,6 +41,7 @@ class StoreChatRequest extends FormRequest
             'question' => __('chats.question'),
             'manualName' => __('documents.name'),
             'chatHistory' => __('chats.history'),
+            'chatGroupId' => __('chat_groups.id')
         ];
     }
 
