@@ -953,20 +953,46 @@ const ChatMessage = () => {
 
     const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
     const [modalDescription, setModalDescription] = useState('')
+    const [deleteTargetChatGroupId, setDeleteTargetChatGroupId] = useState('')
     /**
      * 削除モーダルをopen
      */
-    const openDeleteModal = (chatGroupTitle: string) => {
+    const openDeleteModal = (chatGroupId: string, chatGroupTitle: string) => {
+        // 削除対象のchatGroupId
+        setDeleteTargetChatGroupId(chatGroupId)
+
         const modalDescriptionMessage = `${chatGroupTitle} を削除しますか？`
         setModalDescription(modalDescriptionMessage)
         setIsOpenDeleteModal(true)
     }
 
     /**
-     * chatGroupの削除
+     * chatGroupを削除しサイドバー更新
      */
-    const deleteChatGroup = () => {
-        console.log('削除')
+    const executeDelete = async (chatGroupId: string) => {
+        await deleteChatGroup(chatGroupId)
+
+        const chatGroups: ResChatGroup[] = await getChatGroups()
+        setChatGroups(chatGroups)
+    }
+
+    /**
+     * chatGroup削除
+     */
+    const deleteChatGroup = (chatGroupId: string): Promise<boolean> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: `/api/v1/chat-groups/${chatGroupId}`,
+                method: 'DELETE',
+            })
+            .then((res: AxiosResponse): void => {
+                resolve(true)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
+        })
     }
 
     return (
@@ -978,7 +1004,7 @@ const ChatMessage = () => {
                 modalDescription={modalDescription}
                 buttonType={'error'}
                 buttonText={'削除'}
-                handleExecute={deleteChatGroup}
+                handleExecute={() => {executeDelete(deleteTargetChatGroupId)}}
             />
             <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
@@ -1040,7 +1066,7 @@ const ChatMessage = () => {
                                                                 <FiEdit3 />
                                                                 <p>編集</p>
                                                             </div>
-                                                            <div className='delete' onClick={() => {openDeleteModal(chatGroup.title)}}>
+                                                            <div className='delete' onClick={() => {openDeleteModal(chatGroup.id, chatGroup.title)}}>
                                                                 <RiDeleteBin5Line />
                                                                 <p>削除</p>
                                                             </div>
