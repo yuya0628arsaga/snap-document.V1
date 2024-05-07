@@ -969,11 +969,14 @@ const ChatMessage = () => {
     /**
      * chatGroupを削除しサイドバー更新
      */
-    const executeDelete = async (chatGroupId: string) => {
-        await deleteChatGroup(chatGroupId)
+    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string) => {
+        await deleteChatGroup(deleteTargetChatGroupId)
 
         const chatGroups: ResChatGroup[] = await getChatGroups()
         setChatGroups(chatGroups)
+
+        // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
+        refreshChats(deleteTargetChatGroupId, currentlyOpenChatGroupId)
     }
 
     /**
@@ -995,6 +998,16 @@ const ChatMessage = () => {
         })
     }
 
+    /**
+     * 削除したchatGroupの画面を削除時に開いていた場合に、chat画面を初期化
+     */
+    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string) => {
+        if (deleteTargetChatGroupId === currentlyOpenChatGroupId) {
+            setChats([])
+            setChatGroupId('')
+        }
+    }
+
     return (
         <>
             <BasicModal
@@ -1004,7 +1017,7 @@ const ChatMessage = () => {
                 modalDescription={modalDescription}
                 buttonType={'error'}
                 buttonText={'削除'}
-                handleExecute={() => {executeDelete(deleteTargetChatGroupId)}}
+                handleExecute={() => {executeDelete(deleteTargetChatGroupId, chatGroupId)}}
             />
             <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
