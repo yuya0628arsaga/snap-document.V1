@@ -8,6 +8,7 @@ import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
+import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
 // 検索フォーム
@@ -949,8 +950,36 @@ const ChatMessage = () => {
         chatGroupTitleInputRef.current?.focus()
     }, [chatGroups])
 
+
+    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
+    const [modalDescription, setModalDescription] = useState('')
+    /**
+     * 削除モーダルをopen
+     */
+    const openDeleteModal = (chatGroupTitle: string) => {
+        const modalDescriptionMessage = `${chatGroupTitle} を削除しますか？`
+        setModalDescription(modalDescriptionMessage)
+        setIsOpenDeleteModal(true)
+    }
+
+    /**
+     * chatGroupの削除
+     */
+    const deleteChatGroup = () => {
+        console.log('削除')
+    }
+
     return (
         <>
+            <BasicModal
+                open={isOpenDeleteModal}
+                setOpen={setIsOpenDeleteModal}
+                modalTitle={'Delete chat'}
+                modalDescription={modalDescription}
+                buttonType={'error'}
+                buttonText={'削除'}
+                handleExecute={deleteChatGroup}
+            />
             <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
@@ -1011,7 +1040,7 @@ const ChatMessage = () => {
                                                                 <FiEdit3 />
                                                                 <p>編集</p>
                                                             </div>
-                                                            <div className='delete'>
+                                                            <div className='delete' onClick={() => {openDeleteModal(chatGroup.title)}}>
                                                                 <RiDeleteBin5Line />
                                                                 <p>削除</p>
                                                             </div>
