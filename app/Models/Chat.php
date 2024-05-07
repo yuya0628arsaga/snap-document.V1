@@ -3,18 +3,26 @@
 namespace App\Models;
 
 use App\Traits\Common\SerializeDate;
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Chat extends Model
 {
     use HasFactory;
     use HasUlids;
     use SerializeDate;
+    use SoftDeletes;
+    use SoftCascadeTrait;
+
+    protected array $softCascade = [
+        'pages',
+    ];
 
     /**
      * The attributes that are not mass assignable.

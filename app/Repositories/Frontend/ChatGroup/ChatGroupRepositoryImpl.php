@@ -48,4 +48,12 @@ class ChatGroupRepositoryImpl implements ChatGroupRepository
     {
         return ChatGroup::findOrFail($chatGroupId);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(ChatGroup $chatGroup): void
+    {
+        $chatGroup->delete();
+    }
 }
