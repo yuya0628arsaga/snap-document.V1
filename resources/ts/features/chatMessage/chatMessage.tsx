@@ -31,7 +31,24 @@ const MainContainer = styled('div')`
     height: 100vh;
     > .messages {
         flex: 1;
+
+        // スクロールバー（チャット）
         overflow-y: scroll;
+        &::-webkit-scrollbar {
+            visibility: hidden;
+            width: 10px;
+        }
+        &::-webkit-scrollbar-thumb {
+            visibility: hidden;
+            border-radius: 20px;
+        }
+        &:hover::-webkit-scrollbar {
+            visibility: visible;
+        }
+        &:hover::-webkit-scrollbar-thumb {
+            visibility: visible;
+            background: ${bgColor.buttonGray};
+        }
     }
     @media (max-width: ${responsive.sp}) {
         width: 100%;
@@ -103,7 +120,7 @@ const SidebarContainer = styled('div')`
             flex-direction: column;
             gap: 10px;
 
-            // スクロールバー
+            // スクロールバー（サイドバー）
             overflow-y: scroll;
             &::-webkit-scrollbar {
                 visibility: hidden;
@@ -431,6 +448,25 @@ const InputText = styled('textarea')`
     @media (max-width: ${responsive.sp}) {
         width: 90%;
         /* margin: 0 auto; */
+    }
+
+    // スクロールバー（質問入力欄）
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+        visibility: hidden;
+        width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+        visibility: hidden;
+        border-radius: 20px;
+    }
+    &:hover::-webkit-scrollbar {
+        visibility: visible;
+    }
+    &:hover::-webkit-scrollbar-thumb {
+        visibility: visible;
+        /* visibility: hidden; */
+        background: ${bgColor.buttonGray};
     }
 `
 
