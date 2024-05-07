@@ -49,4 +49,13 @@ interface ChatGroupRepository
      * @return ChatGroup
      */
     public function findOrFail(string $chatGroupId): ChatGroup;
+
+    /**
+     * チャットグループの削除
+     *
+     * @param ChatGroup
+     *
+     * @return void
+     */
+    public function delete(ChatGroup $chatGroup): void;
 }

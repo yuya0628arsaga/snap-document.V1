@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Frontend\Chat\Api\FetchChatsController;
 use App\Http\Controllers\Frontend\Chat\Api\StoreChatController;
+use App\Http\Controllers\Frontend\ChatGroup\Api\DeleteChatGroupController;
 use App\Http\Controllers\Frontend\ChatGroup\Api\FetchChatGroupsController;
+use App\Http\Controllers\Frontend\ChatGroup\Api\UpdateChatGroupController;
 use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,8 @@ Route::prefix('chats')->name('chat.')->group(function () {
 
 Route::prefix('chat-groups')->name('chat_groups.')->group(function () {
     Route::get('/', FetchChatGroupsController::class)->name('fetch');
+    Route::post('/', UpdateChatGroupController::class)->name('update');
+    Route::delete('/{chat_group_id}', DeleteChatGroupController::class)->name('delete');
 });
 
 

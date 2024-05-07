@@ -1,20 +1,22 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
 import styled from '@emotion/styled'
-import { bgColor, borderColor, fontWeight, responsive } from '../../utils/themeClient';
+import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
+import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
 // 検索フォーム
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiEdit3 } from "react-icons/fi";
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 const Wrapper = styled('div')`
     display: flex;
@@ -100,7 +102,24 @@ const SidebarContainer = styled('div')`
             display: flex;
             flex-direction: column;
             gap: 10px;
+
+            // スクロールバー
             overflow-y: scroll;
+            &::-webkit-scrollbar {
+                visibility: hidden;
+                width: 10px;
+            }
+            &::-webkit-scrollbar-thumb {
+                visibility: hidden;
+                border-radius: 20px;
+            }
+            &:hover::-webkit-scrollbar {
+                visibility: visible;
+            }
+            &:hover::-webkit-scrollbar-thumb {
+                visibility: visible;
+                background: ${bgColor.buttonGray};
+            }
 
             >.search {
                 margin: 10px;
@@ -108,7 +127,7 @@ const SidebarContainer = styled('div')`
             >.past-chats {
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: 8px;
                 >.date {
                     margin: 0 8px;
                     @media (max-width: ${responsive.sp}) {
@@ -122,17 +141,68 @@ const SidebarContainer = styled('div')`
                     background: ${bgColor.lightGray};
                     height: 70px;
                     padding: 8px;
+                    position: relative;
+
+                    > .past-chat-menu {
+                        position: absolute;
+                        width: 30%;
+                        height: 50px;
+                        background: ${bgColor.white};
+                        top: 70%;
+                        left: 70%;
+                        z-index: 999;
+                        display: none;
+                        border: 1px solid ${borderColor.gray};
+                        border-radius: 5px;
+                        box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.35);
+
+                        >.rename {
+                            width: 100%;
+                            height: 50%;
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            padding: 0 8px;
+                            cursor: pointer;
+                            &:hover {
+                                background: ${bgColor.buttonGray};
+                            }
+                            > p {
+                                font-size: ${fontSize.sm};
+                            }
+                        }
+                        >.delete {
+                            width: 100%;
+                            height: 50%;
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            padding: 0 8px;
+                            cursor: pointer;
+                            &:hover {
+                                background: ${bgColor.buttonGray};
+                            }
+                            > p {
+                                font-size: ${fontSize.sm};
+                            }
+                        }
+                    }
+                    >.display {
+                        display: block;
+                    }
 
                     > button {
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+
                         background: ${bgColor.white};
-                        padding: 5px 15px;
+                        padding: 5px 10px;
                         border: 1px solid ${borderColor.gray};
                         border-radius: 5px;
                         height: 100%;
                         width: 100%;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
+
                         &:hover {
                             background: ${bgColor.buttonGray};
                         }
@@ -143,6 +213,34 @@ const SidebarContainer = styled('div')`
                             width: 90%;
                             margin: 0 auto;
                         }
+
+                        >.text {
+                            width: 90%;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        >.icon {
+                            border-radius: 50%;
+                            width: 20px;
+                            height: 20px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            :hover {
+                                border: 1px solid #EFF5F8;
+                                background: #EFF5F8;
+                            }
+                            &.display {
+                                border: 1px solid #EFF5F8;
+                                background: #EFF5F8;
+                            }
+                        }
+                    }
+
+                    >.validation-message {
+                        color: ${textColor.error};
+                        font-size: ${fontSize.sm};
                     }
                 }
             }
@@ -340,7 +438,7 @@ const ErrorMessageContainer = styled('div')`
     padding: 24px;
     text-align: center;
     > .error-message {
-        color: red;
+        color: ${textColor.error};
     }
 `
 
@@ -360,6 +458,8 @@ type ChatGroup = {
     title: string,
     lastChatDate: string,
     isActive: boolean,
+    isDisplayPastChatMenu: boolean,
+    isEditingRename: boolean,
 }
 
 type ResChatGroup = {
@@ -653,7 +753,11 @@ const ChatMessage = () => {
     /**
      * 過去の質問を表示
      */
-    const displayPastChat = async (chatGroupId: string) => {
+    const displayPastChat = async (chatGroup: ChatGroup) => {
+        const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
+        const chatGroupId = chatGroup.id
+        if (isEditingRename) return
+
         getChats(chatGroupId)
 
         const chatGroups = await getChatGroups()
@@ -687,9 +791,235 @@ const ChatMessage = () => {
         setChatGroups(chatGroups)
     }
 
+    // ポップアップメニューが表示中か否か
+    const [displayingPastChatMenu, setDisplayingPastChatMenu] = useState(false)
+
+    /**
+     * pastChatのポップアップメニューを開く
+     */
+    const displayPastChatMenu = (e, chatGroupId: string) => {
+        e.stopPropagation()
+        setDisplayingPastChatMenu(true)
+        const newChatGroups: ResChatGroup[] = []
+
+        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isDisplayPastChatMenu =
+                        chatGroup.id === chatGroupId
+                            ? true
+                            : false
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    /**
+     * pastChatのポップアップメニューを閉じる
+     */
+    const closePastChatMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        // MEMO::なぜかref.current.contains()が使えなかったためこのように実装した
+        const isClickedPostChatMenuElement = e.target.classList[0] === 'past-chat-menu'
+        if (isClickedPostChatMenuElement) return
+        if (!displayingPastChatMenu) return
+
+        const newChatGroups: ResChatGroup[] = []
+
+        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isDisplayPastChatMenu = false
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+        setDisplayingPastChatMenu(false)
+    }
+
+    const chatGroupTitleInputRef = useRef(null)
+
+    /**
+     * titleをinputタグに変換する
+     */
+    const convertTitleToInput = (chatGroupId: string) => {
+        const newChatGroups: ResChatGroup[] = []
+
+        // isEditingRename（title編集中フラグ）を切り替える
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isEditingRename =
+                        chatGroup.id === chatGroupId
+                            ? true
+                            : false
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    /**
+     * chatGroupのtitle名を修正する
+     */
+    const renameTitle = (e: ChangeEvent<HTMLInputElement>, chatGroupId: string) => {
+        const newChatGroups: ResChatGroup[] = []
+
+        // titleの更新
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                if (chatGroup.id === chatGroupId) {
+                    chatGroup.title = e.target.value
+                }
+
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
+
+    /**
+     * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
+     */
+    const outOfTitleInput = () => {
+        const chatGroupId = chatGroupTitleInputRef.current.id
+        const title = chatGroupTitleInputRef.current.value
+        const MAX_STR_COUNT = 255
+
+        if (!title || title.length > MAX_STR_COUNT) {
+            setValidationMessageOfTitle('1~255文字以内で入力してください。')
+            return
+        }
+        // titleのupdate（サーバー）
+        updateChatGroupTitle(chatGroupId, title)
+
+
+        const newChatGroups: ResChatGroup[] = []
+
+        // isEditingRename（title編集中フラグ）を元に戻す
+        Object.keys(chatGroups).map((date) => {
+            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
+                chatGroup.isEditingRename = false
+                return chatGroup
+            })
+
+            newChatGroups[date] = includeIsActiveChatGroup
+        })
+
+        setChatGroups(newChatGroups)
+    }
+
+    /**
+     * チャットグループtitleを更新
+     */
+    const updateChatGroupTitle = (chatGroupId: string, title: string): void => {
+        axios({
+            url: '/api/v1/chat-groups/',
+            method: 'POST',
+            params: {
+                'chatGroupId': chatGroupId,
+                'title': title,
+            }
+        })
+        .then((res: AxiosResponse): void => {
+            const { data } = res
+            console.log(data)
+        })
+        .catch((e: AxiosError): void => {
+            console.error(e)
+        })
+    }
+
+    // 編集ボタン押下時にtitleのinputタグにフォーカスを自動で当てる
+    useEffect(() => {
+        chatGroupTitleInputRef.current?.focus()
+    }, [chatGroups])
+
+
+    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
+    const [modalDescription, setModalDescription] = useState('')
+    const [deleteTargetChatGroupId, setDeleteTargetChatGroupId] = useState('')
+    /**
+     * 削除モーダルをopen
+     */
+    const openDeleteModal = (chatGroupId: string, chatGroupTitle: string) => {
+        // 削除対象のchatGroupId
+        setDeleteTargetChatGroupId(chatGroupId)
+
+        const modalDescriptionMessage = `${chatGroupTitle} を削除しますか？`
+        setModalDescription(modalDescriptionMessage)
+        setIsOpenDeleteModal(true)
+    }
+
+    /**
+     * chatGroupを削除しサイドバー更新
+     */
+    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string) => {
+        await deleteChatGroup(deleteTargetChatGroupId)
+
+        const chatGroups: ResChatGroup[] = await getChatGroups()
+        setChatGroups(chatGroups)
+
+        // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
+        refreshChats(deleteTargetChatGroupId, currentlyOpenChatGroupId)
+    }
+
+    /**
+     * chatGroup削除
+     */
+    const deleteChatGroup = (chatGroupId: string): Promise<boolean> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: `/api/v1/chat-groups/${chatGroupId}`,
+                method: 'DELETE',
+            })
+            .then((res: AxiosResponse): void => {
+                resolve(true)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
+        })
+    }
+
+    /**
+     * 削除したchatGroupの画面を削除時に開いていた場合に、chat画面を初期化
+     */
+    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string) => {
+        if (deleteTargetChatGroupId === currentlyOpenChatGroupId) {
+            setChats([])
+            setChatGroupId('')
+        }
+    }
+
     return (
         <>
-            <Wrapper>
+            <BasicModal
+                open={isOpenDeleteModal}
+                setOpen={setIsOpenDeleteModal}
+                modalTitle={'Delete chat'}
+                modalDescription={modalDescription}
+                buttonType={'error'}
+                buttonText={'削除'}
+                handleExecute={() => {executeDelete(deleteTargetChatGroupId, chatGroupId)}}
+            />
+            <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
                         <div className='new-chat-container'>
@@ -726,11 +1056,34 @@ const ChatMessage = () => {
                                             {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button className={ chatGroup.isActive ? 'active' : ''} onClick={() => {
-                                                            displayPastChat(chatGroup.id)
-                                                        }}>
-                                                            {chatGroup.title}
+                                                        <button className={ chatGroup.isActive ? 'active' : ''}>
+                                                            <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
+                                                                {chatGroup.isEditingRename
+                                                                    ? <input type="text" id={chatGroup.id} value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
+                                                                    : chatGroup.title
+                                                                }
+                                                            </div>
+                                                            <div className={`icon ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`} onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
+                                                                <svg width="3" height="14" viewBox="0 0 3 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <circle cx="1.5" cy="2" r="1.5" transform="rotate(90 1.5 2)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'} />
+                                                                    <circle cx="1.5" cy="7" r="1.5" transform="rotate(90 1.5 7)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
+                                                                    <circle cx="1.5" cy="12" r="1.5" transform="rotate(90 1.5 12)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
+                                                                </svg>
+                                                            </div>
                                                         </button>
+                                                        {(chatGroup.isEditingRename && validationMessageOfTitle) &&
+                                                            <div className='validation-message'>{validationMessageOfTitle}</div>
+                                                        }
+                                                        <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
+                                                            <div className='rename' onClick={() => {convertTitleToInput(chatGroup.id)}}>
+                                                                <FiEdit3 />
+                                                                <p>編集</p>
+                                                            </div>
+                                                            <div className='delete' onClick={() => {openDeleteModal(chatGroup.id, chatGroup.title)}}>
+                                                                <RiDeleteBin5Line />
+                                                                <p>削除</p>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 )
                                             })}
