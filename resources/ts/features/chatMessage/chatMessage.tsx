@@ -826,6 +826,7 @@ const ChatMessage = () => {
     const displayNewChat = async () => {
         setChats([])
         setChatGroupId('')
+        setIsSpMenuOpen(prev => !prev)
 
         const chatGroups = await getChatGroups()
         setChatGroups(chatGroups)
