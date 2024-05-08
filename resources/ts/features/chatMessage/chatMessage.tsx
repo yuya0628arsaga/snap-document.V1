@@ -11,13 +11,13 @@ import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
+import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 // 検索フォーム
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { FiEdit, FiEdit3 } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { FaRegUserCircle } from "react-icons/fa";
 
 const Wrapper = styled('div')`
     display: flex;
@@ -286,28 +286,6 @@ const SidebarContainer = styled('div')`
             display: flex;
             align-items: center;
             justify-content: center;
-
-            >button {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin: 8px;
-                width: 85%;
-                padding: 8px;
-                border-radius: 5px;
-                cursor: pointer;
-                :hover {
-                    background: ${bgColor.buttonGray};
-                }
-                >.user-icon {}
-                >.user-name {
-                    font-size: ${fontSize.lg};
-                    font-weight: ${fontWeight.normal};
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-            }
         }
     }
 `
@@ -1172,14 +1150,7 @@ const ChatMessage = () => {
                     <div className='sidebar-footer'>
                         <div className='hoge'></div>
                         <div className='account'>
-                            <button>
-                                <div className='user-icon'>
-                                    <FaRegUserCircle style={{fontSize: '28px'}}/>
-                                </div>
-                                <div className='user-name'>
-                                    ゲスト
-                                </div>
-                            </button>
+                            <AccountPopupMenuButton/>
                         </div>
                     </div>
                 </SidebarContainer>
