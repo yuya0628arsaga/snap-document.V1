@@ -249,12 +249,12 @@ const SidebarContainer = styled('div')`
                             align-items: center;
                             justify-content: center;
                             :hover {
-                                border: 1px solid #EFF5F8;
-                                background: #EFF5F8;
+                                border: 1px solid ${bgColor.lightBlue};
+                                background: ${bgColor.lightBlue};
                             }
                             &.display {
-                                border: 1px solid #EFF5F8;
-                                background: #EFF5F8;
+                                border: 1px solid ${bgColor.lightBlue};
+                                background: ${bgColor.lightBlue};
                             }
                         }
                     }
@@ -355,7 +355,7 @@ const UsersQuestion = styled('div')`
     align-items: flex-start;
     > .icon {
         /* background: ${bgColor.blue}; */
-        background: #FFD700;
+        background: ${bgColor.yellow};
         border-radius: 5px;
         padding: 3px;
         display: flex;
