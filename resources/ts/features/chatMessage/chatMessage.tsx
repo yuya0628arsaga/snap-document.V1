@@ -69,6 +69,7 @@ const SidebarContainer = styled('div')`
         top: 80px;
         transition: all 0.5s;
         right: -120%;
+        z-index: 999;
         &.open {
             right: 0;
         }
