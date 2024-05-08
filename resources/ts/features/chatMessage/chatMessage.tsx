@@ -233,9 +233,12 @@ const SidebarContainer = styled('div')`
 
                         >.text {
                             width: 90%;
+                            height: 100%;
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
+                            display: flex;
+                            align-items: center;
                         }
                         >.icon {
                             border-radius: 50%;
