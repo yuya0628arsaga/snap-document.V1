@@ -358,6 +358,7 @@ const UsersQuestion = styled('div')`
         background: #FFD700;
         border-radius: 5px;
         padding: 3px;
+        display: flex;
     }
     >.text {
         >.name {
@@ -388,6 +389,7 @@ const AiAnswer = styled('div')`
         background: ${bgColor.blue};
         border-radius: 5px;
         padding: 3px;
+        display: flex;
     }
     >.text {
         >.name {
