@@ -17,6 +17,7 @@ import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { FiEdit, FiEdit3 } from "react-icons/fi";
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { FaRegUserCircle } from "react-icons/fa";
 
 const Wrapper = styled('div')`
     display: flex;
@@ -267,15 +268,46 @@ const SidebarContainer = styled('div')`
             }
         }
     }
-    >.account {
+    >.sidebar-footer {
         position: fixed;
         left: 0;
         bottom: 0;
         width: 20%;
-        background: red;
+        background: ${bgColor.lightGray};
         height: 120px;
         @media (max-width: ${responsive.sp}) {
             width: 0;
+        }
+        >.hoge {
+            height: 50%;
+        }
+        >.account {
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            >button {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin: 8px;
+                width: 85%;
+                padding: 8px;
+                border-radius: 5px;
+                cursor: pointer;
+                :hover {
+                    background: ${bgColor.buttonGray};
+                }
+                >.user-icon {}
+                >.user-name {
+                    font-size: ${fontSize.lg};
+                    font-weight: ${fontWeight.normal};
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            }
         }
     }
 `
@@ -1137,7 +1169,19 @@ const ChatMessage = () => {
 
                         </div>
                     </div>
-                    <div className='account'></div>
+                    <div className='sidebar-footer'>
+                        <div className='hoge'></div>
+                        <div className='account'>
+                            <button>
+                                <div className='user-icon'>
+                                    <FaRegUserCircle style={{fontSize: '28px'}}/>
+                                </div>
+                                <div className='user-name'>
+                                    ゲスト
+                                </div>
+                            </button>
+                        </div>
+                    </div>
                 </SidebarContainer>
 
                 <MainContainer>
