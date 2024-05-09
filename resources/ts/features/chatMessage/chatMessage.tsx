@@ -11,6 +11,7 @@ import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
+import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 // 検索フォーム
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
@@ -31,7 +32,24 @@ const MainContainer = styled('div')`
     height: 100vh;
     > .messages {
         flex: 1;
+
+        // スクロールバー（チャット）
         overflow-y: scroll;
+        &::-webkit-scrollbar {
+            visibility: hidden;
+            width: 10px;
+        }
+        &::-webkit-scrollbar-thumb {
+            visibility: hidden;
+            border-radius: 20px;
+        }
+        &:hover::-webkit-scrollbar {
+            visibility: visible;
+        }
+        &:hover::-webkit-scrollbar-thumb {
+            visibility: visible;
+            background: ${bgColor.buttonGray};
+        }
     }
     @media (max-width: ${responsive.sp}) {
         width: 100%;
@@ -52,6 +70,7 @@ const SidebarContainer = styled('div')`
         top: 80px;
         transition: all 0.5s;
         right: -120%;
+        z-index: 999;
         &.open {
             right: 0;
         }
@@ -103,7 +122,7 @@ const SidebarContainer = styled('div')`
             flex-direction: column;
             gap: 10px;
 
-            // スクロールバー
+            // スクロールバー（サイドバー）
             overflow-y: scroll;
             &::-webkit-scrollbar {
                 visibility: hidden;
@@ -216,9 +235,12 @@ const SidebarContainer = styled('div')`
 
                         >.text {
                             width: 90%;
+                            height: 100%;
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
+                            display: flex;
+                            align-items: center;
                         }
                         >.icon {
                             border-radius: 50%;
@@ -228,12 +250,12 @@ const SidebarContainer = styled('div')`
                             align-items: center;
                             justify-content: center;
                             :hover {
-                                border: 1px solid #EFF5F8;
-                                background: #EFF5F8;
+                                border: 1px solid ${bgColor.lightBlue};
+                                background: ${bgColor.lightBlue};
                             }
                             &.display {
-                                border: 1px solid #EFF5F8;
-                                background: #EFF5F8;
+                                border: 1px solid ${bgColor.lightBlue};
+                                background: ${bgColor.lightBlue};
                             }
                         }
                     }
@@ -246,15 +268,24 @@ const SidebarContainer = styled('div')`
             }
         }
     }
-    >.account {
+    >.sidebar-footer {
         position: fixed;
         left: 0;
         bottom: 0;
         width: 20%;
-        background: red;
+        background: ${bgColor.lightGray};
         height: 120px;
         @media (max-width: ${responsive.sp}) {
             width: 0;
+        }
+        >.hoge {
+            height: 50%;
+        }
+        >.account {
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     }
 `
@@ -334,9 +365,10 @@ const UsersQuestion = styled('div')`
     align-items: flex-start;
     > .icon {
         /* background: ${bgColor.blue}; */
-        background: #FFD700;
+        background: ${bgColor.yellow};
         border-radius: 5px;
         padding: 3px;
+        display: flex;
     }
     >.text {
         >.name {
@@ -367,6 +399,7 @@ const AiAnswer = styled('div')`
         background: ${bgColor.blue};
         border-radius: 5px;
         padding: 3px;
+        display: flex;
     }
     >.text {
         >.name {
@@ -432,6 +465,25 @@ const InputText = styled('textarea')`
         width: 90%;
         /* margin: 0 auto; */
     }
+
+    // スクロールバー（質問入力欄）
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+        visibility: hidden;
+        width: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+        visibility: hidden;
+        border-radius: 20px;
+    }
+    &:hover::-webkit-scrollbar {
+        visibility: visible;
+    }
+    &:hover::-webkit-scrollbar-thumb {
+        visibility: visible;
+        /* visibility: hidden; */
+        background: ${bgColor.buttonGray};
+    }
 `
 
 const ErrorMessageContainer = styled('div')`
@@ -478,6 +530,9 @@ const ChatMessage = () => {
 
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
+
+    // PDFページを取得するか否か
+    const [isGetPdfPage, setIsGetPdfPage] = useState(true)
 
     // chatsの更新によるautoScroll()制御のため
     const [isChecking, setIsChecking] = useState(false)
@@ -531,7 +586,13 @@ const ChatMessage = () => {
         axios({
             url: '/api/v1/chats/',
             method: 'POST',
-            data: { question: inputQuestion, manualName: manual, chatHistory: getChatHistory(chats), chatGroupId: chatGroupId }
+            data: {
+                question: inputQuestion,
+                manualName: manual,
+                chatHistory: getChatHistory(chats),
+                chatGroupId: chatGroupId,
+                isGetPdfPage: isGetPdfPage,
+            }
             // data: { question: inputQuestion, manualName: manual, chatHistory: [['question1', 'answer1'], ['question2', 'answer2']] }
             // data: { question: '具体的にどの学部に行けばいいか教えてください。', manualName: manual, chatHistory: [['私は医者です。医者の平均収入を教えて下さい。', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の間になることがあります。'], ['具体的にいくらですか？', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の範囲になることがあります。例えば、一般開業医の場合、年収は1000万円以上になることが一般的です。特に専門医や大学病院の医師などは、それ以上の高収入を得ることもあります。']] }
         })
@@ -786,6 +847,7 @@ const ChatMessage = () => {
     const displayNewChat = async () => {
         setChats([])
         setChatGroupId('')
+        setIsSpMenuOpen(prev => !prev)
 
         const chatGroups = await getChatGroups()
         setChatGroups(chatGroups)
@@ -969,7 +1031,7 @@ const ChatMessage = () => {
     /**
      * chatGroupを削除しサイドバー更新
      */
-    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string) => {
+    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
         await deleteChatGroup(deleteTargetChatGroupId)
 
         const chatGroups: ResChatGroup[] = await getChatGroups()
@@ -1001,7 +1063,7 @@ const ChatMessage = () => {
     /**
      * 削除したchatGroupの画面を削除時に開いていた場合に、chat画面を初期化
      */
-    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string) => {
+    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
         if (deleteTargetChatGroupId === currentlyOpenChatGroupId) {
             setChats([])
             setChatGroupId('')
@@ -1094,7 +1156,15 @@ const ChatMessage = () => {
 
                         </div>
                     </div>
-                    <div className='account'></div>
+                    <div className='sidebar-footer'>
+                        <div className='hoge'></div>
+                        <div className='account'>
+                            <AccountPopupMenuButton
+                                isGetPdfPage={isGetPdfPage}
+                                setIsGetPdfPage={setIsGetPdfPage}
+                            />
+                        </div>
+                    </div>
                 </SidebarContainer>
 
                 <MainContainer>
@@ -1141,7 +1211,7 @@ const ChatMessage = () => {
                                                     )
                                                 })
                                             }
-                                            {(!chat.isGenerating && chat.pdfPages) &&
+                                            {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
                                                 <div className='url-title'>
                                                     {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
                                                 </div>

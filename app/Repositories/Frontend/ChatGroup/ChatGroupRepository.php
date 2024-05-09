@@ -58,4 +58,13 @@ interface ChatGroupRepository
      * @return void
      */
     public function delete(ChatGroup $chatGroup): void;
+
+     /**
+     * チャットグループの存在チェック
+     *
+     * @param string $chatGroupId
+     *
+     * @return bool
+     */
+    public function exists(string $chatGroupId): bool;
 }

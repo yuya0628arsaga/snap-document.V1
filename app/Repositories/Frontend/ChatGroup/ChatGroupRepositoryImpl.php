@@ -56,4 +56,12 @@ class ChatGroupRepositoryImpl implements ChatGroupRepository
     {
         $chatGroup->delete();
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function exists(string $chatGroupId): bool
+    {
+        return ChatGroup::where('id', $chatGroupId)->exists();
+    }
 }
