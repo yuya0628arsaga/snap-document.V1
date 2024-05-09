@@ -1211,7 +1211,7 @@ const ChatMessage = () => {
                                                     )
                                                 })
                                             }
-                                            {(!chat.isGenerating && chat.pdfPages) &&
+                                            {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
                                                 <div className='url-title'>
                                                     {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
                                                 </div>
