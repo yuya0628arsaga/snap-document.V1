@@ -31,7 +31,13 @@ const AccountButton = styled('button')`
     }
 `
 
-const AccountPopupMenuButton = (props) => {
+type AccountPopupMenuButtonProps = {
+    isGetPdfPage: boolean,
+    setIsGetPdfPage: (isGetPdfPage: boolean) => void,
+}
+const AccountPopupMenuButton = (props: AccountPopupMenuButtonProps) => {
+    const { isGetPdfPage, setIsGetPdfPage } = props
+
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -58,6 +64,8 @@ const AccountPopupMenuButton = (props) => {
             <AccountSettingsModal
                 open={isSettingsModalOpen}
                 setOpen={setIsSettingsModalOpen}
+                isGetPdfPage={isGetPdfPage}
+                setIsGetPdfPage={setIsGetPdfPage}
             />
             <Menu
                 open={open}

@@ -531,6 +531,9 @@ const ChatMessage = () => {
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
 
+    // PDFページを取得するか否か
+    const [isGetPdfPage, setIsGetPdfPage] = useState(true)
+
     // chatsの更新によるautoScroll()制御のため
     const [isChecking, setIsChecking] = useState(false)
 
@@ -583,7 +586,13 @@ const ChatMessage = () => {
         axios({
             url: '/api/v1/chats/',
             method: 'POST',
-            data: { question: inputQuestion, manualName: manual, chatHistory: getChatHistory(chats), chatGroupId: chatGroupId }
+            data: {
+                question: inputQuestion,
+                manualName: manual,
+                chatHistory: getChatHistory(chats),
+                chatGroupId: chatGroupId,
+                isGetPdfPage: isGetPdfPage,
+            }
             // data: { question: inputQuestion, manualName: manual, chatHistory: [['question1', 'answer1'], ['question2', 'answer2']] }
             // data: { question: '具体的にどの学部に行けばいいか教えてください。', manualName: manual, chatHistory: [['私は医者です。医者の平均収入を教えて下さい。', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の間になることがあります。'], ['具体的にいくらですか？', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の範囲になることがあります。例えば、一般開業医の場合、年収は1000万円以上になることが一般的です。特に専門医や大学病院の医師などは、それ以上の高収入を得ることもあります。']] }
         })
@@ -1150,7 +1159,10 @@ const ChatMessage = () => {
                     <div className='sidebar-footer'>
                         <div className='hoge'></div>
                         <div className='account'>
-                            <AccountPopupMenuButton/>
+                            <AccountPopupMenuButton
+                                isGetPdfPage={isGetPdfPage}
+                                setIsGetPdfPage={setIsGetPdfPage}
+                            />
                         </div>
                     </div>
                 </SidebarContainer>

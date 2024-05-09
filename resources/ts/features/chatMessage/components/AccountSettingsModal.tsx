@@ -39,13 +39,17 @@ const Wrapper = styled('div')`
     }
 `
 
+type setIsGetPdfPageParam = (isGetPdfPage: boolean) => boolean
+
 type AccountSettingsModalProps = {
     open: boolean,
     setOpen: (open: boolean) => void,
+    isGetPdfPage: boolean,
+    setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
 }
 
 const AccountSettingsModal = (props: AccountSettingsModalProps) => {
-    const { open, setOpen } = props
+    const { open, setOpen, isGetPdfPage, setIsGetPdfPage } = props
     const handleClose = () => setOpen(false);
 
     return (
@@ -64,7 +68,9 @@ const AccountSettingsModal = (props: AccountSettingsModalProps) => {
                     <div className='contents'>
                         <div className='toggle-container'>
                             <div className='label'>参照したドキュメントのページを表示する</div>
-                            <FormControlLabel control={<Switch defaultChecked />} label="" />
+                                <FormControlLabel control={<Switch checked={isGetPdfPage} />} label="" onChange={() => {
+                                    setIsGetPdfPage(prev => !prev)
+                                }}/>
                         </div>
                     </div>
                 </Wrapper>
