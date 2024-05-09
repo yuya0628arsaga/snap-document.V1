@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Backend\Chroma\StoreChromaController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,17 +17,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/chroma', function (Request $request) {
-    $documentName = $request->input('documentName');
-
-    $res = Http::timeout(-1)->withHeaders([
-        'Content-Type' => 'application/json',
-    ])->post(config('api.gpt_engine.endpoint').'/chroma', [
-        'document_name' => $documentName,
-    ]);
-
-    return response()->json([
-        'status' => $res['status'],
-        'message' => $res['message']
-    ], 200);
-});
+// Chroma にベクトルデータを保存する
+Route::post('/chroma', StoreChromaController::class)->name('chroma');

@@ -63,7 +63,7 @@ class ChromaEngine(object):
             openai_api_key=settings.OPENAI_API_KEY
         ))
 
-        texts = s3.get_pdf_text(document_name)
+        texts = s3.get_pdf_text(key)
 
         doc_ids = [str(uuid.uuid4()) for _ in texts]
 
