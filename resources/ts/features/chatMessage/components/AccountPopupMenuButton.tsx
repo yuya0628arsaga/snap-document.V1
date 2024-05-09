@@ -6,6 +6,8 @@ import styled from '@emotion/styled';
 import { bgColor } from '../../../utils/themeClient';
 import { fontSize } from '../../../utils/themeClient';
 import { fontWeight } from '../../../utils/themeClient';
+import { IoSettingsOutline } from "react-icons/io5";
+import AccountSettingsModal from './AccountSettingsModal';
 
 const AccountButton = styled('button')`
     display: flex;
@@ -39,6 +41,8 @@ const AccountPopupMenuButton = (props) => {
         setAnchorEl(null);
     };
 
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
+
     return (
         <>
             <AccountButton
@@ -51,6 +55,10 @@ const AccountPopupMenuButton = (props) => {
                     ゲスト
                 </div>
             </AccountButton>
+            <AccountSettingsModal
+                open={isSettingsModalOpen}
+                setOpen={setIsSettingsModalOpen}
+            />
             <Menu
                 open={open}
                 onClose={handleClose}
@@ -65,7 +73,16 @@ const AccountPopupMenuButton = (props) => {
                 }}
             >
                 <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>settings</MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleClose()
+                        setIsSettingsModalOpen(true)
+                    }}
+                    style={{ display: 'flex', gap: '5px', alignItems: 'center' }}
+                >
+                    <IoSettingsOutline />
+                    <p>設定</p>
+                </MenuItem>
                 <MenuItem onClick={handleClose}>Logout</MenuItem>
             </Menu>
         </>
