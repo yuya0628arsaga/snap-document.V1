@@ -17,36 +17,32 @@ class S3(object):
             region_name=settings.REGION
         )
 
-    def get_pdf_text(self, pdf_name):
+    def get_pdf_text(self, key):
         """S3からPDFのテキストデータを取得する
 
         Args:
-            pdf_name (str): 拡張子を除いたPDFのファイル名（例. Man_Digest_v9）
+            key (str): PDFの.txtデータが保存されているS3キー（例. documents_text/Man_Digest_v9.txt）
 
         Returns:
             list[str]:
         """
-        key=f"documents_text/{pdf_name}.txt"
 
-        if (self.check_s3_key_exists(key)):
-            try:
-                # S3からオブジェクトを取得
-                response = self.s3.get_object(
-                    Bucket=settings.BUCKET_NAME,
-                    Key=f"documents_text/{pdf_name}.txt"
-                )
-                pdf_texts_binary_data = response["Body"].read()
-                pdf_texts_data = pdf_texts_binary_data.decode()
+        try:
+            # S3からオブジェクトを取得
+            response = self.s3.get_object(
+                Bucket=settings.BUCKET_NAME,
+                Key=key
+            )
+            pdf_texts_binary_data = response["Body"].read()
+            pdf_texts_data = pdf_texts_binary_data.decode()
 
-                # strをlist型に変換
-                texts = eval(pdf_texts_data)
+            # strをlist型に変換
+            texts = eval(pdf_texts_data)
 
-                return texts
-            except Exception as e:
-                print(f"S3 Error: {e}")
-                raise
-        else:
-            raise S3KeyNotExistsError(f"S3キー: {key} が存在しません。PDFドキュメントの.txtデータをS3に保存してください。")
+            return texts
+        except Exception as e:
+            print(f"S3 Error: {e}")
+            raise
 
     # base64を元の画像にdecodeする
     def convert_b64_string_to_binary(img_base64):

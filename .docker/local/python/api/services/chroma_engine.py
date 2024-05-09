@@ -8,9 +8,11 @@ from langchain_openai import OpenAIEmbeddings
 
 import settings
 from api.models.s3 import S3
+from api.models.s3 import S3KeyNotExistsError
 
 
 VECTOR_DATA_STORE_BASE_DIR = './chromadb_datas'
+PDF_TEXT_DATA_S3_DIR = 'documents_text'
 
 
 class ChromaEngine(object):
@@ -47,16 +49,21 @@ class ChromaEngine(object):
         """ChromaDB にドキュメントのベクトルデータを永久保存する"""
         vector_data_store_dir = f"{VECTOR_DATA_STORE_BASE_DIR}/{document_name}"
         if os.path.isdir(vector_data_store_dir):
-            print(f"Warning: ベクトルデータが既に存在します。{vector_data_store_dir} を一旦削除してから再度お試しください。")
+            print(f"Warning: ローカルにベクトルデータが既に存在します。{vector_data_store_dir} を一旦削除してから再度お試しください。")
             shutil.rmtree(vector_data_store_dir)
 
-        client = chromadb.PersistentClient(path=f"./chromadb_datas/{document_name}")
+        s3 = S3()
+        key = f"{PDF_TEXT_DATA_S3_DIR}/{document_name}.txt"
+        if not s3.check_s3_key_exists(key):
+            raise S3KeyNotExistsError(f"S3キー: {key} が存在しません。PDFドキュメントの.txtデータをS3に保存してください。")
+
+        client = chromadb.PersistentClient(path=f"./{VECTOR_DATA_STORE_BASE_DIR}/{document_name}")
 
         collection = client.create_collection(name="langchain", embedding_function=_CustomOpenAIEmbeddings(
             openai_api_key=settings.OPENAI_API_KEY
         ))
 
-        texts = S3().get_pdf_text(document_name)
+        texts = s3.get_pdf_text(document_name)
 
         doc_ids = [str(uuid.uuid4()) for _ in texts]
 
