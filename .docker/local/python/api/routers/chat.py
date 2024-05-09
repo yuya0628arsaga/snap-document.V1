@@ -14,7 +14,8 @@ async def answer(chat: Chat):
         data = ChatEngine().get_answer(
             params['question'],
             params['document_name'],
-            params['chat_history']
+            params['chat_history'],
+            params['is_get_pdf_page'],
         )
 
         return {

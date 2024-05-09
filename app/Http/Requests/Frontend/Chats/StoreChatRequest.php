@@ -84,4 +84,14 @@ class StoreChatRequest extends FormRequest
     {
         return $this->input('chatGroupId');
     }
+
+    /**
+     * PDFページの取得フラグを取得
+     *
+     * @return bool
+     */
+    public function getIsGetPdfPage(): bool
+    {
+        return $this->input('isGetPdfPage');
+    }
 }

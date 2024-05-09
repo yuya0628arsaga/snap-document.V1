@@ -40,15 +40,16 @@ class StoreChatUseCase
      * @param string $question 質問
      * @param string $documentName 使用するドキュメント名
      * @param array $chatHistory チャット履歴
-     * @param ?string $chatGroupId
+     * @param ?string $chatGroupId チャットグループID
+     * @param bool $isGetPdfPage PDFページ取得フラグ
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId): array
+    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId, bool $isGetPdfPage): array
     {
-        [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory);
+        [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage);
 
         $chatGroupId = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -126,12 +127,13 @@ class StoreChatUseCase
      * @param string $question
      * @param string $documentName
      * @param array $chatHistory
+     * @param bool $isGetPdfPage
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory): array
+    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage): array
     {
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
@@ -140,6 +142,7 @@ class StoreChatUseCase
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
+                'is_get_pdf_page' => $isGetPdfPage,
             ]);
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {

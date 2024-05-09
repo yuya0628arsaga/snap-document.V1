@@ -122,13 +122,14 @@ class ChatEngine(object):
                 "cost": cb.total_cost
             }
 
-    def get_answer(self, question, document_name, chat_history):
+    def get_answer(self, question, document_name, chat_history, is_get_pdf_page):
         """回答を返却
 
         Args:
             question (str): 質問
             document_name (str): ドキュメント名
             chat_history (list[str]): 会話履歴
+            is_get_pdf_page (bool): PDFページの取得フラグ
 
         Returns:
             dict:
@@ -152,7 +153,8 @@ class ChatEngine(object):
         qa = self._make_qa(prompt_qg, prompt_qa, retriever)
 
         result = self._get_answer_from_gpt(qa, question, chat_history)
-        pdf_pages = self._get_pdf_pages(result['source_documents'], document_name)
+        # is_get_pdf_page がfalseの場合は pdfページの取得処理を実行しない
+        pdf_pages = self._get_pdf_pages(result['source_documents'], document_name) if is_get_pdf_page else []
         base64_images = self.get_images(result['answer'])
 
         return {

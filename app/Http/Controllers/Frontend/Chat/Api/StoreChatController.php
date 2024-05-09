@@ -33,6 +33,7 @@ class StoreChatController extends Controller
             $request->getManualName(),
             $request->getChatHistory(),
             $request->getChatGroupId(),
+            $request->getIsGetPdfPage(),
         );
 
         return response()->json(new StoreChatResource($response), Response::HTTP_OK);
