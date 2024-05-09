@@ -26,22 +26,27 @@ class S3(object):
         Returns:
             list[str]:
         """
-        try:
-            # S3からオブジェクトを取得
-            response = self.s3.get_object(
-                Bucket=settings.BUCKET_NAME,
-                Key=f"documents_text/{pdf_name}.txt"
-            )
-            pdf_texts_binary_data = response["Body"].read()
-            pdf_texts_data = pdf_texts_binary_data.decode()
+        key=f"documents_text/{pdf_name}.txt"
 
-            # strをlist型に変換
-            texts = eval(pdf_texts_data)
+        if (self.check_s3_key_exists(key)):
+            try:
+                # S3からオブジェクトを取得
+                response = self.s3.get_object(
+                    Bucket=settings.BUCKET_NAME,
+                    Key=f"documents_text/{pdf_name}.txt"
+                )
+                pdf_texts_binary_data = response["Body"].read()
+                pdf_texts_data = pdf_texts_binary_data.decode()
 
-            return texts
-        except Exception as e:
-            print(f"S3 Error: {e}")
-            raise
+                # strをlist型に変換
+                texts = eval(pdf_texts_data)
+
+                return texts
+            except Exception as e:
+                print(f"S3 Error: {e}")
+                raise
+        else:
+            raise S3KeyNotExistsError(f"S3キー: {key} が存在しません。PDFドキュメントの.txtデータをS3に保存してください。")
 
     # base64を元の画像にdecodeする
     def convert_b64_string_to_binary(img_base64):

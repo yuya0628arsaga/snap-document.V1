@@ -1,14 +1,16 @@
 from fastapi import APIRouter
 
 from api.services.chroma_engine import ChromaEngine
+from api.schemas.chroma import StoreChroma
 
 
 router = APIRouter()
 
 
-@router.get("/chroma/store")
-async def store():
-    document_name = 'Man_Digest_v9'
+@router.post("/chroma")
+async def store(store_chroma: StoreChroma):
+    params = store_chroma.dict()
+    document_name = params['document_name']
 
     try:
         success_message = ChromaEngine().store(document_name)
