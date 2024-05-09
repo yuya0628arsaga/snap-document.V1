@@ -3,20 +3,20 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import { borderColor } from '../../../utils/themeClient';
 import { fontSize } from '../../../utils/themeClient';
-import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import styled from '@emotion/styled';
 
 const style = {
-  position: 'absolute' as 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '40%',
-  bgcolor: 'background.paper',
-  border: `1px solid ${borderColor.gray}`,
-  boxShadow: 24,
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '40%',
+    bgcolor: 'background.paper',
+    border: `1px solid ${borderColor.gray}`,
+    boxShadow: 24,
+    borderRadius: 2,
 };
 
 const Wrapper = styled('div')`
@@ -29,14 +29,19 @@ const Wrapper = styled('div')`
         padding-left: 24px;
         font-size: ${fontSize.xl};
     }
-    >.toggle-container {
+    >.contents {
         padding: 24px;
+        >.toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
     }
 `
 
 type AccountSettingsModalProps = {
     open: boolean,
-    setOpen: (open: boolean) => {},
+    setOpen: (open: boolean) => void,
 }
 
 const AccountSettingsModal = (props: AccountSettingsModalProps) => {
@@ -56,10 +61,11 @@ const AccountSettingsModal = (props: AccountSettingsModalProps) => {
                     <div className='title'>
                         設定
                     </div>
-                    <div className='toggle-container'>
-                        <FormGroup>
-                            <FormControlLabel control={<Switch defaultChecked />} label="参照したドキュメントのページを表示する" />
-                        </FormGroup>
+                    <div className='contents'>
+                        <div className='toggle-container'>
+                            <div className='label'>参照したドキュメントのページを表示する</div>
+                            <FormControlLabel control={<Switch defaultChecked />} label="" />
+                        </div>
                     </div>
                 </Wrapper>
             </Box>
