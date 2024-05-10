@@ -42,8 +42,9 @@ class PdfHelper(object):
         make_search_text = self._make_search_text(search_text)
         print('make_search_text: ', make_search_text)
 
-        # MEMO::改行が多すぎると正規表現の処理に膨大な時間がかかるため一旦排除する
-        if make_search_text.count('[\s\S]*?') > 10: return
+        # MEMO::改行や...が多すぎると正規表現の処理に膨大な時間がかかるため処理を行わずreturnする
+        if make_search_text.count('[\s\S]*?') > 10: return # 改行
+        if make_search_text.count('\\.') > 10: return # ...
 
         # PDFファイルを1ページずつ見て該当するかチェック
         pages = []
@@ -129,10 +130,10 @@ class PdfHelper(object):
         Returns:
             str: 最も文字数の多いtext
         """
-        deleted_line_texts = [text.replace(' ', '') for text in texts] # 改行を除去した上で一番長い文字列がどれかを比較させたい
+        # deleted_line_texts = [text.replace(' ', '') for text in texts] # 改行を除去した上で一番長い文字列がどれかを比較させたい
         # print(f"改行除去した: ", deleted_line_texts)
 
-        sorted_texts = sorted(deleted_line_texts, key=len, reverse=True)
+        sorted_texts = sorted(texts, key=len, reverse=True)
         the_longest_text = sorted_texts[0]
 
         print(f"一番長いテキスト: ", the_longest_text)
