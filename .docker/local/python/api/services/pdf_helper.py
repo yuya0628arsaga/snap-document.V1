@@ -42,6 +42,9 @@ class PdfHelper(object):
         make_search_text = self._make_search_text(search_text)
         print('make_search_text: ', make_search_text)
 
+        # MEMO::改行が多すぎると正規表現の処理に膨大な時間がかかるため一旦排除する
+        if make_search_text.count('[\s\S]*?') > 10: return
+
         # PDFファイルを1ページずつ見て該当するかチェック
         pages = []
         try:
@@ -60,12 +63,12 @@ class PdfHelper(object):
                     # 1ページ分のPDF（for文で回しているため i+1 ページ目のPDF）を文字列化したもの
                     extracted_text = outfp.getvalue()
 
+                    # 正規表現による検索
                     extracted_page = re.search(make_search_text, extracted_text)
 
                     # extracted_page.group() は 一致した文字(例. 「S パラメータ」)
                     if extracted_page:
-                        print(search_text)
-                        print(i + 1)
+                        print(f"ヒットしたページ: {i + 1}ページ目", f"検索対象文字列: {search_text}")
                         pages.append(i + 1)
 
             return pages
@@ -85,9 +88,33 @@ class PdfHelper(object):
         Returns:
             str: 検索できる文字列
         """
-        make_search_text = search_text.replace('\\', '\\\\') # C:MEL\\Lib\\bin とかのバックスラッシュを検索できるように
-        make_search_text = make_search_text.replace(' ', '[\s\S]*?') # 改行の空白を実際の改行にする（これでPDF内の改行に一致させることができる）
-        make_search_text = f"({make_search_text})+"
+        # 特殊文字をエスケープ
+        # replace('\\', '\\\\') は C:MEL\\Lib\\bin とかのバックスラッシュを検索できるように
+        # replace(' ', '[\s\S]*?') は 改行の空白を実際の改行にする（これでPDF内の改行に一致させることができる）
+        make_search_text = \
+            search_text.replace('\\', '\\\\') \
+                       .replace('’', '\’') \
+                       .replace(')', '\)') \
+                       .replace('”', '\”') \
+                       .replace('(', '\(') \
+                       .replace('[', '\[') \
+                       .replace(']', '\]') \
+                       .replace('.', '\.') \
+                       .replace('*', '\*') \
+                       .replace('+', '\+') \
+                       .replace('.', '\.') \
+                       .replace('?', '\?') \
+                       .replace('{ }', '\{\}]') \
+                       .replace('( )', '\(\)') \
+                       .replace('[ ]', '\[\]') \
+                       .replace('^', '\^') \
+                       .replace('$', '\$') \
+                       .replace('-', '\-') \
+                       .replace('|', '\|') \
+                       .replace('/', '\/') \
+                       .replace(' ', '[\s\S]*?') \
+
+        # make_search_text = f"({make_search_text})+"
 
         return make_search_text
 
@@ -102,10 +129,10 @@ class PdfHelper(object):
         Returns:
             str: 最も文字数の多いtext
         """
-        # deleted_line_texts = [text.rstrip(' ') for text in texts] # 改行を除去した上で一番長い文字列がどれかを比較
+        deleted_line_texts = [text.replace(' ', '') for text in texts] # 改行を除去した上で一番長い文字列がどれかを比較させたい
         # print(f"改行除去した: ", deleted_line_texts)
 
-        sorted_texts = sorted(texts, key=len, reverse=True)
+        sorted_texts = sorted(deleted_line_texts, key=len, reverse=True)
         the_longest_text = sorted_texts[0]
 
         print(f"一番長いテキスト: ", the_longest_text)
