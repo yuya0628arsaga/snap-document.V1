@@ -35,6 +35,15 @@ class ChatGroupRepositoryImpl implements ChatGroupRepository
     /**
      * {@inheritdoc}
      */
+    public function count(array $whereParams = []): int
+    {
+        return ChatGroup::where($whereParams)
+            ->count();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function update(string $chatGroupId, UpdateChatGroupParams $params): ChatGroup
     {
         $chatGroup = $this->findOrFail($chatGroupId);

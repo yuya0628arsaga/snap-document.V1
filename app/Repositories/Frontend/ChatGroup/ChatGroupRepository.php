@@ -32,6 +32,15 @@ interface ChatGroupRepository
     public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): LengthAwarePaginator;
 
     /**
+     * チャットグループのレコード数を取得
+     *
+     * @param array $whereParams
+     *
+     * @return int
+     */
+    public function count(array $whereParams = []): int;
+
+    /**
      * チャットグループを更新
      *
      * @param string $chatGroupId
