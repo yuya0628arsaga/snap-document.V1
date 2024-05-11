@@ -35,21 +35,25 @@ Route::prefix('chat-groups')->name('chat_groups.')->group(function () {
 
 
 Route::get('/test1', function (Request $request) {
-    Document::create([
-        'name' => 'Man_Digest_v9',
-        'extension' => 'pdf',
-        'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
-    ]);
-
-    Document::create([
-        'name' => 'PCBmanual3DV5',
-        'extension' => 'pdf',
-        'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
-    ]);
-
-    Document::create([
-        'name' => 'PCBmanualV5',
-        'extension' => 'pdf',
-        'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
-    ]);
+    Document::firstOrCreate(
+        ['name' => 'Man_Digest_v9'],
+        [
+            'extension' => 'pdf',
+            'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
+        ]
+    );
+    Document::firstOrCreate(
+        ['name' => 'PCBmanual3DV5'],
+        [
+            'extension' => 'pdf',
+            'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
+        ]
+    );
+    Document::firstOrCreate(
+        ['name' => 'PCBmanualV5'],
+        [
+            'extension' => 'pdf',
+            'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
+        ]
+    );
 });
