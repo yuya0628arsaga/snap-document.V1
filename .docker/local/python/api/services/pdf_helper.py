@@ -17,7 +17,7 @@ class PdfHelper(object):
     def __init__(self):
         pass
 
-    # search_text = 'ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ'
+    # search_text = 'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。'
     def _get_page_from_pdf(self, search_text: str, document_name: str) -> list[int]:
         """検索ワードに一致するPDFのページを出力する
 
@@ -39,6 +39,13 @@ class PdfHelper(object):
             f"{PDF_STORE_LOCAL_DIR}/{document_name}.pdf"
         )
 
+        make_search_text = self._make_search_text(search_text)
+        print('make_search_text: ', make_search_text)
+
+        # MEMO::改行や...が多すぎると正規表現の処理に膨大な時間がかかるため処理を行わずreturnする
+        if make_search_text.count('[\s\S]*?') > 10: return # 改行
+        if make_search_text.count('\\.') > 10: return # ...
+
         # PDFファイルを1ページずつ見て該当するかチェック
         pages = []
         try:
@@ -57,20 +64,14 @@ class PdfHelper(object):
                     # 1ページ分のPDF（for文で回しているため i+1 ページ目のPDF）を文字列化したもの
                     extracted_text = outfp.getvalue()
 
-                    # logger.info(f"{i+1}ページ目のPDF(extracted_text): {extracted_text}")
+                    # 正規表現による検索
+                    extracted_page = re.search(make_search_text, extracted_text)
 
-                    # ページ抽出：抽出条件（演習問題のページ）に該当すればTrue
-                    # 一致した場合：<re.Match object; span=(27, 34), match='S パラメータ'>
-                    # 一致しなかった場合: None
-                    extracted_page = re.search(search_text, extracted_text)
-
-                    # logger.info(f"extracted_page: {extracted_page}")
-
-                    # extracted_page.group() は 検索文字(「S パラメータ」)
+                    # extracted_page.group() は 一致した文字(例. 「S パラメータ」)
                     if extracted_page:
-                        print(search_text)
-                        print(i + 1)
+                        print(f"ヒットしたページ: {i + 1}ページ目", f"検索対象文字列: {search_text}")
                         pages.append(i + 1)
+
             return pages
         except FileNotFoundError:
             print(f"PDF: {document_name} が存在しません。")
@@ -78,6 +79,46 @@ class PdfHelper(object):
         except Exception:
             print(f"PDF 検索エラー")
             raise
+
+    def _make_search_text(self, search_text: str) -> str:
+        """正規表現での検索時にエラーや改行による不一致が出ないように検索対象の文字列を加工
+
+        Args:
+            search_text (str): 検索ワード
+
+        Returns:
+            str: 検索できる文字列
+        """
+        # 特殊文字をエスケープ
+        # replace('\\', '\\\\') は C:MEL\\Lib\\bin とかのバックスラッシュを検索できるように
+        # replace(' ', '[\s\S]*?') は 改行の空白を実際の改行にする（これでPDF内の改行に一致させることができる）
+        make_search_text = \
+            search_text.replace('\\', '\\\\') \
+                       .replace('’', '\’') \
+                       .replace(')', '\)') \
+                       .replace('”', '\”') \
+                       .replace('(', '\(') \
+                       .replace('[', '\[') \
+                       .replace(']', '\]') \
+                       .replace('.', '\.') \
+                       .replace('*', '\*') \
+                       .replace('+', '\+') \
+                       .replace('.', '\.') \
+                       .replace('?', '\?') \
+                       .replace('{ }', '\{\}]') \
+                       .replace('( )', '\(\)') \
+                       .replace('[ ]', '\[\]') \
+                       .replace('^', '\^') \
+                       .replace('$', '\$') \
+                       .replace('-', '\-') \
+                       .replace('|', '\|') \
+                       .replace('/', '\/') \
+                       .replace(' ', '[\s\S]*?') \
+
+        # make_search_text = f"({make_search_text})+"
+
+        return make_search_text
+
 
     # texts = ['図 19 解析結果（S パラメータ特性）', 'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。', 'パラメータの選択', '図 20']
     def _get_the_longest_text(self, texts: list[str]) -> str:
@@ -89,21 +130,25 @@ class PdfHelper(object):
         Returns:
             str: 最も文字数の多いtext
         """
+        # deleted_line_texts = [text.replace(' ', '') for text in texts] # 改行を除去した上で一番長い文字列がどれかを比較させたい
+        # print(f"改行除去した: ", deleted_line_texts)
 
         sorted_texts = sorted(texts, key=len, reverse=True)
         the_longest_text = sorted_texts[0]
 
+        print(f"一番長いテキスト: ", the_longest_text)
+
         return the_longest_text
 
-    # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出し、PDF検索できる形の配列に変換する
-    def _extract_main_sentence_list(self, reference_text: str) -> list[str]:
-        """最も長い文章を抽出し、PDF検索できる形の配列に変換する
+    # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出す
+    def _extract_main_sentence(self, reference_text: str) -> str:
+        """reference_text から最も長い文章を抽出する
 
         Args:
             reference_text (str): 回答に参照されたtext（例. AA \n\n BBBBB \n\n CCC \n\n DD）
 
         Returns:
-            list[str]:
+            str:
         """
 
         # reference_text = '図 19 解析結果（S パラメータ特性）\n\nもしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして 下さい。\n\nパラメータの選択\n\n図 20'
@@ -111,20 +156,9 @@ class PdfHelper(object):
         # 文字列を \n\n で分割して配列化
         noise = '\n\n'
         texts = reference_text.split(noise)
-
         the_longest_text = self._get_the_longest_text(texts)
 
-        # MEMO::PDF内に改行が存在する場合、改行をまたぐ検索ができないから以下の処理が必要
-        main_sentence_list = the_longest_text.split(' ')
-
-        return main_sentence_list
-
-        # sentence_list = [
-        #   'もしシミュレーションを行なったにもかかわらず表示されない場合は、（シミュレーシ',
-        #   'ョンの表示がでて終了した時）「グラフメニュ」の「表示式」を選択して下さい。Ｓパ',
-        #   'ラメータバッファの選択と表示式を確認して下さい。もし異なる場合は、図の様にして',
-        #   '下さい。'
-        # ]
+        return the_longest_text
 
     # ベクトル検索で取得したtextを元に、そのtextがpdfのどこに書いてあるのか文字列一致検索をかけてpdfページを取得
     def get_pdf_pages(self, reference_texts: list[str], document_name: str) -> list[int]:
@@ -140,13 +174,9 @@ class PdfHelper(object):
         pdf_pages = []
 
         for reference_text in reference_texts:
-            # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出し、PDF検索できる形の配列に変換する
-            main_sentence_list = self._extract_main_sentence_list(reference_text)
+            # AA \n\n BBBBB \n\n CCC \n\n DD から一番長い文章(BBBBB)を取り出す
+            main_sentence = self._extract_main_sentence(reference_text)
 
-            # 最も長い sentence だけで検索をかける（全部かけると処理が遅くなるから）
-            main_sentence = self._get_the_longest_text(main_sentence_list)
-
-            # 0番目のやつだけで検索かければよい（他のでかけても同じ結果が出るはずだから）
             pages = self._get_page_from_pdf(main_sentence, document_name)
 
             # もしも検索がヒットしなかった場合、page が[]となり、page[0]でエラーが出る

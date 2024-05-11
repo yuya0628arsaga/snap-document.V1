@@ -40,4 +40,16 @@ Route::get('/test1', function (Request $request) {
         'extension' => 'pdf',
         'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
     ]);
+
+    Document::create([
+        'name' => 'PCBmanual3DV5',
+        'extension' => 'pdf',
+        'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
+    ]);
+
+    Document::create([
+        'name' => 'PCBmanualV5',
+        'extension' => 'pdf',
+        'url' => 'https://mel-document-public.s3.ap-northeast-1.amazonaws.com',
+    ]);
 });

@@ -17,20 +17,21 @@ class S3(object):
             region_name=settings.REGION
         )
 
-    def get_pdf_text(self, pdf_name):
+    def get_pdf_text(self, key):
         """S3からPDFのテキストデータを取得する
 
         Args:
-            pdf_name (str): 拡張子を除いたPDFのファイル名（例. Man_Digest_v9）
+            key (str): PDFの.txtデータが保存されているS3キー（例. documents_text/Man_Digest_v9.txt）
 
         Returns:
             list[str]:
         """
+
         try:
             # S3からオブジェクトを取得
             response = self.s3.get_object(
                 Bucket=settings.BUCKET_NAME,
-                Key=f"documents_text/{pdf_name}.txt"
+                Key=key
             )
             pdf_texts_binary_data = response["Body"].read()
             pdf_texts_data = pdf_texts_binary_data.decode()
