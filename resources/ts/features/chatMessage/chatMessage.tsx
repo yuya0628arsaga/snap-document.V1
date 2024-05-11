@@ -11,6 +11,7 @@ import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
+import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 // 検索フォーム
 import Paper from '@mui/material/Paper';
@@ -266,6 +267,11 @@ const SidebarContainer = styled('div')`
                         font-size: ${fontSize.sm};
                     }
                 }
+            }
+            >.pagination {
+                width: 100%;
+                display: flex;
+                justify-content: center;
             }
         }
     }
@@ -763,10 +769,10 @@ const ChatMessage = () => {
     /**
      * サーバからチャットグループを取得
      */
-    const getChatGroups = (): Promise<ResChatGroup[]> => {
+    const getChatGroups = (page: number = 1): Promise<ResChatGroup[]> => {
         return new Promise((resolve, reject) => {
             axios({
-                url: '/api/v1/chat-groups/',
+                url: `/api/v1/chat-groups/?page=${page}`,
                 method: 'GET',
             })
             .then((res: AxiosResponse): void => {
@@ -1093,6 +1099,14 @@ const ChatMessage = () => {
         }
     }
 
+    /**
+     * chatGroupsのページネーション押下時
+     */
+    const getChatGroupsPagination = async (event: React.ChangeEvent<unknown>, page: number) => {
+        const chatGroups = await getChatGroups(page)
+        setChatGroups(chatGroups)
+    }
+
     return (
         <>
             <BasicModal
@@ -1175,6 +1189,9 @@ const ChatMessage = () => {
                                         </React.Fragment>
                                     )
                                 })}
+                            </div>
+                            <div className='pagination'>
+                                <Pagination count={10} onChange={getChatGroupsPagination} />
                             </div>
 
                         </div>
