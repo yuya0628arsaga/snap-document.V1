@@ -623,14 +623,13 @@ const ChatMessage = () => {
             lastChat.isGenerating = false
 
             setChats(newChats)
-            setChatGroupId(data.chatGroupId)
+            setChatGroupId(data.chatGroupId);
+
             // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
-            if (!chatGroupId) {
-                (async () => {
-                    const chatGroups = await getChatGroups()
-                    setChatGroups(chatGroups)
-                })()
-            }
+            (async () => {
+                const chatGroups = await getChatGroups(1)
+                setChatGroups(chatGroups)
+            })()
         })
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
@@ -678,13 +677,6 @@ const ChatMessage = () => {
 
         // 質問入力欄を空に
         setInputQuestion('')
-
-        // 質問があったchatGroupをサイドバーのトップに移動
-        if (chatGroupId) {
-            const chatGroupsCopy = { ...chatGroups }
-            const sortedChatGroups = sortChatGroups(chatGroupsCopy)
-            setChatGroups(sortedChatGroups)
-        }
     }
 
     /**
@@ -832,6 +824,7 @@ const ChatMessage = () => {
     }
 
     const [isChatLoading, setIsChatLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
     /**
      * 過去の質問を表示
      */
@@ -850,7 +843,7 @@ const ChatMessage = () => {
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
 
-        const chatGroups = await getChatGroups()
+        const chatGroups = await getChatGroups(currentPage)
         const newChatGroups: ResChatGroup[] = []
 
         // isActiveを切り替える
@@ -1103,6 +1096,8 @@ const ChatMessage = () => {
      * chatGroupsのページネーション押下時
      */
     const getChatGroupsPagination = async (event: React.ChangeEvent<unknown>, page: number) => {
+        setCurrentPage(page)
+
         const chatGroups = await getChatGroups(page)
         setChatGroups(chatGroups)
     }
