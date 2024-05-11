@@ -750,11 +750,21 @@ const ChatMessage = () => {
 
 
     const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
+    const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
         (async (): Promise<void> => {
             const chatGroups = await getChatGroups()
             setChatGroups(chatGroups)
+
+            const { chatGroupsCount } = await getChatGroupsCount()
+
+            // pagination出力処理
+            const MAX_CHAT_GROUPS_COUNTS = 10 // サーバから取得する一回のchatGroupsの最大数
+            const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
+            const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
+            const maxPage = remainder ? quotient + 1 : quotient
+            setMaxPagination(maxPage)
         })()
     }, [])
 
@@ -765,6 +775,27 @@ const ChatMessage = () => {
         return new Promise((resolve, reject) => {
             axios({
                 url: `/api/v1/chat-groups/?page=${page}`,
+                method: 'GET',
+            })
+            .then((res: AxiosResponse): void => {
+                const { data } = res
+                console.log(data)
+                resolve(data)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
+        })
+    }
+
+    /**
+     * サーバからチャットグループのレコード数を取得
+     */
+    const getChatGroupsCount = (): Promise<{chatGroupsCount: number}> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: `/api/v1/chat-groups/count`,
                 method: 'GET',
             })
             .then((res: AxiosResponse): void => {
@@ -870,6 +901,7 @@ const ChatMessage = () => {
         setChats([])
         setChatGroupId('')
         setIsSpMenuOpen(prev => !prev)
+        setCurrentPage(1)
 
         const chatGroups = await getChatGroups()
         setChatGroups(chatGroups)
@@ -1186,7 +1218,7 @@ const ChatMessage = () => {
                                 })}
                             </div>
                             <div className='pagination'>
-                                <Pagination count={10} onChange={getChatGroupsPagination} />
+                                <Pagination count={maxPagination} onChange={getChatGroupsPagination} page={currentPage} />
                             </div>
 
                         </div>
