@@ -677,6 +677,9 @@ const ChatMessage = () => {
 
         // 質問入力欄を空に
         setInputQuestion('')
+
+        // 現在のchatGroupsのページネーションを１に
+        setCurrentPage(1)
     }
 
     /**
