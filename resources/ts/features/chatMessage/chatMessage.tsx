@@ -654,7 +654,7 @@ const ChatMessage = () => {
 
     const sendQuestion = () => {
         const MAX_CHAT = 15 // 一つのchatGroupに対して表示できるchatの最大数
-        if (chats.length > MAX_CHAT) {
+        if (chats.length >= MAX_CHAT) {
             setErrorMessage(`1つのタイトルに対して${MAX_CHAT}回以上の質問はできません。\n質問するには「New Chat」ボタンで新しく会話を開始してください。`)
             return
         }
