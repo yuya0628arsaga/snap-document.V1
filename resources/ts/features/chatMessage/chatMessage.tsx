@@ -531,7 +531,13 @@ type ChatGroup = {
 }
 
 type ResChatGroup = {
-    [k in string]: ChatGroup[]
+    id: string,
+    title: string,
+    lastChatDate: string,
+}
+
+type GroupByDateChatGroupsType = {
+    [lastChatDate: string]: ChatGroup[]
 }
 
 const ChatMessage = () => {
@@ -627,7 +633,8 @@ const ChatMessage = () => {
 
             // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
             (async () => {
-                const chatGroups = await getChatGroups(1)
+                const resChatGroups = await getChatGroups(1)
+                const chatGroups = initChatGroups(resChatGroups)
                 setChatGroups(chatGroups)
             })()
         })
@@ -757,12 +764,14 @@ const ChatMessage = () => {
     }
 
 
-    const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
+    const [chatGroups, setChatGroups] = useState<ChatGroup[]>([])
     const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
         (async (): Promise<void> => {
-            const chatGroups = await getChatGroups()
+            const resChatGroups: ResChatGroup[] = await getChatGroups()
+            const chatGroups = initChatGroups(resChatGroups)
+
             setChatGroups(chatGroups)
 
             const { chatGroupsCount } = await getChatGroupsCount()
@@ -775,6 +784,38 @@ const ChatMessage = () => {
             setMaxPagination(maxPage)
         })()
     }, [])
+
+    /**
+     * chatGroupsの初期化
+     */
+    const initChatGroups = (resChatGroups: ResChatGroup[]) => {
+        const chatGroups: ChatGroup[] = resChatGroups.map((chatGroup) => {
+            return {
+                ...chatGroup,
+                isActive: false,
+                isDisplayPastChatMenu: false,
+                isEditingRename: false,
+            }
+        })
+
+        return chatGroups
+    }
+
+    /**
+     * chatGroupsを日付でグルーピング
+     */
+    const groupByDateChatGroups = (chatGroups: ChatGroup[]) => {
+        const groupByDateChatGroups: GroupByDateChatGroupsType[] = chatGroups.reduce((group: any, chatGroup: ChatGroup) => {
+
+            group[chatGroup.lastChatDate] = group[chatGroup.lastChatDate] ?? [];
+            group[chatGroup.lastChatDate].push(chatGroup);
+
+            return group;
+
+        }, []);
+
+        return groupByDateChatGroups
+    }
 
     /**
      * サーバからチャットグループを取得
@@ -842,24 +883,19 @@ const ChatMessage = () => {
         })
     }
 
-
     /**
      * 質問を検索
      */
     const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchWord: string = e.target.value
-        const chatGroups: ResChatGroup[] = await getChatGroups()
-        const searchedChatGroups: ResChatGroup[] = []
+        // const chatGroups: ResChatGroup[] = await getChatGroups()
 
-        Object.keys(chatGroups).map((date) => {
-            const filteredChangeGroup = chatGroups[date].filter((chatGroup) => {
-                const isMatch = chatGroup.title.indexOf(searchWord) !== -1
-                return isMatch
-            })
-            searchedChatGroups[date] = filteredChangeGroup
+        const filteredChangeGroup = chatGroups.filter((chatGroup) => {
+            const isMatch = chatGroup.title.indexOf(searchWord) !== -1
+            return isMatch
         })
 
-        setChatGroups(searchedChatGroups)
+        setChatGroups(filteredChangeGroup)
     }
 
     const [isChatLoading, setIsChatLoading] = useState(false)
@@ -882,24 +918,19 @@ const ChatMessage = () => {
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
 
-        const chatGroups = await getChatGroups(currentPage)
-        const newChatGroups: ResChatGroup[] = []
+        const resChatGroups = await getChatGroups(currentPage)
+        const chatGroups = initChatGroups(resChatGroups)
 
         // isActiveを切り替える
-        Object.keys(chatGroups).map((date) => {
-            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
-                chatGroup.isActive =
-                    chatGroup.id === chatGroupId
-                    ? true
-                    : false
-
-                return chatGroup
-            })
-
-            newChatGroups[date] = includeIsActiveChatGroup
+        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+            return (
+                chatGroup.id === chatGroupId
+                    ? { ...chatGroup, isActive: true }
+                    : { ...chatGroup, isActive: false }
+            )
         })
 
-        setChatGroups(newChatGroups)
+        setChatGroups(editedChatGroups)
     }
 
     /**
@@ -912,7 +943,9 @@ const ChatMessage = () => {
         setCurrentPage(1)
         setErrorMessage('') // エラーメッセージを空に
 
-        const chatGroups = await getChatGroups()
+        const resChatGroups = await getChatGroups()
+        const chatGroups = initChatGroups(resChatGroups)
+
         setChatGroups(chatGroups)
     }
 
@@ -925,23 +958,17 @@ const ChatMessage = () => {
     const displayPastChatMenu = (e, chatGroupId: string) => {
         e.stopPropagation()
         setDisplayingPastChatMenu(true)
-        const newChatGroups: ResChatGroup[] = []
 
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
-        Object.keys(chatGroups).map((date) => {
-            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
-                chatGroup.isDisplayPastChatMenu =
-                        chatGroup.id === chatGroupId
-                            ? true
-                            : false
-
-                return chatGroup
-            })
-
-            newChatGroups[date] = includeIsActiveChatGroup
+        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+            return (
+                chatGroup.id === chatGroupId
+                    ? { ...chatGroup, isDisplayPastChatMenu: true }
+                    : { ...chatGroup, isDisplayPastChatMenu: false }
+            )
         })
 
-        setChatGroups(newChatGroups)
+        setChatGroups(editedChatGroups)
     }
 
     /**
@@ -953,19 +980,12 @@ const ChatMessage = () => {
         if (isClickedPostChatMenuElement) return
         if (!displayingPastChatMenu) return
 
-        const newChatGroups: ResChatGroup[] = []
-
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
-        Object.keys(chatGroups).map((date) => {
-            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
-                chatGroup.isDisplayPastChatMenu = false
-                return chatGroup
-            })
-
-            newChatGroups[date] = includeIsActiveChatGroup
+        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+            return { ...chatGroup, isDisplayPastChatMenu: false }
         })
 
-        setChatGroups(newChatGroups)
+        setChatGroups(editedChatGroups)
         setDisplayingPastChatMenu(false)
     }
 
@@ -975,45 +995,43 @@ const ChatMessage = () => {
      * titleをinputタグに変換する
      */
     const convertTitleToInput = (chatGroupId: string) => {
-        const newChatGroups: ResChatGroup[] = []
+
+        // // isEditingRename（title編集中フラグ）を切り替える
+        // const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+        //     return (
+        //         chatGroup.id === chatGroupId
+        //             ? { ...chatGroup, isEditingRename: true }
+        //             : { ...chatGroup, isEditingRename: false }
+        //     )
+        // })
 
         // isEditingRename（title編集中フラグ）を切り替える
-        Object.keys(chatGroups).map((date) => {
-            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
-                chatGroup.isEditingRename =
-                        chatGroup.id === chatGroupId
-                            ? true
-                            : false
+        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+            chatGroup.isEditingRename =
+                chatGroup.id === chatGroupId
+                ? true
+                : false
 
-                return chatGroup
-            })
-
-            newChatGroups[date] = includeIsActiveChatGroup
+            return chatGroup
         })
 
-        setChatGroups(newChatGroups)
+        setChatGroups(editedChatGroups)
     }
 
     /**
      * chatGroupのtitle名を修正する
      */
-    const renameTitle = (e: ChangeEvent<HTMLInputElement>, chatGroupId: string) => {
-        const newChatGroups: ResChatGroup[] = []
-
+    const renameTitle = (e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
         // titleの更新
-        Object.keys(chatGroups).map((date) => {
-            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
-                if (chatGroup.id === chatGroupId) {
-                    chatGroup.title = e.target.value
-                }
-
-                return chatGroup
-            })
-
-            newChatGroups[date] = includeIsActiveChatGroup
+        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+            return (
+                chatGroup.id === chatGroupId
+                    ? { ...chatGroup, title: e.target.value }
+                    : chatGroup
+            )
         })
 
-        setChatGroups(newChatGroups)
+        setChatGroups(editedChatGroups)
     }
 
     const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
@@ -1033,20 +1051,12 @@ const ChatMessage = () => {
         // titleのupdate（サーバー）
         updateChatGroupTitle(chatGroupId, title)
 
-
-        const newChatGroups: ResChatGroup[] = []
-
         // isEditingRename（title編集中フラグ）を元に戻す
-        Object.keys(chatGroups).map((date) => {
-            const includeIsActiveChatGroup = chatGroups[date].map((chatGroup: ChatGroup) => {
-                chatGroup.isEditingRename = false
-                return chatGroup
-            })
-
-            newChatGroups[date] = includeIsActiveChatGroup
+        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
+            return { ...chatGroup, isEditingRename: false }
         })
 
-        setChatGroups(newChatGroups)
+        setChatGroups(editedChatGroups)
     }
 
     /**
@@ -1097,7 +1107,9 @@ const ChatMessage = () => {
     const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
         await deleteChatGroup(deleteTargetChatGroupId)
 
-        const chatGroups: ResChatGroup[] = await getChatGroups()
+        const resChatGroups = await getChatGroups(currentPage)
+        const chatGroups = initChatGroups(resChatGroups)
+
         setChatGroups(chatGroups)
 
         // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
@@ -1139,7 +1151,9 @@ const ChatMessage = () => {
     const getChatGroupsPagination = async (event: React.ChangeEvent<unknown>, page: number) => {
         setCurrentPage(page)
 
-        const chatGroups = await getChatGroups(page)
+        const resChatGroups = await getChatGroups(page)
+        const chatGroups = initChatGroups(resChatGroups)
+
         setChatGroups(chatGroups)
     }
 
@@ -1182,19 +1196,19 @@ const ChatMessage = () => {
                             </div>
 
                             <div className='past-chats'>
-                                {Object.keys(chatGroups).map((date: string, i: number) => {
+                                {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
                                     return (
                                         <React.Fragment key={i}>
                                             <div className='date'>
                                                 {date}
                                             </div>
-                                            {chatGroups[date].map((chatGroup: ChatGroup, i: number) => {
+                                            {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
                                                         <button className={ chatGroup.isActive ? 'active' : ''}>
                                                             <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
                                                                 {chatGroup.isEditingRename
-                                                                    ? <input type="text" id={chatGroup.id} value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
+                                                                    ? <input type="text" id={chatGroup.id} value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id, chatGroups) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
                                                                     : chatGroup.title
                                                                 }
                                                             </div>
