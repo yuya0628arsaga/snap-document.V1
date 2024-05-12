@@ -888,7 +888,8 @@ const ChatMessage = () => {
      */
     const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchWord: string = e.target.value
-        // const chatGroups: ResChatGroup[] = await getChatGroups()
+        const resChatGroups: ResChatGroup[] = await getChatGroups()
+        const chatGroups = initChatGroups(resChatGroups)
 
         const filteredChangeGroup = chatGroups.filter((chatGroup) => {
             const isMatch = chatGroup.title.indexOf(searchWord) !== -1
@@ -918,9 +919,6 @@ const ChatMessage = () => {
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
 
-        const resChatGroups = await getChatGroups(currentPage)
-        const chatGroups = initChatGroups(resChatGroups)
-
         // isActiveを切り替える
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
             return (
@@ -940,11 +938,7 @@ const ChatMessage = () => {
         setChats([])
         setChatGroupId('')
         setIsSpMenuOpen(prev => !prev)
-        setCurrentPage(1)
         setErrorMessage('') // エラーメッセージを空に
-
-        const resChatGroups = await getChatGroups()
-        const chatGroups = initChatGroups(resChatGroups)
 
         setChatGroups(chatGroups)
     }
