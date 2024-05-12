@@ -653,6 +653,11 @@ const ChatMessage = () => {
     }
 
     const sendQuestion = () => {
+        const MAX_CHAT = 15 // 一つのchatGroupに対して表示できるchatの最大数
+        if (chats.length > MAX_CHAT) {
+            setErrorMessage(`1つのタイトルに対して${MAX_CHAT}回以上の質問はできません。\n質問するには「New Chat」ボタンで新しく会話を開始してください。`)
+            return
+        }
         if (isLoading || !inputQuestion) return;
         if (manual === '') {
             setIsSelectManual(false)
@@ -905,6 +910,7 @@ const ChatMessage = () => {
         setChatGroupId('')
         setIsSpMenuOpen(prev => !prev)
         setCurrentPage(1)
+        setErrorMessage('') // エラーメッセージを空に
 
         const chatGroups = await getChatGroups()
         setChatGroups(chatGroups)
@@ -1343,7 +1349,14 @@ const ChatMessage = () => {
                     </FormContainer>
                     {errorMessage &&
                         <ErrorMessageContainer>
-                            <div className='error-message'>{errorMessage}</div>
+                            <div className='error-message'>
+                                {/* Fix::改行反映のため */}
+                                {errorMessage.split("\n").map((message, index) => {
+                                    return (
+                                        <React.Fragment key={index}>{message}<br /></React.Fragment>
+                                    )
+                                })}
+                            </div>
                         </ErrorMessageContainer>}
 
                 </MainContainer>
