@@ -19,7 +19,7 @@ class FetchChatGroupsResource extends JsonResource
             'id' => $this['id'],
             'title' => $this['title'],
             'lastChatDate' => $this['last_chat_date'],
-            'chats' => static::getChats($this['chats']),
+            // 'chats' => static::getChats($this['chats']),
         ];
     }
 

@@ -7,7 +7,7 @@ namespace App\Repositories\Frontend\ChatGroup;
 use App\Models\ChatGroup;
 use App\Repositories\Frontend\ChatGroup\Params\StoreChatGroupParams;
 use App\Repositories\Frontend\ChatGroup\Params\UpdateChatGroupParams;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ChatGroupRepository
 {
@@ -27,9 +27,18 @@ interface ChatGroupRepository
      * @param array $columns
      * @param array $whereParams
      *
-     * @return Collection
+     * @return LengthAwarePaginator
      */
-    public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): Collection;
+    public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): LengthAwarePaginator;
+
+    /**
+     * チャットグループのレコード数を取得
+     *
+     * @param array $whereParams
+     *
+     * @return int
+     */
+    public function count(array $whereParams = []): int;
 
     /**
      * チャットグループを更新

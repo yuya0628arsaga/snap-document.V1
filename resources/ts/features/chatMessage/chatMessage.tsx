@@ -11,6 +11,7 @@ import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
+import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 // 検索フォーム
 import Paper from '@mui/material/Paper';
@@ -31,6 +32,7 @@ const MainContainer = styled('div')`
     /* padding-top: 48px; */
     height: 100vh;
     > .messages {
+        position: relative; // ChatLoading表示のため
         flex: 1;
 
         // スクロールバー（チャット）
@@ -266,6 +268,11 @@ const SidebarContainer = styled('div')`
                     }
                 }
             }
+            >.pagination {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
         }
     }
     >.sidebar-footer {
@@ -379,10 +386,19 @@ const UsersQuestion = styled('div')`
     }
 `
 
+// 回答表示のloading
 const Load = styled('div')`
     display: flex;
     gap: 10px;
     margin: 16px 0;
+`
+
+// 過去のchat表示のloading
+const ChatLoading = styled('div')`
+    position: absolute;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 `
 
 const AiAnswer = styled('div')`
@@ -607,8 +623,13 @@ const ChatMessage = () => {
             lastChat.isGenerating = false
 
             setChats(newChats)
-            setChatGroupId(data.chatGroupId)
-            if (!chatGroupId) getChatGroups() // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
+            setChatGroupId(data.chatGroupId);
+
+            // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
+            (async () => {
+                const chatGroups = await getChatGroups(1)
+                setChatGroups(chatGroups)
+            })()
         })
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
@@ -632,6 +653,11 @@ const ChatMessage = () => {
     }
 
     const sendQuestion = () => {
+        const MAX_CHAT = 15 // 一つのchatGroupに対して表示できるchatの最大数
+        if (chats.length >= MAX_CHAT) {
+            setErrorMessage(`1つのタイトルに対して${MAX_CHAT}回以上の質問はできません。\n質問するには「New Chat」ボタンで新しく会話を開始してください。`)
+            return
+        }
         if (isLoading || !inputQuestion) return;
         if (manual === '') {
             setIsSelectManual(false)
@@ -657,12 +683,8 @@ const ChatMessage = () => {
         // 質問入力欄を空に
         setInputQuestion('')
 
-        // 質問があったchatGroupをサイドバーのトップに移動
-        if (chatGroupId) {
-            const chatGroupsCopy = { ...chatGroups }
-            const sortedChatGroups = sortChatGroups(chatGroupsCopy)
-            setChatGroups(sortedChatGroups)
-        }
+        // 現在のchatGroupsのページネーションを１に
+        setCurrentPage(1)
     }
 
     /**
@@ -736,21 +758,52 @@ const ChatMessage = () => {
 
 
     const [chatGroups, setChatGroups] = useState<ResChatGroup[]>([])
+    const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
         (async (): Promise<void> => {
             const chatGroups = await getChatGroups()
             setChatGroups(chatGroups)
+
+            const { chatGroupsCount } = await getChatGroupsCount()
+
+            // pagination出力処理
+            const MAX_CHAT_GROUPS_COUNTS = 10 // サーバから取得する一回のchatGroupsの最大数
+            const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
+            const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
+            const maxPage = remainder ? quotient + 1 : quotient
+            setMaxPagination(maxPage)
         })()
     }, [])
 
     /**
      * サーバからチャットグループを取得
      */
-    const getChatGroups = (): Promise<ResChatGroup[]> => {
+    const getChatGroups = (page: number = 1): Promise<ResChatGroup[]> => {
         return new Promise((resolve, reject) => {
             axios({
-                url: '/api/v1/chat-groups/',
+                url: `/api/v1/chat-groups/?page=${page}`,
+                method: 'GET',
+            })
+            .then((res: AxiosResponse): void => {
+                const { data } = res
+                console.log(data)
+                resolve(data)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
+        })
+    }
+
+    /**
+     * サーバからチャットグループのレコード数を取得
+     */
+    const getChatGroupsCount = (): Promise<{chatGroupsCount: number}> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: `/api/v1/chat-groups/count`,
                 method: 'GET',
             })
             .then((res: AxiosResponse): void => {
@@ -768,26 +821,24 @@ const ChatMessage = () => {
     /**
      * チャットグループIDでチャットを取得
      */
-    const getChats = (chatGroupId: string): void => {
-        axios({
-            url: '/api/v1/chats/',
-            method: 'GET',
-            params: {
-                'chat_group_id': chatGroupId
-            }
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
-
-            // [{ id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}, {...}, {...}]
-            setChats(data)
-            setChatGroupId(chatGroupId)
-            setIsDisplayChatGPT(true)
-            setIsSpMenuOpen(prev => !prev)
-        })
-        .catch((e: AxiosError): void => {
-            console.error(e)
+    const getChats = (chatGroupId: string): Promise<Chat[]> => {
+        return new Promise((resolve, reject) => {
+            axios({
+                url: '/api/v1/chats/',
+                method: 'GET',
+                params: {
+                    'chat_group_id': chatGroupId
+                }
+            })
+            .then((res: AxiosResponse): void => {
+                const { data } = res
+                console.log(data)
+                resolve(data)
+            })
+            .catch((e: AxiosError): void => {
+                console.error(e)
+                reject(e)
+            })
         })
     }
 
@@ -811,6 +862,8 @@ const ChatMessage = () => {
         setChatGroups(searchedChatGroups)
     }
 
+    const [isChatLoading, setIsChatLoading] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
     /**
      * 過去の質問を表示
      */
@@ -819,9 +872,17 @@ const ChatMessage = () => {
         const chatGroupId = chatGroup.id
         if (isEditingRename) return
 
-        getChats(chatGroupId)
+        setIsChatLoading(true)
 
-        const chatGroups = await getChatGroups()
+        const chats = await getChats(chatGroupId)
+        setChats(chats)
+        setIsChatLoading(false)
+
+        setChatGroupId(chatGroupId)
+        setIsDisplayChatGPT(true)
+        setIsSpMenuOpen(prev => !prev)
+
+        const chatGroups = await getChatGroups(currentPage)
         const newChatGroups: ResChatGroup[] = []
 
         // isActiveを切り替える
@@ -848,6 +909,8 @@ const ChatMessage = () => {
         setChats([])
         setChatGroupId('')
         setIsSpMenuOpen(prev => !prev)
+        setCurrentPage(1)
+        setErrorMessage('') // エラーメッセージを空に
 
         const chatGroups = await getChatGroups()
         setChatGroups(chatGroups)
@@ -1070,6 +1133,16 @@ const ChatMessage = () => {
         }
     }
 
+    /**
+     * chatGroupsのページネーション押下時
+     */
+    const getChatGroupsPagination = async (event: React.ChangeEvent<unknown>, page: number) => {
+        setCurrentPage(page)
+
+        const chatGroups = await getChatGroups(page)
+        setChatGroups(chatGroups)
+    }
+
     return (
         <>
             <BasicModal
@@ -1153,6 +1226,9 @@ const ChatMessage = () => {
                                     )
                                 })}
                             </div>
+                            <div className='pagination'>
+                                <Pagination count={maxPagination} onChange={getChatGroupsPagination} page={currentPage} />
+                            </div>
 
                         </div>
                     </div>
@@ -1175,6 +1251,11 @@ const ChatMessage = () => {
                         <button className={ `hamburger ${ isSpMenuOpen ? 'open' : ''}` } onClick={openSpMenu}><span></span></button>
                     </Header>
                     <div className="messages" id="scroll-target">
+                        {isChatLoading &&
+                            <ChatLoading>
+                                <CircularProgress disableShrink size={50}/>
+                            </ChatLoading>
+                        }
                         {chats.map((chat: Chat, i: number) => {
                             return (<MessageContainer id={chat.id} key={i}>
                                 <UsersQuestion>
@@ -1268,7 +1349,14 @@ const ChatMessage = () => {
                     </FormContainer>
                     {errorMessage &&
                         <ErrorMessageContainer>
-                            <div className='error-message'>{errorMessage}</div>
+                            <div className='error-message'>
+                                {/* Fix::改行反映のため */}
+                                {errorMessage.split("\n").map((message, index) => {
+                                    return (
+                                        <React.Fragment key={index}>{message}<br /></React.Fragment>
+                                    )
+                                })}
+                            </div>
                         </ErrorMessageContainer>}
 
                 </MainContainer>

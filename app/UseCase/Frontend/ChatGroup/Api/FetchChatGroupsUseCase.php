@@ -24,9 +24,7 @@ class FetchChatGroupsUseCase
      */
     public function execute(): Collection
     {
-        $chatGroups = $this->chatGroupRepository->fetch(
-            with: ['chats.pages'],
-        );
+        $chatGroups = $this->chatGroupRepository->fetch();
 
         $chatGroups->map(function ($chatGroup) {
             $formatLastChatDate = (new CarbonImmutable($chatGroup->last_chat_date))->format('Y年m月');

@@ -7,7 +7,7 @@ namespace App\Repositories\Frontend\ChatGroup;
 use App\Models\ChatGroup;
 use App\Repositories\Frontend\ChatGroup\Params\StoreChatGroupParams;
 use App\Repositories\Frontend\ChatGroup\Params\UpdateChatGroupParams;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ChatGroupRepositoryImpl implements ChatGroupRepository
 {
@@ -22,12 +22,23 @@ class ChatGroupRepositoryImpl implements ChatGroupRepository
     /**
      * {@inheritdoc}
      */
-    public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): Collection
+    public function fetch(array $with = [], array $columns = ['*'], array $whereParams = []): LengthAwarePaginator
     {
+        $MAX_PAGE = 10;
+
         return ChatGroup::with($with)
             ->where($whereParams)
             ->orderBy('last_chat_date', 'desc')
-            ->get($columns);
+            ->paginate($MAX_PAGE, $columns);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(array $whereParams = []): int
+    {
+        return ChatGroup::where($whereParams)
+            ->count();
     }
 
     /**
