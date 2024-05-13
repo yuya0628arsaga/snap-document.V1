@@ -54,7 +54,7 @@ type PastChatMenuButtonPropsType = {
     closePastChatMenu: () => void,
 }
 
-const PastChatMenuButton = (props: PastChatMenuButtonPropsType) => {
+const PastChatMenuButton = React.memo((props: PastChatMenuButtonPropsType) => {
     const { chatGroup, convertTitleToInput, openDeleteModal, displayPastChatMenu, closePastChatMenu } = props
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -65,6 +65,8 @@ const PastChatMenuButton = (props: PastChatMenuButtonPropsType) => {
         closePastChatMenu()
         setAnchorEl(null);
     };
+
+    console.log(222222)
 
     return (
         <PastChatMenuWrapper>
@@ -114,6 +116,6 @@ const PastChatMenuButton = (props: PastChatMenuButtonPropsType) => {
             </Menu>
         </PastChatMenuWrapper>
     );
-}
+})
 
 export default PastChatMenuButton

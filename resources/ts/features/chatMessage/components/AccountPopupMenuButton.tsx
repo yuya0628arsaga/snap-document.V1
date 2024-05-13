@@ -7,7 +7,7 @@ import { bgColor } from '../../../utils/themeClient';
 import { fontSize } from '../../../utils/themeClient';
 import { fontWeight } from '../../../utils/themeClient';
 import { IoSettingsOutline } from "react-icons/io5";
-import AccountSettingsModal from './AccountSettingsModal';
+import AccountSettingsModal, { setIsGetPdfPageParam } from './AccountSettingsModal';
 
 const AccountButton = styled('button')`
     display: flex;
@@ -33,9 +33,10 @@ const AccountButton = styled('button')`
 
 type AccountPopupMenuButtonProps = {
     isGetPdfPage: boolean,
-    setIsGetPdfPage: (isGetPdfPage: boolean) => void,
+    setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
 }
-const AccountPopupMenuButton = (props: AccountPopupMenuButtonProps) => {
+
+const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) => {
     const { isGetPdfPage, setIsGetPdfPage } = props
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -95,6 +96,6 @@ const AccountPopupMenuButton = (props: AccountPopupMenuButtonProps) => {
             </Menu>
         </>
     );
-}
+})
 
 export default AccountPopupMenuButton

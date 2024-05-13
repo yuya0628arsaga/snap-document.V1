@@ -13,12 +13,9 @@ import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
-import PastChatMenuButton from './components/PastChatMenuButton';
-// 検索フォーム
-import Paper from '@mui/material/Paper';
-import InputBase from '@mui/material/InputBase';
-import SearchIcon from '@mui/icons-material/Search';
-import { FiEdit } from "react-icons/fi";
+import PastChat from './components/PastChat';
+import SearchQuestionInput from './components/SearchQuestionInput';
+import NewChatButton from './components/NewChatButton';
 
 
 const Wrapper = styled('div')`
@@ -84,41 +81,6 @@ const SidebarContainer = styled('div')`
     >.contents {
         height: calc(100vh - 120px);
         width: 100%;
-        >.new-chat-container {
-            height: 80px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            >.new-chat-button {
-                width: 80%;
-                height: 50%;
-                padding: 0 5px;
-                display: flex;
-                :hover {
-                    cursor: pointer;
-                    background: ${bgColor.buttonGray};
-                    border-radius: 5px;
-                }
-                >.img {
-                    flex-grow: 1;
-                    display: flex;
-                    align-items: center;
-                }
-                >.text{
-                    flex-grow: 5;
-                    display: flex;
-                    align-items: center;
-                    font-weight: ${fontWeight.bold};
-                }
-                >.icon{
-                    flex-grow: 1;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-            }
-        }
         >.past-chats-container {
             height: calc(100vh - 120px - 80px);
             display: flex;
@@ -143,9 +105,6 @@ const SidebarContainer = styled('div')`
                 background: ${bgColor.buttonGray};
             }
 
-            >.search {
-                margin: 10px;
-            }
             >.past-chats {
                 display: flex;
                 flex-direction: column;
@@ -155,58 +114,6 @@ const SidebarContainer = styled('div')`
                     margin: 0 8px;
                     @media (max-width: ${responsive.sp}) {
                         text-align: center;
-                    }
-                }
-                >.past-chat {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    background: ${bgColor.lightGray};
-                    height: 70px;
-                    padding: 8px;
-                    position: relative;
-
-                    > .past-chat-button {
-                        display: flex;
-                        align-items: center;
-                        gap: 5px;
-
-                        background: ${bgColor.white};
-                        padding: 5px 10px;
-                        border: 1px solid ${borderColor.gray};
-                        border-radius: 5px;
-                        height: 100%;
-                        width: 100%;
-                        cursor: pointer;
-
-                        &:hover {
-                            background: ${bgColor.buttonGray};
-                        }
-                        &.active {
-                            background: ${bgColor.buttonGray};
-                        }
-                        @media (max-width: ${responsive.sp}) {
-                            width: 90%;
-                            margin: 0 auto;
-                        }
-
-                        >.text {
-                            width: 90%;
-                            height: 100%;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            display: flex;
-                            align-items: center;
-                            > input {
-                                width: 100%;
-                            }
-                        }
-                    }
-
-                    >.validation-message {
-                        color: ${textColor.error};
-                        font-size: ${fontSize.sm};
                     }
                 }
             }
@@ -467,7 +374,6 @@ export type ChatGroup = {
     id: string,
     title: string,
     lastChatDate: string,
-    isActive: boolean,
     isDisplayPastChatMenu: boolean,
     isEditingRename: boolean,
 }
@@ -734,7 +640,6 @@ const ChatMessage = () => {
         const chatGroups: ChatGroup[] = resChatGroups.map((chatGroup) => {
             return {
                 ...chatGroup,
-                isActive: false,
                 isDisplayPastChatMenu: false,
                 isEditingRename: false,
             }
@@ -828,7 +733,7 @@ const ChatMessage = () => {
     /**
      * 質問を検索
      */
-    const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchChatGroups = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchWord: string = e.target.value
         const resChatGroups: ResChatGroup[] = await getChatGroups()
         const chatGroups = initChatGroups(resChatGroups)
@@ -839,14 +744,14 @@ const ChatMessage = () => {
         })
 
         setChatGroups(filteredChangeGroup)
-    }
+    }, [chatGroups])
 
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     /**
      * 過去の質問を表示
      */
-    const displayPastChat = async (chatGroup: ChatGroup) => {
+    const displayPastChat = useCallback(async (chatGroup: ChatGroup) => {
         const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
         const chatGroupId = chatGroup.id
         if (isEditingRename) return
@@ -860,35 +765,24 @@ const ChatMessage = () => {
         setChatGroupId(chatGroupId)
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
-
-        // isActiveを切り替える
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            return (
-                chatGroup.id === chatGroupId
-                    ? { ...chatGroup, isActive: true }
-                    : { ...chatGroup, isActive: false }
-            )
-        })
-
-        setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups, isSpMenuOpen])
 
     /**
      * 新しい質問を開始
      */
-    const displayNewChat = async () => {
+    const displayNewChat = useCallback(async () => {
         setChats([])
         setChatGroupId('')
         setIsSpMenuOpen(prev => !prev)
         setErrorMessage('') // エラーメッセージを空に
 
         setChatGroups(chatGroups)
-    }
+    }, [chatGroups, isSpMenuOpen])
 
     /**
      * pastChatのポップアップメニューを開く（クリック時に3点リーダー活性化させるため）
      */
-    const displayPastChatMenu = (chatGroupId: string) => {
+    const displayPastChatMenu = useCallback((chatGroupId: string) => {
 
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
@@ -900,26 +794,26 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     /**
      * pastChatのポップアップメニューを閉じる（クリック時に3点リーダーを非活性にさせるため）
      */
-    const closePastChatMenu = () => {
+    const closePastChatMenu = useCallback(() => {
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
             return { ...chatGroup, isDisplayPastChatMenu: false }
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     const chatGroupTitleInputRef = useRef(null)
 
     /**
      * titleをinputタグに変換する
      */
-    const convertTitleToInput = (chatGroupId: string) => {
+    const convertTitleToInput = useCallback((chatGroupId: string) => {
 
         // // isEditingRename（title編集中フラグ）を切り替える
         // const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
@@ -941,12 +835,12 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     /**
      * chatGroupのtitle名を修正する
      */
-    const renameTitle = (e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
+    const renameTitle = useCallback((e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
         // titleの更新
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
             return (
@@ -957,14 +851,14 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
 
     /**
      * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
      */
-    const outOfTitleInput = () => {
+    const outOfTitleInput = useCallback(() => {
         const chatGroupId = chatGroupTitleInputRef.current.id
         const title = chatGroupTitleInputRef.current.value
         const MAX_STR_COUNT = 255
@@ -982,7 +876,7 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     /**
      * チャットグループtitleを更新
@@ -1017,14 +911,14 @@ const ChatMessage = () => {
     /**
      * 削除モーダルをopen
      */
-    const openDeleteModal = (chatGroupId: string, chatGroupTitle: string) => {
+    const openDeleteModal = useCallback((chatGroupId: string, chatGroupTitle: string) => {
         // 削除対象のchatGroupId
         setDeleteTargetChatGroupId(chatGroupId)
 
         const modalDescriptionMessage = `${chatGroupTitle} を削除しますか？`
         setModalDescription(modalDescriptionMessage)
         setIsOpenDeleteModal(true)
-    }
+    }, [chatGroups])
 
     /**
      * chatGroupを削除しサイドバー更新
@@ -1098,30 +992,13 @@ const ChatMessage = () => {
             <Wrapper>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
-                        <div className='new-chat-container'>
-                            <div onClick={displayNewChat} className='new-chat-button'>
-                                <div className='img'>
-                                    <img src="/images/icon/logo.png" alt=""/>
-                                </div>
-                                <div className='text'>New Chat</div>
-                                <div className='icon'><FiEdit /></div>
-                            </div>
-                        </div>
+                        <NewChatButton
+                            displayNewChat={displayNewChat}
+                        />
                         <div className='past-chats-container'>
-                            <div className='search'>
-                                <Paper
-                                component="form"
-                                sx={{ p: '2px 4px', display: 'flex', alignItems: 'center'}}
-                                >
-                                    <SearchIcon />
-                                    <InputBase
-                                        sx={{ ml: 1, flex: 1, mt: 1 }}
-                                        placeholder="質問を検索"
-                                        onChange={searchChatGroups}
-                                    />
-                                </Paper>
-                            </div>
-
+                            <SearchQuestionInput
+                                searchChatGroups={searchChatGroups}
+                            />
                             <div className='past-chats'>
                                 {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
                                     return (
@@ -1131,33 +1008,22 @@ const ChatMessage = () => {
                                             </div>
                                             {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
-                                                    <div key={i} className='past-chat'>
-                                                        <div className={ `past-chat-button ${chatGroup.isActive ? 'active' : ''}`}>
-                                                            <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
-                                                                {chatGroup.isEditingRename
-                                                                    ? <input
-                                                                        type="text"
-                                                                        id={chatGroup.id}
-                                                                        value={chatGroup.title}
-                                                                        onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id, chatGroups) }}
-                                                                        onBlur={outOfTitleInput}
-                                                                        ref={chatGroupTitleInputRef}
-                                                                      />
-                                                                    : chatGroup.title
-                                                                }
-                                                            </div>
-                                                            <PastChatMenuButton
-                                                                chatGroup={chatGroup}
-                                                                convertTitleToInput={convertTitleToInput}
-                                                                openDeleteModal={openDeleteModal}
-                                                                displayPastChatMenu={displayPastChatMenu}
-                                                                closePastChatMenu={closePastChatMenu}
-                                                            />
-                                                        </div>
-                                                        {(chatGroup.isEditingRename && validationMessageOfTitle) &&
-                                                            <div className='validation-message'>{validationMessageOfTitle}</div>
-                                                        }
-                                                    </div>
+                                                    <React.Fragment key={i}>
+                                                        <PastChat
+                                                            chatGroups={chatGroups}
+                                                            chatGroup={chatGroup}
+                                                            chatGroupId={chatGroupId}
+                                                            displayPastChat={displayPastChat}
+                                                            renameTitle={renameTitle}
+                                                            outOfTitleInput={outOfTitleInput}
+                                                            chatGroupTitleInputRef={chatGroupTitleInputRef}
+                                                            convertTitleToInput={convertTitleToInput}
+                                                            openDeleteModal={openDeleteModal}
+                                                            displayPastChatMenu={displayPastChatMenu}
+                                                            closePastChatMenu={closePastChatMenu}
+                                                            validationMessageOfTitle={validationMessageOfTitle}
+                                                        />
+                                                    </React.Fragment>
                                                 )
                                             })}
                                         </React.Fragment>
@@ -1195,70 +1061,70 @@ const ChatMessage = () => {
                             </ChatLoading>
                         }
                         {chats.map((chat: Chat, i: number) => {
-                            return (<MessageContainer id={chat.id} key={i}>
-                                <UsersQuestion>
-                                    <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                    <p className="text">
-                                        <span className="name">You</span>
-                                        {/* Fix::改行反映のため */}
-                                        {chat.question.split("\n").map((item, index) => {
-                                            return (
-                                                <React.Fragment key={index}>{item}<br /></React.Fragment>
-                                            )
-                                        })}
-                                    </p>
-                                </UsersQuestion>
-                                {chat.isGenerating &&
-                                    <Load>
-                                        <CircularProgress disableShrink size={25}/>
-                                        <p>回答を生成中です...</p>
-                                    </Load>
-                                }
-                                {isDisplayChatGPT &&
-                                    <AiAnswer>
-                                        <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                        <div className="text">
-                                            <span className="name">ChatGPT</span>
-                                            {chat.answer}
-                                            {chat.base64Images &&
-                                                chat.base64Images.map((base64Image, i) => {
-                                                    return (
-                                                        <div className='img-container' key={i}>
-                                                            <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
-                                                            <div className='img-text'>{base64Image.path}</div>
-                                                        </div>
-                                                    )
-                                                })
-                                            }
-                                            {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
-                                                <div className='url-title'>
-                                                    {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
-                                                </div>
-                                            }
-                                            {chat.pdfPages &&
-                                                chat.pdfPages.map((pdfPage: number, i: number) => {
-                                                    return (
-                                                        <React.Fragment key={i}>
-                                                            <div className='url'>
-                                                                ・<a target="_blank" href={`https://mel-document-public.s3.ap-northeast-1.amazonaws.com/${chat.documentName}.pdf#page=${pdfPage}`}>{pdfPage}ページ</a>
+                            return (
+                                <MessageContainer id={chat.id} key={i}>
+                                    <UsersQuestion>
+                                        <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                        <p className="text">
+                                            <span className="name">You</span>
+                                            {/* Fix::改行反映のため */}
+                                            {chat.question.split("\n").map((item, index) => {
+                                                return (
+                                                    <React.Fragment key={index}>{item}<br /></React.Fragment>
+                                                )
+                                            })}
+                                        </p>
+                                    </UsersQuestion>
+                                    {chat.isGenerating &&
+                                        <Load>
+                                            <CircularProgress disableShrink size={25}/>
+                                            <p>回答を生成中です...</p>
+                                        </Load>
+                                    }
+                                    {isDisplayChatGPT &&
+                                        <AiAnswer>
+                                            <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                            <div className="text">
+                                                <span className="name">ChatGPT</span>
+                                                {chat.answer}
+                                                {chat.base64Images &&
+                                                    chat.base64Images.map((base64Image, i) => {
+                                                        return (
+                                                            <div className='img-container' key={i}>
+                                                                <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
+                                                                <div className='img-text'>{base64Image.path}</div>
                                                             </div>
-                                                        </React.Fragment>
-                                                    )
-                                                })
-                                            }
-                                            {!chat.isGenerating &&
-                                                <div className='checkbox-container'>
-                                                    <CheckboxLabels
-                                                        targetChat={chat}
-                                                        chats={chats}
-                                                        includeToHistory={includeToHistory}
-                                                    />
-                                                </div>
-                                            }
-                                        </div>
-                                    </AiAnswer>
-                                }
-
+                                                        )
+                                                    })
+                                                }
+                                                {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
+                                                    <div className='url-title'>
+                                                        {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
+                                                    </div>
+                                                }
+                                                {chat.pdfPages &&
+                                                    chat.pdfPages.map((pdfPage: number, i: number) => {
+                                                        return (
+                                                            <React.Fragment key={i}>
+                                                                <div className='url'>
+                                                                    ・<a target="_blank" href={`https://mel-document-public.s3.ap-northeast-1.amazonaws.com/${chat.documentName}.pdf#page=${pdfPage}`}>{pdfPage}ページ</a>
+                                                                </div>
+                                                            </React.Fragment>
+                                                        )
+                                                    })
+                                                }
+                                                {!chat.isGenerating &&
+                                                    <div className='checkbox-container'>
+                                                        <CheckboxLabels
+                                                            targetChat={chat}
+                                                            chats={chats}
+                                                            includeToHistory={includeToHistory}
+                                                        />
+                                                    </div>
+                                                }
+                                            </div>
+                                        </AiAnswer>
+                                    }
                             </MessageContainer>)
                         })}
                     </div>
