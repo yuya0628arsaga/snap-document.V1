@@ -13,13 +13,9 @@ import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
-import PastChatMenuButton from './components/PastChatMenuButton';
-// 検索フォーム
-import Paper from '@mui/material/Paper';
-import InputBase from '@mui/material/InputBase';
-import SearchIcon from '@mui/icons-material/Search';
 import { FiEdit } from "react-icons/fi";
 import PastChat from './components/PastChat';
+import SearchQuestionInput from './components/SearchQuestionInput';
 
 
 const Wrapper = styled('div')`
@@ -144,9 +140,6 @@ const SidebarContainer = styled('div')`
                 background: ${bgColor.buttonGray};
             }
 
-            >.search {
-                margin: 10px;
-            }
             >.past-chats {
                 display: flex;
                 flex-direction: column;
@@ -1044,20 +1037,9 @@ const ChatMessage = () => {
                             </div>
                         </div>
                         <div className='past-chats-container'>
-                            <div className='search'>
-                                <Paper
-                                component="form"
-                                sx={{ p: '2px 4px', display: 'flex', alignItems: 'center'}}
-                                >
-                                    <SearchIcon />
-                                    <InputBase
-                                        sx={{ ml: 1, flex: 1, mt: 1 }}
-                                        placeholder="質問を検索"
-                                        onChange={searchChatGroups}
-                                    />
-                                </Paper>
-                            </div>
-
+                            <SearchQuestionInput
+                                searchChatGroups={searchChatGroups}
+                            />
                             <div className='past-chats'>
                                 {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
                                     return (
