@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -13,12 +13,13 @@ import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
+import PastChatMenuButton from './components/PastChatMenuButton';
 // 検索フォーム
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { FiEdit, FiEdit3 } from "react-icons/fi";
-import { RiDeleteBin5Line } from "react-icons/ri";
+import { FiEdit } from "react-icons/fi";
+
 
 const Wrapper = styled('div')`
     display: flex;
@@ -212,7 +213,7 @@ const SidebarContainer = styled('div')`
                         display: block;
                     }
 
-                    > button {
+                    > .past-chat-button {
                         display: flex;
                         align-items: center;
                         gap: 5px;
@@ -223,6 +224,7 @@ const SidebarContainer = styled('div')`
                         border-radius: 5px;
                         height: 100%;
                         width: 100%;
+                        cursor: pointer;
 
                         &:hover {
                             background: ${bgColor.buttonGray};
@@ -243,6 +245,9 @@ const SidebarContainer = styled('div')`
                             white-space: nowrap;
                             display: flex;
                             align-items: center;
+                            > input {
+                                width: 100%;
+                            }
                         }
                         >.icon {
                             border-radius: 50%;
@@ -521,7 +526,7 @@ type Chat = {
     isIncludeToHistory: boolean,
 }
 
-type ChatGroup = {
+export type ChatGroup = {
     id: string,
     title: string,
     lastChatDate: string,
@@ -1151,6 +1156,8 @@ const ChatMessage = () => {
         setChatGroups(chatGroups)
     }
 
+    console.log(111111111)
+
     return (
         <>
             <BasicModal
@@ -1199,25 +1206,37 @@ const ChatMessage = () => {
                                             {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <button className={ chatGroup.isActive ? 'active' : ''}>
+                                                        <div className={ `past-chat-button ${chatGroup.isActive ? 'active' : ''}`}>
                                                             <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
                                                                 {chatGroup.isEditingRename
-                                                                    ? <input type="text" id={chatGroup.id} value={chatGroup.title} onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id, chatGroups) }} onBlur={outOfTitleInput} ref={chatGroupTitleInputRef} />
+                                                                    ? <input
+                                                                        type="text"
+                                                                        id={chatGroup.id}
+                                                                        value={chatGroup.title}
+                                                                        onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id, chatGroups) }}
+                                                                        onBlur={outOfTitleInput}
+                                                                        ref={chatGroupTitleInputRef}
+                                                                      />
                                                                     : chatGroup.title
                                                                 }
                                                             </div>
-                                                            <div className={`icon ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`} onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
+                                                            <PastChatMenuButton
+                                                                chatGroup={chatGroup}
+                                                                convertTitleToInput={convertTitleToInput}
+                                                                openDeleteModal={openDeleteModal}
+                                                            />
+                                                            {/* <div className={`icon ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`} onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
                                                                 <svg width="3" height="14" viewBox="0 0 3 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <circle cx="1.5" cy="2" r="1.5" transform="rotate(90 1.5 2)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'} />
                                                                     <circle cx="1.5" cy="7" r="1.5" transform="rotate(90 1.5 7)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
                                                                     <circle cx="1.5" cy="12" r="1.5" transform="rotate(90 1.5 12)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
                                                                 </svg>
-                                                            </div>
-                                                        </button>
+                                                            </div> */}
+                                                        </div>
                                                         {(chatGroup.isEditingRename && validationMessageOfTitle) &&
                                                             <div className='validation-message'>{validationMessageOfTitle}</div>
                                                         }
-                                                        <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
+                                                        {/* <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
                                                             <div className='rename' onClick={() => {convertTitleToInput(chatGroup.id)}}>
                                                                 <FiEdit3 />
                                                                 <p>編集</p>
@@ -1226,7 +1245,7 @@ const ChatMessage = () => {
                                                                 <RiDeleteBin5Line />
                                                                 <p>削除</p>
                                                             </div>
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                 )
                                             })}
