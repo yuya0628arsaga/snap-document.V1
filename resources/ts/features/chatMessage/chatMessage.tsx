@@ -165,54 +165,6 @@ const SidebarContainer = styled('div')`
                     padding: 8px;
                     position: relative;
 
-                    > .past-chat-menu {
-                        position: absolute;
-                        width: 30%;
-                        height: 50px;
-                        background: ${bgColor.white};
-                        top: 70%;
-                        left: 70%;
-                        z-index: 999;
-                        display: none;
-                        border: 1px solid ${borderColor.gray};
-                        border-radius: 5px;
-                        box-shadow: 0px 5px 15px 0px rgba(0, 0, 0, 0.35);
-
-                        >.rename {
-                            width: 100%;
-                            height: 50%;
-                            display: flex;
-                            gap: 10px;
-                            align-items: center;
-                            padding: 0 8px;
-                            cursor: pointer;
-                            &:hover {
-                                background: ${bgColor.buttonGray};
-                            }
-                            > p {
-                                font-size: ${fontSize.sm};
-                            }
-                        }
-                        >.delete {
-                            width: 100%;
-                            height: 50%;
-                            display: flex;
-                            gap: 10px;
-                            align-items: center;
-                            padding: 0 8px;
-                            cursor: pointer;
-                            &:hover {
-                                background: ${bgColor.buttonGray};
-                            }
-                            > p {
-                                font-size: ${fontSize.sm};
-                            }
-                        }
-                    }
-                    >.display {
-                        display: block;
-                    }
-
                     > .past-chat-button {
                         display: flex;
                         align-items: center;
@@ -247,22 +199,6 @@ const SidebarContainer = styled('div')`
                             align-items: center;
                             > input {
                                 width: 100%;
-                            }
-                        }
-                        >.icon {
-                            border-radius: 50%;
-                            width: 20px;
-                            height: 20px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            :hover {
-                                border: 1px solid ${bgColor.lightBlue};
-                                background: ${bgColor.lightBlue};
-                            }
-                            &.display {
-                                border: 1px solid ${bgColor.lightBlue};
-                                background: ${bgColor.lightBlue};
                             }
                         }
                     }
@@ -948,15 +884,10 @@ const ChatMessage = () => {
         setChatGroups(chatGroups)
     }
 
-    // ポップアップメニューが表示中か否か
-    const [displayingPastChatMenu, setDisplayingPastChatMenu] = useState(false)
-
     /**
-     * pastChatのポップアップメニューを開く
+     * pastChatのポップアップメニューを開く（クリック時に3点リーダー活性化させるため）
      */
-    const displayPastChatMenu = (e, chatGroupId: string) => {
-        e.stopPropagation()
-        setDisplayingPastChatMenu(true)
+    const displayPastChatMenu = (chatGroupId: string) => {
 
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
@@ -971,21 +902,15 @@ const ChatMessage = () => {
     }
 
     /**
-     * pastChatのポップアップメニューを閉じる
+     * pastChatのポップアップメニューを閉じる（クリック時に3点リーダーを非活性にさせるため）
      */
-    const closePastChatMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        // MEMO::なぜかref.current.contains()が使えなかったためこのように実装した
-        const isClickedPostChatMenuElement = e.target.classList[0] === 'past-chat-menu'
-        if (isClickedPostChatMenuElement) return
-        if (!displayingPastChatMenu) return
-
+    const closePastChatMenu = () => {
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
             return { ...chatGroup, isDisplayPastChatMenu: false }
         })
 
         setChatGroups(editedChatGroups)
-        setDisplayingPastChatMenu(false)
     }
 
     const chatGroupTitleInputRef = useRef(null)
@@ -1169,7 +1094,7 @@ const ChatMessage = () => {
                 buttonText={'削除'}
                 handleExecute={() => {executeDelete(deleteTargetChatGroupId, chatGroupId)}}
             />
-            <Wrapper onClick={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {closePastChatMenu(e)}}>
+            <Wrapper>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
                         <div className='new-chat-container'>
@@ -1224,28 +1149,13 @@ const ChatMessage = () => {
                                                                 chatGroup={chatGroup}
                                                                 convertTitleToInput={convertTitleToInput}
                                                                 openDeleteModal={openDeleteModal}
+                                                                displayPastChatMenu={displayPastChatMenu}
+                                                                closePastChatMenu={closePastChatMenu}
                                                             />
-                                                            {/* <div className={`icon ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`} onClick={(e) => { displayPastChatMenu(e, chatGroup.id) }}>
-                                                                <svg width="3" height="14" viewBox="0 0 3 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <circle cx="1.5" cy="2" r="1.5" transform="rotate(90 1.5 2)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'} />
-                                                                    <circle cx="1.5" cy="7" r="1.5" transform="rotate(90 1.5 7)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
-                                                                    <circle cx="1.5" cy="12" r="1.5" transform="rotate(90 1.5 12)" fill={chatGroup.isDisplayPastChatMenu ? '#2F80ED' : 'gray'}/>
-                                                                </svg>
-                                                            </div> */}
                                                         </div>
                                                         {(chatGroup.isEditingRename && validationMessageOfTitle) &&
                                                             <div className='validation-message'>{validationMessageOfTitle}</div>
                                                         }
-                                                        {/* <div className={`past-chat-menu ${chatGroup.isDisplayPastChatMenu ? 'display' : ''}`}>
-                                                            <div className='rename' onClick={() => {convertTitleToInput(chatGroup.id)}}>
-                                                                <FiEdit3 />
-                                                                <p>編集</p>
-                                                            </div>
-                                                            <div className='delete' onClick={() => {openDeleteModal(chatGroup.id, chatGroup.title)}}>
-                                                                <RiDeleteBin5Line />
-                                                                <p>削除</p>
-                                                            </div>
-                                                        </div> */}
                                                     </div>
                                                 )
                                             })}

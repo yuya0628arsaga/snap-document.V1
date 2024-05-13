@@ -48,16 +48,19 @@ type PastChatMenuButtonPropsType = {
     chatGroup: ChatGroup,
     convertTitleToInput: (chatGroupId: string) => void,
     openDeleteModal: (chatGroupId: string, chatGroupTitle: string) => void,
+    displayPastChatMenu: (chatGroupId: string) => void,
+    closePastChatMenu: () => void,
 }
 
 export default function PastChatMenuButton(props: PastChatMenuButtonPropsType) {
-    const { chatGroup, convertTitleToInput, openDeleteModal } = props
+    const { chatGroup, convertTitleToInput, openDeleteModal, displayPastChatMenu, closePastChatMenu } = props
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
+        closePastChatMenu()
         setAnchorEl(null);
     };
 
@@ -69,7 +72,11 @@ export default function PastChatMenuButton(props: PastChatMenuButtonPropsType) {
                 aria-controls={open ? 'long-menu' : undefined}
                 aria-expanded={open ? 'true' : undefined}
                 aria-haspopup="true"
-                onClick={handleClick}
+                onClick={(e) => {
+                    displayPastChatMenu(chatGroup.id)
+                    handleClick(e)
+                }}
+                color={ `${chatGroup.isDisplayPastChatMenu ? 'primary' : 'inherit'}` }
             >
                 <MoreVertIcon />
             </IconButton>
@@ -81,7 +88,6 @@ export default function PastChatMenuButton(props: PastChatMenuButtonPropsType) {
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}
-                className='test'
             >
                 <PastChatMenu>
                     <div className='rename' onClick={() => {
