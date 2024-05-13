@@ -39,7 +39,7 @@ const Wrapper = styled('div')`
     }
 `
 
-type setIsGetPdfPageParam = (isGetPdfPage: boolean) => boolean
+export type setIsGetPdfPageParam = boolean | ((isGetPdfPage: boolean) => boolean)
 
 type AccountSettingsModalProps = {
     open: boolean,
