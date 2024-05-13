@@ -768,7 +768,7 @@ const ChatMessage = () => {
     /**
      * 質問を検索
      */
-    const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchChatGroups = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchWord: string = e.target.value
         const resChatGroups: ResChatGroup[] = await getChatGroups()
         const chatGroups = initChatGroups(resChatGroups)
@@ -779,7 +779,7 @@ const ChatMessage = () => {
         })
 
         setChatGroups(filteredChangeGroup)
-    }
+    }, [chatGroups])
 
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)

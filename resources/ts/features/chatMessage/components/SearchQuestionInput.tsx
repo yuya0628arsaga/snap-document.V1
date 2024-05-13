@@ -15,7 +15,7 @@ type SearchQuestionInputPropsType = {
 /**
  * 質問検索欄
  */
-const SearchQuestionInput = (props: SearchQuestionInputPropsType) => {
+const SearchQuestionInput = React.memo((props: SearchQuestionInputPropsType) => {
     const { searchChatGroups } = props
 
     return (
@@ -33,6 +33,6 @@ const SearchQuestionInput = (props: SearchQuestionInputPropsType) => {
             </Paper>
         </SearchQuestionInputWrapper>
     )
-}
+})
 
 export default SearchQuestionInput
