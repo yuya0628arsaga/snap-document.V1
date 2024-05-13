@@ -54,7 +54,7 @@ type PastChatMenuButtonPropsType = {
     closePastChatMenu: () => void,
 }
 
-export default function PastChatMenuButton(props: PastChatMenuButtonPropsType) {
+const PastChatMenuButton = (props: PastChatMenuButtonPropsType) => {
     const { chatGroup, convertTitleToInput, openDeleteModal, displayPastChatMenu, closePastChatMenu } = props
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -115,3 +115,5 @@ export default function PastChatMenuButton(props: PastChatMenuButtonPropsType) {
         </PastChatMenuWrapper>
     );
 }
+
+export default PastChatMenuButton
