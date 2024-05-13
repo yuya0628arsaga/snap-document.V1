@@ -72,7 +72,7 @@ type PastChatPropsType = {
     validationMessageOfTitle: string,
 }
 
-const PastChat = (props: PastChatPropsType) => {
+const PastChat = React.memo((props: PastChatPropsType) => {
     const {
         chatGroups,
         chatGroup,
@@ -117,6 +117,6 @@ const PastChat = (props: PastChatPropsType) => {
             }
         </PastChatWrapper>
     )
-}
+})
 
 export default PastChat
