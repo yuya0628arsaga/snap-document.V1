@@ -19,6 +19,7 @@ import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import { FiEdit } from "react-icons/fi";
+import PastChat from './components/PastChat';
 
 
 const Wrapper = styled('div')`
@@ -155,58 +156,6 @@ const SidebarContainer = styled('div')`
                     margin: 0 8px;
                     @media (max-width: ${responsive.sp}) {
                         text-align: center;
-                    }
-                }
-                >.past-chat {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    background: ${bgColor.lightGray};
-                    height: 70px;
-                    padding: 8px;
-                    position: relative;
-
-                    > .past-chat-button {
-                        display: flex;
-                        align-items: center;
-                        gap: 5px;
-
-                        background: ${bgColor.white};
-                        padding: 5px 10px;
-                        border: 1px solid ${borderColor.gray};
-                        border-radius: 5px;
-                        height: 100%;
-                        width: 100%;
-                        cursor: pointer;
-
-                        &:hover {
-                            background: ${bgColor.buttonGray};
-                        }
-                        &.active {
-                            background: ${bgColor.buttonGray};
-                        }
-                        @media (max-width: ${responsive.sp}) {
-                            width: 90%;
-                            margin: 0 auto;
-                        }
-
-                        >.text {
-                            width: 90%;
-                            height: 100%;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            display: flex;
-                            align-items: center;
-                            > input {
-                                width: 100%;
-                            }
-                        }
-                    }
-
-                    >.validation-message {
-                        color: ${textColor.error};
-                        font-size: ${fontSize.sm};
                     }
                 }
             }
@@ -1118,33 +1067,22 @@ const ChatMessage = () => {
                                             </div>
                                             {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
-                                                    <div key={i} className='past-chat'>
-                                                        <div className={ `past-chat-button ${chatGroup.id === chatGroupId ? 'active' : ''}`}>
-                                                            <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
-                                                                {chatGroup.isEditingRename
-                                                                    ? <input
-                                                                        type="text"
-                                                                        id={chatGroup.id}
-                                                                        value={chatGroup.title}
-                                                                        onChange={(e: ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id, chatGroups) }}
-                                                                        onBlur={outOfTitleInput}
-                                                                        ref={chatGroupTitleInputRef}
-                                                                      />
-                                                                    : chatGroup.title
-                                                                }
-                                                            </div>
-                                                            <PastChatMenuButton
-                                                                chatGroup={chatGroup}
-                                                                convertTitleToInput={convertTitleToInput}
-                                                                openDeleteModal={openDeleteModal}
-                                                                displayPastChatMenu={displayPastChatMenu}
-                                                                closePastChatMenu={closePastChatMenu}
-                                                            />
-                                                        </div>
-                                                        {(chatGroup.isEditingRename && validationMessageOfTitle) &&
-                                                            <div className='validation-message'>{validationMessageOfTitle}</div>
-                                                        }
-                                                    </div>
+                                                    <React.Fragment key={i}>
+                                                        <PastChat
+                                                            chatGroups={chatGroups}
+                                                            chatGroup={chatGroup}
+                                                            chatGroupId={chatGroupId}
+                                                            displayPastChat={displayPastChat}
+                                                            renameTitle={renameTitle}
+                                                            outOfTitleInput={outOfTitleInput}
+                                                            chatGroupTitleInputRef={chatGroupTitleInputRef}
+                                                            convertTitleToInput={convertTitleToInput}
+                                                            openDeleteModal={openDeleteModal}
+                                                            displayPastChatMenu={displayPastChatMenu}
+                                                            closePastChatMenu={closePastChatMenu}
+                                                            validationMessageOfTitle={validationMessageOfTitle}
+                                                        />
+                                                    </React.Fragment>
                                                 )
                                             })}
                                         </React.Fragment>
