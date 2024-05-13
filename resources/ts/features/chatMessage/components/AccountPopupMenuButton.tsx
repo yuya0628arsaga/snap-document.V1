@@ -36,7 +36,7 @@ type AccountPopupMenuButtonProps = {
     setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
 }
 
-const AccountPopupMenuButton = (props: AccountPopupMenuButtonProps) => {
+const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) => {
     const { isGetPdfPage, setIsGetPdfPage } = props
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -96,6 +96,6 @@ const AccountPopupMenuButton = (props: AccountPopupMenuButtonProps) => {
             </Menu>
         </>
     );
-}
+})
 
 export default AccountPopupMenuButton
