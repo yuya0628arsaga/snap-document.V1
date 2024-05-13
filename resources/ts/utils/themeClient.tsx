@@ -16,7 +16,8 @@ const color = {
     },
 
     text: {
-        error: '#ff0000'
+        // error: '#ff0000'
+        error: '#b91c1c'
     }
 }
 
