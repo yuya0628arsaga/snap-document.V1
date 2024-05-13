@@ -150,6 +150,7 @@ const SidebarContainer = styled('div')`
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
+                flex-grow: 1; // paginationの位置を下に固定するため
                 >.date {
                     margin: 0 8px;
                     @media (max-width: ${responsive.sp}) {
