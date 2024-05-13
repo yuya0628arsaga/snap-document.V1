@@ -3,10 +3,11 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import styled from '@emotion/styled';
-import { bgColor, fontSize } from '../../../utils/themeClient';
+import { bgColor, fontSize, textColor } from '../../../utils/themeClient';
 import { FiEdit3 } from 'react-icons/fi';
 import { RiDeleteBin5Line } from 'react-icons/ri';
 import { ChatGroup } from '../chatMessage';
+import { IconContext } from "react-icons" // iconにデザイン適用させるため
 
 
 const PastChatMenuWrapper = styled('div')``
@@ -18,13 +19,13 @@ const PastChatMenu = styled('div')`
         display: flex;
         gap: 10px;
         align-items: center;
-        padding: 0 8px;
+        padding: 5px 15px;
         cursor: pointer;
         &:hover {
             background: ${bgColor.buttonGray};
         }
         > p {
-            font-size: ${fontSize.sm};
+            font-size: ${fontSize.md};
         }
     }
     >.delete {
@@ -33,13 +34,14 @@ const PastChatMenu = styled('div')`
         display: flex;
         gap: 10px;
         align-items: center;
-        padding: 0 8px;
+        padding: 5px 15px;
         cursor: pointer;
         &:hover {
             background: ${bgColor.buttonGray};
         }
         > p {
-            font-size: ${fontSize.sm};
+            font-size: ${fontSize.md};
+            color: ${textColor.error};
         }
     }
 `
@@ -94,14 +96,18 @@ export default function PastChatMenuButton(props: PastChatMenuButtonPropsType) {
                         convertTitleToInput(chatGroup.id)
                         handleClose()
                     }}>
-                        <FiEdit3 />
+                        <IconContext.Provider value={{ size: '20px' }}>
+                            <FiEdit3 fontSize={'large'} />
+                        </IconContext.Provider>
                         <p>編集</p>
                     </div>
                     <div className='delete' onClick={() => {
                         openDeleteModal(chatGroup.id, chatGroup.title)
                         handleClose()
                     }}>
-                        <RiDeleteBin5Line />
+                        <IconContext.Provider value={{ color: `${textColor.error}`, size: '20px' }}>
+                            <RiDeleteBin5Line />
+                        </IconContext.Provider>
                         <p>削除</p>
                     </div>
                 </PastChatMenu>
