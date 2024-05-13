@@ -793,7 +793,7 @@ const ChatMessage = () => {
     /**
      * 過去の質問を表示
      */
-    const displayPastChat = async (chatGroup: ChatGroup) => {
+    const displayPastChat = useCallback(async (chatGroup: ChatGroup) => {
         const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
         const chatGroupId = chatGroup.id
         if (isEditingRename) return
@@ -807,7 +807,7 @@ const ChatMessage = () => {
         setChatGroupId(chatGroupId)
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
-    }
+    }, [chatGroups])
 
     /**
      * 新しい質問を開始
@@ -882,7 +882,7 @@ const ChatMessage = () => {
     /**
      * chatGroupのtitle名を修正する
      */
-    const renameTitle = (e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
+    const renameTitle = useCallback((e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
         // titleの更新
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
             return (
@@ -893,14 +893,14 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
 
     /**
      * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
      */
-    const outOfTitleInput = () => {
+    const outOfTitleInput = useCallback(() => {
         const chatGroupId = chatGroupTitleInputRef.current.id
         const title = chatGroupTitleInputRef.current.value
         const MAX_STR_COUNT = 255
@@ -918,7 +918,7 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     /**
      * チャットグループtitleを更新
