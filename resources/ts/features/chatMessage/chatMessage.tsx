@@ -13,9 +13,9 @@ import { StatusCode } from '../../utils/statusCode';
 import CheckboxLabels from '../../components/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
-import { FiEdit } from "react-icons/fi";
 import PastChat from './components/PastChat';
 import SearchQuestionInput from './components/SearchQuestionInput';
+import NewChatButton from './components/NewChatButton';
 
 
 const Wrapper = styled('div')`
@@ -81,41 +81,6 @@ const SidebarContainer = styled('div')`
     >.contents {
         height: calc(100vh - 120px);
         width: 100%;
-        >.new-chat-container {
-            height: 80px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            >.new-chat-button {
-                width: 80%;
-                height: 50%;
-                padding: 0 5px;
-                display: flex;
-                :hover {
-                    cursor: pointer;
-                    background: ${bgColor.buttonGray};
-                    border-radius: 5px;
-                }
-                >.img {
-                    flex-grow: 1;
-                    display: flex;
-                    align-items: center;
-                }
-                >.text{
-                    flex-grow: 5;
-                    display: flex;
-                    align-items: center;
-                    font-weight: ${fontWeight.bold};
-                }
-                >.icon{
-                    flex-grow: 1;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-            }
-        }
         >.past-chats-container {
             height: calc(100vh - 120px - 80px);
             display: flex;
@@ -1027,15 +992,9 @@ const ChatMessage = () => {
             <Wrapper>
                 <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
                     <div className='contents'>
-                        <div className='new-chat-container'>
-                            <div onClick={displayNewChat} className='new-chat-button'>
-                                <div className='img'>
-                                    <img src="/images/icon/logo.png" alt=""/>
-                                </div>
-                                <div className='text'>New Chat</div>
-                                <div className='icon'><FiEdit /></div>
-                            </div>
-                        </div>
+                        <NewChatButton
+                            displayNewChat={displayNewChat}
+                        />
                         <div className='past-chats-container'>
                             <SearchQuestionInput
                                 searchChatGroups={searchChatGroups}
