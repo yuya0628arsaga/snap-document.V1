@@ -888,7 +888,7 @@ const ChatMessage = () => {
     /**
      * pastChatのポップアップメニューを開く（クリック時に3点リーダー活性化させるため）
      */
-    const displayPastChatMenu = (chatGroupId: string) => {
+    const displayPastChatMenu = useCallback((chatGroupId: string) => {
 
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
@@ -900,26 +900,26 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     /**
      * pastChatのポップアップメニューを閉じる（クリック時に3点リーダーを非活性にさせるため）
      */
-    const closePastChatMenu = () => {
+    const closePastChatMenu = useCallback(() => {
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
         const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
             return { ...chatGroup, isDisplayPastChatMenu: false }
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     const chatGroupTitleInputRef = useRef(null)
 
     /**
      * titleをinputタグに変換する
      */
-    const convertTitleToInput = (chatGroupId: string) => {
+    const convertTitleToInput = useCallback((chatGroupId: string) => {
 
         // // isEditingRename（title編集中フラグ）を切り替える
         // const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
@@ -941,7 +941,7 @@ const ChatMessage = () => {
         })
 
         setChatGroups(editedChatGroups)
-    }
+    }, [chatGroups])
 
     /**
      * chatGroupのtitle名を修正する
@@ -1017,14 +1017,14 @@ const ChatMessage = () => {
     /**
      * 削除モーダルをopen
      */
-    const openDeleteModal = (chatGroupId: string, chatGroupTitle: string) => {
+    const openDeleteModal = useCallback((chatGroupId: string, chatGroupTitle: string) => {
         // 削除対象のchatGroupId
         setDeleteTargetChatGroupId(chatGroupId)
 
         const modalDescriptionMessage = `${chatGroupTitle} を削除しますか？`
         setModalDescription(modalDescriptionMessage)
         setIsOpenDeleteModal(true)
-    }
+    }, [chatGroups])
 
     /**
      * chatGroupを削除しサイドバー更新
