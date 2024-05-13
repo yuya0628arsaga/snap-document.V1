@@ -765,19 +765,19 @@ const ChatMessage = () => {
         setChatGroupId(chatGroupId)
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
-    }, [chatGroups])
+    }, [chatGroups, isSpMenuOpen])
 
     /**
      * 新しい質問を開始
      */
-    const displayNewChat = async () => {
+    const displayNewChat = useCallback(async () => {
         setChats([])
         setChatGroupId('')
         setIsSpMenuOpen(prev => !prev)
         setErrorMessage('') // エラーメッセージを空に
 
         setChatGroups(chatGroups)
-    }
+    }, [chatGroups, isSpMenuOpen])
 
     /**
      * pastChatのポップアップメニューを開く（クリック時に3点リーダー活性化させるため）

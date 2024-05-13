@@ -46,7 +46,7 @@ type NewChatButtonPropsType = {
 /**
  * NewChatのボタン
  */
-const NewChatButton = (props: NewChatButtonPropsType) => {
+const NewChatButton = React.memo((props: NewChatButtonPropsType) => {
     const { displayNewChat } = props
 
     return (
@@ -60,6 +60,6 @@ const NewChatButton = (props: NewChatButtonPropsType) => {
             </div>
         </NewChatButtonWrapper>
     )
-}
+})
 
 export default NewChatButton
