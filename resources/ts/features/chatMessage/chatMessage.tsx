@@ -1061,70 +1061,70 @@ const ChatMessage = () => {
                             </ChatLoading>
                         }
                         {chats.map((chat: Chat, i: number) => {
-                            return (<MessageContainer id={chat.id} key={i}>
-                                <UsersQuestion>
-                                    <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                    <p className="text">
-                                        <span className="name">You</span>
-                                        {/* Fix::改行反映のため */}
-                                        {chat.question.split("\n").map((item, index) => {
-                                            return (
-                                                <React.Fragment key={index}>{item}<br /></React.Fragment>
-                                            )
-                                        })}
-                                    </p>
-                                </UsersQuestion>
-                                {chat.isGenerating &&
-                                    <Load>
-                                        <CircularProgress disableShrink size={25}/>
-                                        <p>回答を生成中です...</p>
-                                    </Load>
-                                }
-                                {isDisplayChatGPT &&
-                                    <AiAnswer>
-                                        <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                        <div className="text">
-                                            <span className="name">ChatGPT</span>
-                                            {chat.answer}
-                                            {chat.base64Images &&
-                                                chat.base64Images.map((base64Image, i) => {
-                                                    return (
-                                                        <div className='img-container' key={i}>
-                                                            <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
-                                                            <div className='img-text'>{base64Image.path}</div>
-                                                        </div>
-                                                    )
-                                                })
-                                            }
-                                            {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
-                                                <div className='url-title'>
-                                                    {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
-                                                </div>
-                                            }
-                                            {chat.pdfPages &&
-                                                chat.pdfPages.map((pdfPage: number, i: number) => {
-                                                    return (
-                                                        <React.Fragment key={i}>
-                                                            <div className='url'>
-                                                                ・<a target="_blank" href={`https://mel-document-public.s3.ap-northeast-1.amazonaws.com/${chat.documentName}.pdf#page=${pdfPage}`}>{pdfPage}ページ</a>
+                            return (
+                                <MessageContainer id={chat.id} key={i}>
+                                    <UsersQuestion>
+                                        <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                        <p className="text">
+                                            <span className="name">You</span>
+                                            {/* Fix::改行反映のため */}
+                                            {chat.question.split("\n").map((item, index) => {
+                                                return (
+                                                    <React.Fragment key={index}>{item}<br /></React.Fragment>
+                                                )
+                                            })}
+                                        </p>
+                                    </UsersQuestion>
+                                    {chat.isGenerating &&
+                                        <Load>
+                                            <CircularProgress disableShrink size={25}/>
+                                            <p>回答を生成中です...</p>
+                                        </Load>
+                                    }
+                                    {isDisplayChatGPT &&
+                                        <AiAnswer>
+                                            <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
+                                            <div className="text">
+                                                <span className="name">ChatGPT</span>
+                                                {chat.answer}
+                                                {chat.base64Images &&
+                                                    chat.base64Images.map((base64Image, i) => {
+                                                        return (
+                                                            <div className='img-container' key={i}>
+                                                                <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
+                                                                <div className='img-text'>{base64Image.path}</div>
                                                             </div>
-                                                        </React.Fragment>
-                                                    )
-                                                })
-                                            }
-                                            {!chat.isGenerating &&
-                                                <div className='checkbox-container'>
-                                                    <CheckboxLabels
-                                                        targetChat={chat}
-                                                        chats={chats}
-                                                        includeToHistory={includeToHistory}
-                                                    />
-                                                </div>
-                                            }
-                                        </div>
-                                    </AiAnswer>
-                                }
-
+                                                        )
+                                                    })
+                                                }
+                                                {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
+                                                    <div className='url-title'>
+                                                        {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
+                                                    </div>
+                                                }
+                                                {chat.pdfPages &&
+                                                    chat.pdfPages.map((pdfPage: number, i: number) => {
+                                                        return (
+                                                            <React.Fragment key={i}>
+                                                                <div className='url'>
+                                                                    ・<a target="_blank" href={`https://mel-document-public.s3.ap-northeast-1.amazonaws.com/${chat.documentName}.pdf#page=${pdfPage}`}>{pdfPage}ページ</a>
+                                                                </div>
+                                                            </React.Fragment>
+                                                        )
+                                                    })
+                                                }
+                                                {!chat.isGenerating &&
+                                                    <div className='checkbox-container'>
+                                                        <CheckboxLabels
+                                                            targetChat={chat}
+                                                            chats={chats}
+                                                            includeToHistory={includeToHistory}
+                                                        />
+                                                    </div>
+                                                }
+                                            </div>
+                                        </AiAnswer>
+                                    }
                             </MessageContainer>)
                         })}
                     </div>
