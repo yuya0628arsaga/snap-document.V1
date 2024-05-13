@@ -467,7 +467,6 @@ export type ChatGroup = {
     id: string,
     title: string,
     lastChatDate: string,
-    isActive: boolean,
     isDisplayPastChatMenu: boolean,
     isEditingRename: boolean,
 }
@@ -734,7 +733,6 @@ const ChatMessage = () => {
         const chatGroups: ChatGroup[] = resChatGroups.map((chatGroup) => {
             return {
                 ...chatGroup,
-                isActive: false,
                 isDisplayPastChatMenu: false,
                 isEditingRename: false,
             }
@@ -860,17 +858,6 @@ const ChatMessage = () => {
         setChatGroupId(chatGroupId)
         setIsDisplayChatGPT(true)
         setIsSpMenuOpen(prev => !prev)
-
-        // isActiveを切り替える
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            return (
-                chatGroup.id === chatGroupId
-                    ? { ...chatGroup, isActive: true }
-                    : { ...chatGroup, isActive: false }
-            )
-        })
-
-        setChatGroups(editedChatGroups)
     }
 
     /**
@@ -1132,7 +1119,7 @@ const ChatMessage = () => {
                                             {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
                                                 return (
                                                     <div key={i} className='past-chat'>
-                                                        <div className={ `past-chat-button ${chatGroup.isActive ? 'active' : ''}`}>
+                                                        <div className={ `past-chat-button ${chatGroup.id === chatGroupId ? 'active' : ''}`}>
                                                             <div className='text' onClick={() => { displayPastChat(chatGroup) }}>
                                                                 {chatGroup.isEditingRename
                                                                     ? <input
