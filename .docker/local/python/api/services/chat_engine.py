@@ -11,7 +11,6 @@ from langchain.chains import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 
 from api.services.chroma_engine import ChromaEngine
-from api.services.pdf_helper import PdfHelper
 from api.models.s3 import S3
 import settings
 
@@ -190,17 +189,6 @@ class ChatEngine(object):
             base64_images.append({'path': path, 'base64': image_data})
 
         return base64_images
-
-    # def _get_pdf_pages(self, source_documents, document_name):
-    #     """参照のPDFページを取得"""
-    #     for document in source_documents:
-    #         print(document)
-
-    #     source_texts = [document.page_content for document in source_documents]
-    #     pdf_pages = PdfHelper().get_pdf_pages(source_texts, document_name)
-    #     print(pdf_pages)
-
-    #     return pdf_pages
 
     def _get_pdf_pages(self, source_documents):
         """回答する際に参照したPDFページを取得"""
