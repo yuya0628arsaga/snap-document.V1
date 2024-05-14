@@ -1,17 +1,19 @@
 import os
+import pathlib
 import shutil
 import uuid
 
 import chromadb
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
 
 import settings
 from api.models.s3 import S3
 from api.models.s3 import S3KeyNotExistsError
 
 
-VECTOR_DATA_STORE_BASE_DIR = './chromadb_datas'
+VECTOR_DATA_STORE_BASE_DIR = './chromadb_data'
 PDF_TEXT_DATA_S3_DIR = 'documents_text'
 
 
@@ -45,7 +47,7 @@ class ChromaEngine(object):
 
         return vectordb.as_retriever()
 
-    def store(self, document_name):
+    def old_store(self, document_name):
         """ChromaDB にドキュメントのベクトルデータを永久保存する"""
         vector_data_store_dir = f"{VECTOR_DATA_STORE_BASE_DIR}/{document_name}"
         if os.path.isdir(vector_data_store_dir):
@@ -88,6 +90,33 @@ class ChromaEngine(object):
             collection.add(documents=content_list, metadatas=metadata_list, ids=chunk_ids)
 
         return '保存成功'
+
+    def store(self, document_name):
+        """ChromaDB にドキュメントのベクトルデータを永久保存する"""
+        vector_data_store_dir = f"{VECTOR_DATA_STORE_BASE_DIR}/{document_name}"
+        if os.path.isdir(vector_data_store_dir):
+            print(f"Warning: ローカルにベクトルデータが既に存在します。{vector_data_store_dir} を一旦削除してから再度お試しください。")
+            shutil.rmtree(vector_data_store_dir)
+
+        client = chromadb.PersistentClient(path=f"./{VECTOR_DATA_STORE_BASE_DIR}/{document_name}")
+
+        db = Chroma(
+            persist_directory=vector_data_store_dir,
+            embedding_function=_CustomOpenAIEmbeddings(openai_api_key=settings.OPENAI_API_KEY),
+            client=client,
+        )
+
+        # PDFからページごとにテキストを抽出する処理
+        pdf_path = pathlib.Path(
+            f"api/documents/{document_name}.pdf"
+        )
+        pdf_loader = PyPDFLoader(pdf_path)
+        documents = pdf_loader.load()
+        print(documents)
+
+        db.add_documents(documents=documents, embedding=_CustomOpenAIEmbeddings(openai_api_key=settings.OPENAI_API_KEY))
+
+        return 'PDFのページごとに保存成功'
 
 
 class _CustomOpenAIEmbeddings(OpenAIEmbeddings):
