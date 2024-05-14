@@ -11,7 +11,6 @@ from langchain.chains import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 
 from api.services.chroma_engine import ChromaEngine
-from api.services.pdf_helper import PdfHelper
 from api.models.s3 import S3
 import settings
 
@@ -154,7 +153,7 @@ class ChatEngine(object):
 
         result = self._get_answer_from_gpt(qa, question, chat_history)
         # is_get_pdf_page がfalseの場合は pdfページの取得処理を実行しない
-        pdf_pages = self._get_pdf_pages(result['source_documents'], document_name) if is_get_pdf_page else []
+        pdf_pages = self._get_pdf_pages(result['source_documents']) if is_get_pdf_page else []
         base64_images = self.get_images(result['answer'])
 
         return {
@@ -191,13 +190,8 @@ class ChatEngine(object):
 
         return base64_images
 
-    def _get_pdf_pages(self, source_documents, document_name):
-        """参照のPDFページを取得"""
-        for document in source_documents:
-            print(document)
-
-        source_texts = [document.page_content for document in source_documents]
-        pdf_pages = PdfHelper().get_pdf_pages(source_texts, document_name)
-        print(pdf_pages)
+    def _get_pdf_pages(self, source_documents):
+        """回答する際に参照したPDFページを取得"""
+        pdf_pages = [document.metadata['page'] + 1 for document in source_documents]
 
         return pdf_pages

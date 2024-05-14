@@ -1351,6 +1351,24 @@ python-versions = ">=3.6.8"
 diagrams = ["railroad-diagrams", "jinja2"]
 
 [[package]]
+name = "pypdf"
+version = "4.2.0"
+description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+typing_extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
+
+[package.extras]
+crypto = ["cryptography", "pycryptodome"]
+dev = ["black", "pip-tools", "pre-commit (<2.18.0)", "pytest-cov", "pytest-socket", "pytest-timeout", "flit", "wheel", "pytest-xdist"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
+full = ["cryptography", "pycryptodome", "Pillow (>=8.0.0)"]
+image = ["Pillow (>=8.0.0)"]
+
+[[package]]
 name = "pypika"
 version = "0.48.9"
 description = "A SQL query builder API for Python"
@@ -1788,7 +1806,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-ena
 [metadata]
 lock-version = "1.1"
 python-versions = "3.9.13"
-content-hash = "43afe4034688fd670b43021eb301dc3188802e25f73221f752e4ac5c9ad69599"
+content-hash = "9a347d8e9b787415c8ebdeacb07ee04f0adb935eb7f1978b42395dc7b2b5c5fc"
 
 [metadata.files]
 aiohttp = []
@@ -1889,6 +1907,7 @@ pydantic-core = []
 pygments = []
 pyjwt = []
 pyparsing = []
+pypdf = []
 pypika = []
 pyreadline3 = []
 pysqlite3-binary = []
