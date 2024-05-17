@@ -37,43 +37,39 @@ const DocumentManagement = () => {
 
         setIsUploading(true)
 
-        try {
-            const promises = selectedFiles.map(async (selectedFile) => {
-                try {
-                    const url = await axios({
-                        url: '/api/v1/document/image/presigned-url',
-                        method: 'POST',
-                        params: {
-                            document_name: selectedDocument,
-                            file_name: selectedFile.name,
-                            extension: getExtension(selectedFile.name),
-                            size: selectedFile.size,
-                        }
-                    })
-                    .then((res) => res.data)
+        const promises: Promise<void>[] = selectedFiles.map(async (selectedFile) => {
+            try {
+                const presignedUrl = await axios({
+                    url: '/api/v1/document/image/presigned-url',
+                    method: 'POST',
+                    params: {
+                        document_name: selectedDocument,
+                        file_name: selectedFile.name,
+                        extension: getExtension(selectedFile.name),
+                        size: selectedFile.size,
+                    }
+                })
+                .then((res) => res.data)
 
-                    console.log(`${selectedFile.name}の署名付きURL`, url)
+                console.log(`${selectedFile.name}の署名付きURL`, presignedUrl)
 
-                    // MEMO::なぜかaxiosがこの書き方じゃないとうまくS3に保存できない（リクエストは成功するが何も保存されない）
-                    const result = await axios.put(url, selectedFile)
+                // MEMO::なぜかaxiosがこの書き方じゃないとうまくS3に保存できない（リクエストは成功するが何も保存されない）
+                const result = await axios.put(presignedUrl, selectedFile)
 
-                    const newSelectedFiles: File[] = deleteSelectedFile(selectedFile.name)
-                    setSelectedFiles(newSelectedFiles)
+                const newSelectedFiles: File[] = deleteSelectedFile(selectedFile.name)
+                setSelectedFiles(newSelectedFiles)
 
-                    console.log(`%c${selectedFile.name}のS3アップロード結果`, 'color: green;', result)
-                } catch (e) {
-                    console.log(`%c${selectedFile.name}でエラー発生: `, 'color: red;', e)
-                    // response.data.message
-                }
-            })
+                console.log(`%c${selectedFile.name}のS3アップロード結果`, 'color: green;', result)
+            } catch (e) {
+                console.log(`%c${selectedFile.name}でエラー発生: `, `color: ${textColor.error};`, e)
+                // response.data.message
+            }
+        })
 
-            await Promise.allSettled(promises)
+        await Promise.allSettled(promises)
 
-            setSelectedFiles([])
-            setIsUploading(false)
-        } catch (e) {
-            console.log(e)
-        }
+        setSelectedFiles([])
+        setIsUploading(false)
     }
 
     /**
@@ -132,7 +128,7 @@ const DocumentManagement = () => {
     }
 
     /**
-     * 画像ファイルの重複に関するエラーメッセージ
+     * 画像ファイルの重複に関するエラーメッセージの作成
      */
     const makeDuplicateErrorMessage = (duplicateFileNames: string[]) => {
         let message: string = ''
@@ -145,6 +141,9 @@ const DocumentManagement = () => {
         return message
     }
 
+    /**
+     * 削除アイコン押下時の処理
+     */
     const handleClickDeleteIcon = (targetFileName: string) => {
         const newSelectedFiles: File[] = deleteSelectedFile(targetFileName)
 
