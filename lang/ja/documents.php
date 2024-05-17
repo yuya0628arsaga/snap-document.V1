@@ -10,4 +10,10 @@ return [
     'name' => 'ドキュメント名',
     'extension' => '拡張子',
     'url' => 'ドキュメントURL',
+
+    'image' => [
+        'name' => 'ファイル名',
+        'extension' => '拡張子',
+        'size' => 'サイズ',
+    ]
 ];
