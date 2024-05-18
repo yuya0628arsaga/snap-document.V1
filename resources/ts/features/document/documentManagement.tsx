@@ -45,7 +45,7 @@ const DocumentManagement = () => {
         setErrorMessage('')
         setIsUploading(true)
 
-        const promises: Promise<void>[] = selectedFileItems.map(async (selectedFileItem) => {
+        const promises: Promise<void | FileItem>[] = selectedFileItems.map(async (selectedFileItem: FileItem) => {
             try {
                 const presignedUrl = await axios({
                     url: '/api/v1/document/image/presigned-url',
@@ -57,27 +57,44 @@ const DocumentManagement = () => {
                         size: selectedFileItem.value.size,
                     }
                 })
-                .then((res) => res.data)
+                .then((res: AxiosResponse) => res.data)
 
                 console.log(`${selectedFileItem.fileName}の署名付きURL`, presignedUrl)
 
                 // MEMO::なぜかaxiosがこの書き方じゃないとうまくS3に保存できない（リクエストは成功するが何も保存されない）
                 const result = await axios.put(presignedUrl, selectedFileItem)
 
+                console.log(`%c${selectedFileItem.fileName}のS3へのupload 成功`, 'color: green;', result)
+            } catch (e: any) {
+                console.log(`%c${selectedFileItem.fileName}でupload error 発生: `, `color: ${textColor.error};`, e)
+                return { ...selectedFileItem, errorMessage: `Upload Error: ${e.response.data.message}` }
+            } finally {
+                // アップロード済みのファイルを画面から削除
                 const newSelectedFileItems: FileItem[] = deleteSelectedFile(selectedFileItem.fileName)
                 setSelectedFileItems(newSelectedFileItems)
-
-                console.log(`%c${selectedFileItem.fileName}のS3アップロード結果`, 'color: green;', result)
-            } catch (e) {
-                console.log(`%c${selectedFileItem.fileName}でエラー発生: `, `color: ${textColor.error};`, e)
-                // response.data.message
             }
         })
 
-        await Promise.allSettled(promises)
+        const results: PromiseSettledResult<void | FileItem>[] = await Promise.allSettled(promises)
+        const failUploadFileItems: FileItem[] = getFailUploadFileItems(results)
 
-        setSelectedFileItems([])
+        // アップロードに失敗したファイルを残す
+        setSelectedFileItems(failUploadFileItems)
         setIsUploading(false)
+    }
+
+    /**
+     * アップロードに失敗したファイル一覧を取得
+     */
+    const getFailUploadFileItems = (promiseResults: PromiseSettledResult<void | FileItem>[]) => {
+        const failResults: PromiseSettledResult<void | FileItem>[] = promiseResults.filter(
+            (result: any) => {
+                return typeof result.value !== 'undefined'
+            })
+
+        return failResults.map((failResult: any) => {
+            return failResult.value
+        })
     }
 
     /**
