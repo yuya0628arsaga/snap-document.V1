@@ -100,7 +100,8 @@ const DocumentManagement = () => {
                 errorMessage: errorMessage
             }
         })
-        if (selectedFileItems.length === 0) {
+        // 最初にFile選択をする段階では重複チェックをしなくてよい
+        if (! selectedFileItems.length) {
             setSelectedFileItems(fileItems)
             return
         }
@@ -174,7 +175,7 @@ const DocumentManagement = () => {
     const validateFilesDuplicate = (selectedFileItems: FileItem[]) => {
         const duplicateFileNames = getDuplicateFileNames(selectedFileItems)
 
-        if (duplicateFileNames.length > 0) {
+        if (duplicateFileNames.length) {
             const validationMessage: string = makeDuplicateFileErrorMessage(duplicateFileNames)
 
             setErrorMessage(validationMessage)
@@ -232,7 +233,7 @@ const DocumentManagement = () => {
             <Button
                 variant="contained"
                 onClick={uploadSelectedFiles}
-                disabled={selectedFileItems.length === 0 || isUploading || isError()}
+                disabled={! selectedFileItems.length || isUploading || isError()}
             >
                 アップロード
             </Button>
