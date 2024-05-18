@@ -12,6 +12,7 @@ type FileItem = {
     id: string,
     fileName: string,
     value: File,
+    errorMessage: string | null,
 }
 
 const DocumentManagement = () => {
@@ -87,11 +88,20 @@ const DocumentManagement = () => {
      * 画像ファイルの選択・追加
      */
     const addSelectedFiles = (files: File[]) => {
+        const MAX_SIZE = 10485760
+
         const fileItems = files.map((file: File, i: number) => {
+            let errorMessage = null
+
+            if (file.size > MAX_SIZE) {
+                errorMessage = `サイズが${(MAX_SIZE / 1024) / 1024}MBを超えています。`
+            }
+
             return {
                 id: `${i}`,
                 fileName: file.name,
                 value: file,
+                errorMessage: errorMessage
             }
         })
         if (selectedFileItems.length === 0) {
@@ -262,7 +272,10 @@ const DocumentManagement = () => {
                     return (
                         <li key={i}>
                             {selectedFileItem.fileName}
-                            <button onClick={() => {handleClickDeleteIcon(selectedFileItem.fileName)}}><RiDeleteBin5Line /></button>
+                            <button onClick={() => { handleClickDeleteIcon(selectedFileItem.fileName) }}><RiDeleteBin5Line /></button>
+                            {selectedFileItem.errorMessage &&
+                                <p style={{ color: textColor.error }}>{selectedFileItem.errorMessage}</p>
+                            }
                         </li>
                     )
                 })}
