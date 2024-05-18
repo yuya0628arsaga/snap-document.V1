@@ -234,6 +234,16 @@ const DocumentManagement = () => {
         setSelectedFileItems(newSelectedFileItems)
     }
 
+    /**
+     * 選択したファイルたちにエラーが含まれているか否か
+     */
+    const isError = (): boolean => {
+        const hasErrorFiles: FileItem[] = selectedFileItems.filter((selectedFileItem) => {
+            return selectedFileItem.errorMessage
+        })
+        return errorMessage !== '' || hasErrorFiles.length > 0
+    }
+
     return (
         <>
             <h1>documentページ</h1>
@@ -262,7 +272,7 @@ const DocumentManagement = () => {
             <Button
                 variant="contained"
                 onClick={uploadSelectedFiles}
-                disabled={selectedFileItems.length === 0 || isUploading || errorMessage !== ''}
+                disabled={selectedFileItems.length === 0 || isUploading || isError()}
             >
                 アップロード
             </Button>
