@@ -8,13 +8,23 @@ import SelectBox from './../../components/SelectBox';
 import { textColor } from '../../utils/themeClient';
 
 
+type FileItem = {
+    id: string,
+    fileName: string,
+    value: File,
+}
+
 const DocumentManagement = () => {
 
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+    const [selectedFileItems, setSelectedFileItems] = useState<FileItem[]>([])
+
+    // const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [isUploading, setIsUploading] = useState(false)
     const [isSelectDocument, setIsSelectDocument] = useState(true)
     const [selectedDocument, setSelectedDocument] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    // const [duplicateFileErrorMessage, setDuplicateFileErrorMessage] = useState('')
+    // const [duplicateFileErrorMessage, setDuplicateFileErrorMessage] = useState('')
 
     /**
      * 選択した画像ファイルの拡張子取得
@@ -35,40 +45,41 @@ const DocumentManagement = () => {
         }
         if (isUploading) return
 
+        setErrorMessage('')
         setIsUploading(true)
 
-        const promises: Promise<void>[] = selectedFiles.map(async (selectedFile) => {
+        const promises: Promise<void>[] = selectedFileItems.map(async (selectedFileItem) => {
             try {
                 const presignedUrl = await axios({
                     url: '/api/v1/document/image/presigned-url',
                     method: 'POST',
                     params: {
                         document_name: selectedDocument,
-                        file_name: selectedFile.name,
-                        extension: getExtension(selectedFile.name),
-                        size: selectedFile.size,
+                        file_name: selectedFileItem.fileName,
+                        extension: getExtension(selectedFileItem.value.name),
+                        size: selectedFileItem.value.size,
                     }
                 })
                 .then((res) => res.data)
 
-                console.log(`${selectedFile.name}の署名付きURL`, presignedUrl)
+                console.log(`${selectedFileItem.fileName}の署名付きURL`, presignedUrl)
 
                 // MEMO::なぜかaxiosがこの書き方じゃないとうまくS3に保存できない（リクエストは成功するが何も保存されない）
-                const result = await axios.put(presignedUrl, selectedFile)
+                const result = await axios.put(presignedUrl, selectedFileItem)
 
-                const newSelectedFiles: File[] = deleteSelectedFile(selectedFile.name)
-                setSelectedFiles(newSelectedFiles)
+                const newSelectedFileItems: FileItem[] = deleteSelectedFile(selectedFileItem.fileName)
+                setSelectedFileItems(newSelectedFileItems)
 
-                console.log(`%c${selectedFile.name}のS3アップロード結果`, 'color: green;', result)
+                console.log(`%c${selectedFileItem.fileName}のS3アップロード結果`, 'color: green;', result)
             } catch (e) {
-                console.log(`%c${selectedFile.name}でエラー発生: `, `color: ${textColor.error};`, e)
+                console.log(`%c${selectedFileItem.fileName}でエラー発生: `, `color: ${textColor.error};`, e)
                 // response.data.message
             }
         })
 
         await Promise.allSettled(promises)
 
-        setSelectedFiles([])
+        setSelectedFileItems([])
         setIsUploading(false)
     }
 
@@ -76,20 +87,49 @@ const DocumentManagement = () => {
      * 画像ファイルの選択・追加
      */
     const addSelectedFiles = (files: File[]) => {
-        if (selectedFiles.length === 0) {
-            setSelectedFiles(files)
+        const fileItems = files.map((file: File, i: number) => {
+            return {
+                id: `${i}`,
+                fileName: file.name,
+                value: file,
+            }
+        })
+        if (selectedFileItems.length === 0) {
+            setSelectedFileItems(fileItems)
             return
         }
 
-        const newSelectedFiles = [...selectedFiles].concat(files)
+        const newSelectedFileItems: FileItem[] = [...selectedFileItems].concat(fileItems)
 
-        const duplicateFileNames = checkDuplicate(newSelectedFiles)
-        if (duplicateFileNames.length > 0) {
-            const errorMessage = makeDuplicateErrorMessage(duplicateFileNames)
-            setErrorMessage(errorMessage)
-        }
+        // const duplicateFileNames = checkDuplicate(newSelectedFiles)
 
-        setSelectedFiles(newSelectedFiles)
+        // let message: string = ''
+        // if (duplicateFileNames.length > 0) {
+        //     // const errorMessage = makeDuplicateErrorMessage(duplicateFileNames)
+
+        //     message = makeFileErrorMessage(message, duplicateFileNames)
+        //     message = `${message}が重複しています。\n`
+
+        //     setErrorMessage(message)
+        // }
+
+        validateFilesDuplicate(newSelectedFileItems)
+
+        // // サイズチェック
+        // const MAX_SIZE = 5
+        // const overSizeFiles = newSelectedFileItems.filter((newSelectedFileItem) => {
+        //     return newSelectedFileItem.value.size > MAX_SIZE
+        // })
+        // if (overSizeFiles.length > 0) {
+        //     // message = makeFileErrorMessage(message, duplicateFileNames)
+        //     message = `${message}のサイズが${MAX_SIZE}MBを超えています\n`
+
+        //     setErrorMessage(message)
+        // }
+
+        // 拡張子チェック
+
+        setSelectedFileItems(newSelectedFileItems)
     }
 
     /**
@@ -97,12 +137,12 @@ const DocumentManagement = () => {
      */
     const deleteSelectedFile = (targetFileName: string) => {
 
-        const selectedFileNames: string[] = selectedFiles.map((selectedFile) => {
-            return selectedFile.name
+        const selectedFileNames: string[] = selectedFileItems.map((selectedFileItem) => {
+            return selectedFileItem.fileName
         })
 
-        return selectedFiles.filter((selectedFile: File, i: number) => {
-            const isTarget = selectedFile.name === targetFileName
+        return selectedFileItems.filter((selectedFileItem: FileItem, i: number) => {
+            const isTarget = selectedFileItem.fileName === targetFileName
             const isDuplicate
                 = selectedFileNames.indexOf(targetFileName) === i && i !== selectedFileNames.lastIndexOf(targetFileName)
 
@@ -114,9 +154,9 @@ const DocumentManagement = () => {
     /**
      * 選択した画像ファイルの重複チェック
      */
-    const checkDuplicate = (selectedFiles: File[]) => {
-        const selectedFileNames = selectedFiles.map((newSelectedFile) => {
-            return newSelectedFile.name
+    const getDuplicateFileNames = (selectedFileItems: FileItem[]) => {
+        const selectedFileNames: string[] = selectedFileItems.map((newSelectedFile: FileItem) => {
+            return newSelectedFile.fileName
         })
 
         const duplicateFileNames: string[] = selectedFileNames.filter(
@@ -127,35 +167,61 @@ const DocumentManagement = () => {
         return duplicateFileNames
     }
 
+    // /**
+    //  * 画像ファイルの重複に関するエラーメッセージの作成
+    //  */
+    // const makeDuplicateErrorMessage = (duplicateFileNames: string[]) => {
+    //     let message: string = ''
+    //     duplicateFileNames.forEach((duplicateFileName: string) => {
+    //         message += `・${duplicateFileName}\n`
+    //     });
+
+    //     message = `${message}が重複しています。`
+
+    //     return message
+    // }
+
     /**
-     * 画像ファイルの重複に関するエラーメッセージの作成
+     * 画像ファイルに関するエラーメッセージの作成
      */
-    const makeDuplicateErrorMessage = (duplicateFileNames: string[]) => {
+    const makeFileErrorMessage = (fileNames: string[]) => {
         let message: string = ''
-        duplicateFileNames.forEach((duplicateFileName: string) => {
-            message += `・${duplicateFileName}\n`
+
+        fileNames.forEach((fileName: string) => {
+            message += `・${fileName}\n`
         });
 
-        message = `${message}が重複しています。`
-
         return message
+    }
+
+    const makeDuplicateFileErrorMessage = (fileNames: string[]) => {
+        return `${makeFileErrorMessage(fileNames)}が重複しています。\n`
+    }
+
+    /**
+     * 選択した画像ファイルの重複バリデーション
+     */
+    const validateFilesDuplicate = (selectedFileItems: FileItem[]) => {
+        const duplicateFileNames = getDuplicateFileNames(selectedFileItems)
+
+        if (duplicateFileNames.length > 0) {
+            const validationMessage: string = makeDuplicateFileErrorMessage(duplicateFileNames)
+
+            setErrorMessage(validationMessage)
+        } else {
+            setErrorMessage('')
+        }
     }
 
     /**
      * 削除アイコン押下時の処理
      */
     const handleClickDeleteIcon = (targetFileName: string) => {
-        const newSelectedFiles: File[] = deleteSelectedFile(targetFileName)
+        const newSelectedFileItems: FileItem[] = deleteSelectedFile(targetFileName)
 
-        const duplicateFileNames = checkDuplicate(newSelectedFiles)
-        if (duplicateFileNames.length > 0) {
-            const errorMessage = makeDuplicateErrorMessage(duplicateFileNames)
-            setErrorMessage(errorMessage)
-        } else {
-            setErrorMessage('')
-        }
+        validateFilesDuplicate(newSelectedFileItems)
 
-        setSelectedFiles(newSelectedFiles)
+        setSelectedFileItems(newSelectedFileItems)
     }
 
     return (
@@ -170,7 +236,7 @@ const DocumentManagement = () => {
 
             <MuiFileInput
                 placeholder={'ファイルを選択してください（複数可）'}
-                value={selectedFiles}
+                value={selectedFileItems.map((selectedFileItem) => selectedFileItem.value)}
                 onChange={(files) => addSelectedFiles(files)}
                 multiple
                 inputProps={{ accept: 'image/*' }}
@@ -186,17 +252,17 @@ const DocumentManagement = () => {
             <Button
                 variant="contained"
                 onClick={uploadSelectedFiles}
-                disabled={selectedFiles.length === 0 || isUploading || errorMessage !== ''}
+                disabled={selectedFileItems.length === 0 || isUploading || errorMessage !== ''}
             >
                 アップロード
             </Button>
 
             <ul>
-                {selectedFiles.map((selectedFile, i) => {
+                {selectedFileItems.map((selectedFileItem, i) => {
                     return (
                         <li key={i}>
-                            {selectedFile.name}
-                            <button onClick={() => {handleClickDeleteIcon(selectedFile.name)}}><RiDeleteBin5Line /></button>
+                            {selectedFileItem.fileName}
+                            <button onClick={() => {handleClickDeleteIcon(selectedFileItem.fileName)}}><RiDeleteBin5Line /></button>
                         </li>
                     )
                 })}
