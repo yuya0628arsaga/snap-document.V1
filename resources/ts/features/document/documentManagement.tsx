@@ -12,7 +12,7 @@ type FileItem = {
     id: string,
     fileName: string,
     value: File,
-    errorMessage: string | null,
+    errorMessage: string,
 }
 
 const DocumentManagement = () => {
@@ -87,10 +87,17 @@ const DocumentManagement = () => {
         const MAX_SIZE = 10485760
 
         const fileItems = files.map((file: File, i: number) => {
-            let errorMessage = null
+            let errorMessage: string = ''
 
             if (file.size > MAX_SIZE) {
                 errorMessage = `サイズが${(MAX_SIZE / 1024) / 1024}MBを超えています。`
+            }
+
+            const extension: string = getExtension(file.name)
+            const ALLOW_EXTENSIONS: string[] = ['png', 'svg', 'jpeg', 'jpg']
+            const isAllowExtension: boolean = ALLOW_EXTENSIONS.includes(extension)
+            if (!isAllowExtension) {
+                errorMessage += `拡張子${extension}は使用できません。`
             }
 
             return {
@@ -108,8 +115,6 @@ const DocumentManagement = () => {
 
         const newSelectedFileItems: FileItem[] = [...selectedFileItems].concat(fileItems)
         validateFilesDuplicate(newSelectedFileItems)
-
-        // 拡張子チェック
 
         setSelectedFileItems(newSelectedFileItems)
     }
@@ -244,7 +249,7 @@ const DocumentManagement = () => {
                         <li key={i}>
                             {selectedFileItem.fileName}
                             <button onClick={() => { handleClickDeleteIcon(selectedFileItem.fileName) }}><RiDeleteBin5Line /></button>
-                            {selectedFileItem.errorMessage &&
+                            {selectedFileItem.errorMessage !== '' &&
                                 <p style={{ color: textColor.error }}>{selectedFileItem.errorMessage}</p>
                             }
                         </li>
