@@ -161,6 +161,9 @@ const DocumentManagement = () => {
         return message
     }
 
+    /**
+     * 重複エラーメッセージの作成
+     */
     const makeDuplicateFileErrorMessage = (fileNames: string[]) => {
         return `${makeFileErrorMessage(fileNames)}が重複しています。\n`
     }
