@@ -18,14 +18,10 @@ type FileItem = {
 const DocumentManagement = () => {
 
     const [selectedFileItems, setSelectedFileItems] = useState<FileItem[]>([])
-
-    // const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [isUploading, setIsUploading] = useState(false)
     const [isSelectDocument, setIsSelectDocument] = useState(true)
     const [selectedDocument, setSelectedDocument] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
-    // const [duplicateFileErrorMessage, setDuplicateFileErrorMessage] = useState('')
-    // const [duplicateFileErrorMessage, setDuplicateFileErrorMessage] = useState('')
 
     /**
      * 選択した画像ファイルの拡張子取得
@@ -110,32 +106,7 @@ const DocumentManagement = () => {
         }
 
         const newSelectedFileItems: FileItem[] = [...selectedFileItems].concat(fileItems)
-
-        // const duplicateFileNames = checkDuplicate(newSelectedFiles)
-
-        // let message: string = ''
-        // if (duplicateFileNames.length > 0) {
-        //     // const errorMessage = makeDuplicateErrorMessage(duplicateFileNames)
-
-        //     message = makeFileErrorMessage(message, duplicateFileNames)
-        //     message = `${message}が重複しています。\n`
-
-        //     setErrorMessage(message)
-        // }
-
         validateFilesDuplicate(newSelectedFileItems)
-
-        // // サイズチェック
-        // const MAX_SIZE = 5
-        // const overSizeFiles = newSelectedFileItems.filter((newSelectedFileItem) => {
-        //     return newSelectedFileItem.value.size > MAX_SIZE
-        // })
-        // if (overSizeFiles.length > 0) {
-        //     // message = makeFileErrorMessage(message, duplicateFileNames)
-        //     message = `${message}のサイズが${MAX_SIZE}MBを超えています\n`
-
-        //     setErrorMessage(message)
-        // }
 
         // 拡張子チェック
 
@@ -176,20 +147,6 @@ const DocumentManagement = () => {
 
         return duplicateFileNames
     }
-
-    // /**
-    //  * 画像ファイルの重複に関するエラーメッセージの作成
-    //  */
-    // const makeDuplicateErrorMessage = (duplicateFileNames: string[]) => {
-    //     let message: string = ''
-    //     duplicateFileNames.forEach((duplicateFileName: string) => {
-    //         message += `・${duplicateFileName}\n`
-    //     });
-
-    //     message = `${message}が重複しています。`
-
-    //     return message
-    // }
 
     /**
      * 画像ファイルに関するエラーメッセージの作成
