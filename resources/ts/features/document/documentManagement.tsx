@@ -1,11 +1,12 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
 import { MuiFileInput } from 'mui-file-input';
 import Button from '@mui/material/Button';
 import { RiDeleteBin5Line } from 'react-icons/ri';
 import SelectBox from './../../components/SelectBox';
 import { textColor } from '../../utils/themeClient';
+import TextField from '@mui/material/TextField';
 
 
 type FileItem = {
@@ -33,6 +34,14 @@ const DocumentManagement = () => {
     }
 
     /**
+     * 拡張子を除いた画像ファイル名を取得
+     */
+     const removeExtension = (fileName: string) => {
+        const fileNameArray = fileName.split('.')
+        return fileNameArray[0]
+    }
+
+    /**
      * 選択した画像ファイルをアップロード
      */
     const uploadSelectedFiles = async () => {
@@ -47,12 +56,14 @@ const DocumentManagement = () => {
 
         const promises: Promise<void | FileItem>[] = selectedFileItems.map(async (selectedFileItem: FileItem) => {
             try {
+                const imageName = removeExtension(selectedFileItem.fileName)
+
                 const presignedUrl = await axios({
                     url: '/api/v1/document/image/presigned-url',
                     method: 'POST',
                     params: {
                         document_name: selectedDocument,
-                        file_name: selectedFileItem.fileName,
+                        file_name: imageName,
                         extension: getExtension(selectedFileItem.value.name),
                         size: selectedFileItem.value.size,
                     }
@@ -106,9 +117,10 @@ const DocumentManagement = () => {
 
             errorMessage = validateFilesSize(file, errorMessage)
             errorMessage = validateFilesExtension(file, errorMessage)
+            const uuid = Math.random().toString(36).slice(-8)
 
             return {
-                id: `${i}`,
+                id: uuid,
                 fileName: file.name,
                 value: file,
                 errorMessage: errorMessage
@@ -246,6 +258,19 @@ const DocumentManagement = () => {
         return errorMessage !== '' || hasErrorFiles.length > 0
     }
 
+    /**
+     * 画像ファイル名を変更
+     */
+    const handleChangeFileNameInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, targetFileId: string) => {
+        const editedSelectedFileItems = selectedFileItems.map((selectedFileItem) => {
+            return selectedFileItem.id === targetFileId
+                ? { ...selectedFileItem, fileName: e.target.value }
+                : selectedFileItem
+        })
+
+        setSelectedFileItems(editedSelectedFileItems)
+    }
+
     return (
         <>
             <h1>documentページ</h1>
@@ -283,7 +308,7 @@ const DocumentManagement = () => {
                 {selectedFileItems.map((selectedFileItem, i) => {
                     return (
                         <li key={i}>
-                            {selectedFileItem.fileName}
+                            <TextField id="outlined-basic" value={selectedFileItem.fileName} onChange={(e) => {handleChangeFileNameInput(e, selectedFileItem.id)}}/>
                             <button onClick={() => { handleClickDeleteIcon(selectedFileItem.fileName) }}><RiDeleteBin5Line /></button>
                             {selectedFileItem.errorMessage !== '' &&
                                 <p style={{ color: textColor.error }}>{selectedFileItem.errorMessage}</p>
