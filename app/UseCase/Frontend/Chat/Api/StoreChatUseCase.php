@@ -271,11 +271,8 @@ class StoreChatUseCase
     private function makeImageDatum(string $answer, string $documentName): array
     {
         $imageNames = $this->getImageNamesFromAnswer($answer);
-        Log::debug($imageNames);
 
         return array_map(function ($imageName) use ($documentName) {
-            Log::debug($imageName);
-            Log::debug($documentName);
             return [
                 'name' => $imageName,
                 'url' => $this->getImageUrl($documentName, $imageName),
