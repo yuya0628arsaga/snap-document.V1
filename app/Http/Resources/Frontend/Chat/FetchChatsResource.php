@@ -21,6 +21,7 @@ class FetchChatsResource extends JsonResource
             'question' => $this['question'],
             'answer' => $this['answer'],
             'pdfPages' => static::getPages($this['pages']),
+            'images' => static::getImages($this['chat_images']),
             'base64Images' => $this['base64_images'],
             'documentName' => $this['document_name'],
         ];
@@ -35,6 +36,21 @@ class FetchChatsResource extends JsonResource
     {
         return $pages->map(function ($page) {
             return $page['page'];
+        });
+    }
+
+    /**
+     *
+     * @param Collection $images
+     * @return Collection
+     */
+    static private function getImages(Collection $images): Collection
+    {
+        return $images->map(function ($image) {
+            return [
+                'name' => $image['name'],
+                'url' => $image['url'],
+            ];
         });
     }
 }

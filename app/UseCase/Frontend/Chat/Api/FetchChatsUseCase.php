@@ -30,13 +30,12 @@ class FetchChatsUseCase
     public function execute(string $chatGroupId): Collection
     {
         $chats = $this->chatRepository->fetch(
-            with: ['pages'],
+            with: ['pages', 'chat_images'],
             whereParams: ['chat_group_id' => $chatGroupId],
             columns: ['id', 'date', 'question', 'answer', 'document_id'],
         );
 
         $chats = $this->addDocumentNameToChats($chats);
-        $chats = $this->addImagesToChats($chats);
 
         return $chats;
     }
@@ -73,8 +72,8 @@ class FetchChatsUseCase
             $answer = $chat->answer;
             $isIncludeImage = preg_match('/図\d+/', $answer);
 
-            $chat->base64_images =
-                $isIncludeImage ? $this->getBase64Images($answer) : [];
+            // $chat->base64_images =
+            //     $isIncludeImage ? $this->getBase64Images($answer) : [];
 
             return $chat;
         });
