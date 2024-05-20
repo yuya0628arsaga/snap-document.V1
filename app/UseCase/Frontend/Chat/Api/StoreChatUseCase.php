@@ -55,7 +55,7 @@ class StoreChatUseCase
     {
         [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage);
 
-        $chatGroupId = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
+        [$chatGroupId, $imageDatum] = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
             if (! $chatGroupId) {
@@ -124,12 +124,13 @@ class StoreChatUseCase
                 'user_id' => $userId ?? null,
             ]);
 
-            return $chatGroupId;
+            return [$chatGroupId, $imageDatum];
         });
 
         return [
             'answer' => $answer,
             'base64Images' => $base64Images,
+            'images' => $imageDatum,
             'pdfPages' => $pdfPages,
             'chatGroupId' => $chatGroupId,
         ];
