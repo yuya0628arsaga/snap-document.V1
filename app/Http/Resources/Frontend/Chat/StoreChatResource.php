@@ -16,7 +16,6 @@ class StoreChatResource extends JsonResource
     {
         return [
             'answer' => $this['answer'],
-            'base64Images' => $this['base64Images'],
             'images' => $this['images'],
             'pdfPages' => $this['pdfPages'],
             'chatGroupId' => $this['chatGroupId'],

@@ -53,7 +53,7 @@ class StoreChatUseCase
      */
     public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId, bool $isGetPdfPage): array
     {
-        [$answer, $base64Images, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage);
+        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage);
 
         [$chatGroupId, $imageDatum] = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
@@ -129,7 +129,6 @@ class StoreChatUseCase
 
         return [
             'answer' => $answer,
-            'base64Images' => $base64Images,
             'images' => $imageDatum,
             'pdfPages' => $pdfPages,
             'chatGroupId' => $chatGroupId,
@@ -153,7 +152,7 @@ class StoreChatUseCase
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post(config('api.gpt_engine.endpoint').'/chat/answer/', [
+            ])->post(config('api.gpt_engine.endpoint').'/test3', [
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
@@ -173,7 +172,6 @@ class StoreChatUseCase
 
         return [
             $responseFromGptEngine['answer'],
-            $responseFromGptEngine['base64_images'],
             $responseFromGptEngine['pdf_pages'],
             $tokenCounts,
             $responseFromGptEngine['cost'],
