@@ -10,6 +10,8 @@ use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
 use App\Repositories\Frontend\ChatGroup\Params\StoreChatGroupParams;
 use App\Repositories\Frontend\ChatGroup\Params\UpdateChatGroupParams;
+use App\Repositories\Frontend\ChatImage\ChatImageRepository;
+use App\Repositories\Frontend\ChatImage\Params\StoreChatImageParams;
 use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
@@ -27,12 +29,14 @@ class StoreChatUseCase
      * @param ChatRepository $chatRepository
      * @param DocumentRepository $documentRepository
      * @param PageRepository $pageRepository
+     * @param ChatImageRepository $chatImageRepository
      */
     public function __construct(
         private readonly ChatGroupRepository $chatGroupRepository,
         private readonly ChatRepository $chatRepository,
         private readonly DocumentRepository $documentRepository,
         private readonly PageRepository $pageRepository,
+        private readonly ChatImageRepository $chatImageRepository
     ) {
     }
 
@@ -89,10 +93,7 @@ class StoreChatUseCase
             ]);
 
             $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId);
-
             $chat = $this->chatRepository->store($storeChatParams);
-
-            $insertPageParams = $this->makeInsertPageParams($pdfPages, $chat->id);
 
             Log::info('[Start] ページの保存処理を開始します。', [
                 'method' => __METHOD__,
@@ -101,9 +102,22 @@ class StoreChatUseCase
                 'pages' => $pdfPages,
             ]);
 
+            $insertPageParams = $this->makeInsertPageParams($pdfPages, $chat->id);
             $this->pageRepository->insert($insertPageParams);
 
-            Log::info('[End] チャットとページの保存処理が完了しました。', [
+            $imageDatum = $this->makeImageDatum($answer, $documentName);
+
+            Log::info('[Start] 画像情報の保存処理を開始します。', [
+                'method' => __METHOD__,
+                'chat_id' => $chat->id,
+                'user_id' => $userId ?? null,
+                'imageDatum' => $imageDatum,
+            ]);
+
+            $insertChatImageParams = $this->makeInsertChatImageParams($imageDatum, $chat->id);
+            $this->chatImageRepository->insert($insertChatImageParams);
+
+            Log::info('[End] チャット, ページ, 画像の保存処理が完了しました。', [
                 'method' => __METHOD__,
                 'question' => $question,
                 'chat_id' => $chat->id,
@@ -245,5 +259,93 @@ class StoreChatUseCase
     private function getCurrentTime(): CarbonImmutable
     {
         return CarbonImmutable::now();
+    }
+
+    /**
+     * 画像情報のデータ作成
+     *
+     * @param string $answer
+     * @param string $documentName
+     *
+     * @return array
+     */
+    private function makeImageDatum(string $answer, string $documentName): array
+    {
+        $imageNames = $this->getImageNamesFromAnswer($answer);
+        Log::debug($imageNames);
+
+        return array_map(function ($imageName) use ($documentName) {
+            Log::debug($imageName);
+            Log::debug($documentName);
+            return [
+                'name' => $imageName,
+                'url' => $this->getImageUrl($documentName, $imageName),
+            ];
+        }, $imageNames);
+    }
+
+    /**
+     * 画像が保存されてるS3のURLを取得
+     *
+     * @param string $documentName
+     * @param string $fileName
+     *
+     * @return string
+     */
+    private function getImageUrl(string $documentName, string $fileName): string
+    {
+        $BUCKET = config('filesystems.disks.s3.bucket');
+        $REGION = config('filesystems.disks.s3.region');
+
+        // https://{bucket-name}.s3.{region}.amazonaws.com/{folder-name}/{file-name}
+        return 'https://'.$BUCKET.'.s3.'.$REGION.'.amazonaws.com/'.$documentName.'/'.$fileName;
+    }
+
+    /**
+     * 回答内から画像名を取得
+     *
+     * @param string $answer
+     *
+     * @return array
+     */
+    private function getImageNamesFromAnswer(string $answer): array
+    {
+        /**
+         * TODO::「図33」のように画像名が「図〇〇」（〇〇は数値）の場合のみしか取得できないため、
+         * 「画像12」や「図A」のような場合にも取得できるように一般化する必要あり
+         */
+        $prefixImageName = '図';
+        preg_match_all('/'.$prefixImageName.'\d+/i', $answer, $matches);
+
+        return $matches[0];
+    }
+
+    /**
+     * 画像データの配列をinsertするためのオブジェクト作成
+     *
+     * @param array $imageDatum
+     * @param string $chatId
+     *
+     * @return array
+     */
+    private function makeInsertChatImageParams($imageDatum, $chatId): array
+    {
+        $insertChatImageParams = [];
+
+        foreach ($imageDatum as $imageData) {
+            $storeChatImageParams =
+                new StoreChatImageParams(
+                    id: strtolower((string) Str::ulid()),
+                    name: $imageData['name'],
+                    url: $imageData['url'],
+                    chatId: $chatId,
+                    createdAt: CarbonImmutable::now(),
+                    updatedAt: CarbonImmutable::now(),
+                    deletedAt: null,
+                );
+
+            $insertChatImageParams[] = $storeChatImageParams->toArrayForInsert();
+        }
+        return $insertChatImageParams;
     }
 }

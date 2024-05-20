@@ -6,6 +6,8 @@ use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\ChatRepositoryImpl;
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepositoryImpl;
+use App\Repositories\Frontend\ChatImage\ChatImageRepository;
+use App\Repositories\Frontend\ChatImage\ChatImageRepositoryImpl;
 use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Document\DocumentRepositoryImpl;
 use App\Repositories\Frontend\Page\PageRepository;
@@ -28,6 +30,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ChatGroupRepository::class, ChatGroupRepositoryImpl::class);
         $this->app->bind(DocumentRepository::class, DocumentRepositoryImpl::class);
         $this->app->bind(PageRepository::class, PageRepositoryImpl::class);
+        $this->app->bind(ChatImageRepository::class, ChatImageRepositoryImpl::class);
 
         // general
         $this->app->bind(S3Repository::class, S3RepositoryImpl::class);

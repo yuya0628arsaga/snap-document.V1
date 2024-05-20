@@ -39,9 +39,9 @@ class GenerateImageUploadPresignedUrlRequest extends FormRequest
     {
         return [
             'document_name' => __('documents.name'),
-            'file_name' => __('documents.image.name'),
-            'size' => __('documents.image.size'),
-            'extension' => __('documents.image.extension'),
+            'file_name' => __('chat_images.name'),
+            'size' => __('chat_images.size'),
+            'extension' => __('chat_images.extension'),
         ];
     }
 
