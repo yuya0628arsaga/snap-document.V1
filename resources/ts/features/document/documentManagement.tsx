@@ -62,7 +62,7 @@ const DocumentManagement = () => {
                 console.log(`${selectedFileItem.fileName}の署名付きURL`, presignedUrl)
 
                 // MEMO::なぜかaxiosがこの書き方じゃないとうまくS3に保存できない（リクエストは成功するが何も保存されない）
-                const result = await axios.put(presignedUrl, selectedFileItem)
+                const result = await axios.put(presignedUrl, selectedFileItem.value)
 
                 console.log(`%c${selectedFileItem.fileName}のS3へのupload 成功`, 'color: green;', result)
             } catch (e: any) {
