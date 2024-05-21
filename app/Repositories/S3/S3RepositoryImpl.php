@@ -53,11 +53,11 @@ class S3RepositoryImpl implements S3Repository
             'path' => $path,
         ]);
 
-        // FIXME: 同名ファイルをアップロードできないよう一時的な措置
-        if (Storage::disk($disk)->exists($path)) {
-            Log::info('アップロード用署名付きurl発行処理に失敗しました。');
-            throw ValidationException::withMessages(['file_name' => '同名のファイルが存在します']);
-        }
+        // // FIXME: 同名ファイルをアップロードできないよう一時的な措置
+        // if (Storage::disk($disk)->exists($path)) {
+        //     Log::info('アップロード用署名付きurl発行処理に失敗しました。');
+        //     throw ValidationException::withMessages(['file_name' => '同名のファイルが存在します']);
+        // }
 
         $client = Storage::disk($disk)->getClient();
 
