@@ -281,6 +281,7 @@ const AiAnswer = styled('div')`
             gap: 10px;
             >.img {
                 width: 80%;
+                height: auto;
                 margin: 0 auto;
             }
             >.img-text{
@@ -363,7 +364,7 @@ type Chat = {
     id: string
     question: string,
     answer: string,
-    base64Images: { path: string, base64: string }[],
+    images: { name: string, url: string }[],
     documentName: string,
     pdfPages: number[],
     isGenerating: boolean,
@@ -472,7 +473,7 @@ const ChatMessage = () => {
 
             const lastChat: Chat = newChats.slice(-1)[0];
             lastChat.answer = data.answer
-            lastChat.base64Images = data.base64Images
+            lastChat.images = data.images
             lastChat.pdfPages = data.pdfPages
             lastChat.isGenerating = false
 
@@ -523,7 +524,7 @@ const ChatMessage = () => {
 
         // const elementId = crypto.randomUUID();
         const elementId = Math.random().toString(36).slice(-8);
-        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', base64Images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}]
+        const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}]
         setChats(newChats)
 
         // ローディング表示
@@ -1087,12 +1088,12 @@ const ChatMessage = () => {
                                             <div className="text">
                                                 <span className="name">ChatGPT</span>
                                                 {chat.answer}
-                                                {chat.base64Images &&
-                                                    chat.base64Images.map((base64Image, i) => {
+                                                {chat.images &&
+                                                    chat.images.map((image, i) => {
                                                         return (
                                                             <div className='img-container' key={i}>
-                                                                <img src={`data:image/jpg;base64,${base64Image.base64}`} className="img" alt="" />
-                                                                <div className='img-text'>{base64Image.path}</div>
+                                                                <img src={image.url} className="img" alt="" />
+                                                                <div className='img-text'>{image.name}</div>
                                                             </div>
                                                         )
                                                     })

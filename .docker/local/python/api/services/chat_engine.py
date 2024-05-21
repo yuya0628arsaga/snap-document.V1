@@ -135,7 +135,6 @@ class ChatEngine(object):
                 {
                     "answer": str,
                     "source_documents": str,
-                    "base64_images": list[str],
                     "pdf_pages": list[int],
                     "token_counts": int,
                     "cost": int,
@@ -154,41 +153,11 @@ class ChatEngine(object):
         result = self._get_answer_from_gpt(qa, question, chat_history)
         # is_get_pdf_page がfalseの場合は pdfページの取得処理を実行しない
         pdf_pages = self._get_pdf_pages(result['source_documents']) if is_get_pdf_page else []
-        base64_images = self.get_images(result['answer'])
 
         return {
             **result,
-            "base64_images": base64_images,
             "pdf_pages": pdf_pages,
         }
-
-    def get_images(self, answer):
-        """回答の画像データを取得
-
-        Args:
-            answer (str): 回答
-
-        Returns:
-            list[str]: base64の配列
-        """
-        # answer = 'Sパラメータ解析を実行するには、まず図33のSパラメータ解析設定画面で解析を設定します。その後、解析実行ボタンを押して解析を開始します。解析が進むにつれてログダイアローグに途中経過が表示されます。解析が完了すると、図19のようにS11特性が表示されます。解析が終了したら、解析ボタンを押してください。';
-        paths = re.findall(r'図\d+', answer)
-
-        paths_set = set(paths) # 配列の重複削除
-        paths = list(paths_set)
-
-        base64_images = []
-        s3 = S3()
-        for path in paths:
-            key = f"{IMG_STORE_S3_DIR}/{path}.{IMG_EXTENSION}"
-            if s3.check_s3_key_exists(key) is False: continue
-
-            binary = s3.get_s3_object(key)
-            # 画像データをBase64エンコードしてフォーマットする
-            image_data = base64.b64encode(binary).decode("utf-8")
-            base64_images.append({'path': path, 'base64': image_data})
-
-        return base64_images
 
     def _get_pdf_pages(self, source_documents):
         """回答する際に参照したPDFページを取得"""

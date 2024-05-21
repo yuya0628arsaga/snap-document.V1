@@ -75,6 +75,16 @@ class Chat extends Model
         return $this->hasMany(Page::class);
     }
 
+    /**
+     * chatImagesテーブルとのリレーション
+     *
+     * @return hasMany
+     */
+    public function chat_images(): HasMany
+    {
+        return $this->hasMany(ChatImage::class);
+    }
+
     // /**
     //  * usersテーブルとのリレーション
     //  *
