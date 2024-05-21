@@ -281,12 +281,14 @@ const DocumentManagement = () => {
         const imageName = removeExtension(inputImageName)
 
         const editedSelectedFileItems = selectedFileItems.map((selectedFileItem) => {
+            const MAX_STR_COUNT = 255
+
             return selectedFileItem.id === targetFileId
                 ? {
                     ...selectedFileItem,
                     errorMessage:
-                        imageName === ''
-                        ? selectedFileItem.inputFileNameErrorMessage = 'ファイル名は1文字以上で指定してください。'
+                        imageName === '' || imageName.length > MAX_STR_COUNT
+                        ? selectedFileItem.inputFileNameErrorMessage = 'ファイル名は1文字以上255文字以下で指定してください。'
                         : ''
                 }
                 : selectedFileItem
