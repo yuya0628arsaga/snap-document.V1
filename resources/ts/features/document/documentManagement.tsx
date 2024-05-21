@@ -14,6 +14,7 @@ type FileItem = {
     fileName: string,
     value: File,
     errorMessage: string,
+    inputFileNameErrorMessage: string,
 }
 
 const DocumentManagement = () => {
@@ -123,7 +124,8 @@ const DocumentManagement = () => {
                 id: uuid,
                 fileName: file.name,
                 value: file,
-                errorMessage: errorMessage
+                errorMessage: errorMessage,
+                inputFileNameErrorMessage: ''
             }
         })
         // 最初にFile選択をする段階では重複チェックをしなくてよい
@@ -271,6 +273,28 @@ const DocumentManagement = () => {
         setSelectedFileItems(editedSelectedFileItems)
     }
 
+    /**
+     * 画像ファイル名の文字数チェック
+     */
+    const handleOnBlurFileNameInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, targetFileId: string) => {
+        const inputImageName = e.target.value
+        const imageName = removeExtension(inputImageName)
+
+        const editedSelectedFileItems = selectedFileItems.map((selectedFileItem) => {
+            return selectedFileItem.id === targetFileId
+                ? {
+                    ...selectedFileItem,
+                    errorMessage:
+                        imageName === ''
+                        ? selectedFileItem.inputFileNameErrorMessage = 'ファイル名は1文字以上で指定してください。'
+                        : ''
+                }
+                : selectedFileItem
+        })
+
+        setSelectedFileItems(editedSelectedFileItems)
+    }
+
     return (
         <>
             <h1>documentページ</h1>
@@ -308,10 +332,13 @@ const DocumentManagement = () => {
                 {selectedFileItems.map((selectedFileItem, i) => {
                     return (
                         <li key={i}>
-                            <TextField id="outlined-basic" value={selectedFileItem.fileName} onChange={(e) => {handleChangeFileNameInput(e, selectedFileItem.id)}}/>
+                            <TextField id="outlined-basic" value={selectedFileItem.fileName} onChange={(e) => { handleChangeFileNameInput(e, selectedFileItem.id) }} onBlur={(e) => {handleOnBlurFileNameInput(e, selectedFileItem.id)}}/>
                             <button onClick={() => { handleClickDeleteIcon(selectedFileItem.fileName) }}><RiDeleteBin5Line /></button>
                             {selectedFileItem.errorMessage !== '' &&
                                 <p style={{ color: textColor.error }}>{selectedFileItem.errorMessage}</p>
+                            }
+                            {selectedFileItem.inputFileNameErrorMessage !== '' &&
+                                <p style={{ color: textColor.error }}>{selectedFileItem.inputFileNameErrorMessage}</p>
                             }
                         </li>
                     )
