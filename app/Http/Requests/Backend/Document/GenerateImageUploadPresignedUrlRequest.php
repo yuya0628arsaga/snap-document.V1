@@ -26,7 +26,7 @@ class GenerateImageUploadPresignedUrlRequest extends FormRequest
     {
         return [
             'document_name' => ['required', 'string', 'exists:documents,name'],
-            'file_name' => ['required', 'string'],
+            'file_name' => ['required', 'string', 'max:255'],
             'size' => ['required', 'integer', 'max:10485760'], // 単位はバイト（10MBまで許容）
             'extension' => ['required', new ImageMimeTypeRule()],
         ];
