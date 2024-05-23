@@ -101,12 +101,12 @@ const UserLogin = (props: UserLoginPropsType) => {
                 <LoginCard>
                     <InputFormWrapper>
                         <InputForm>
-                            <TextField fullWidth label="メールアドレス" id="fullWidth" size="small" error={false} type={'text'}/>
+                            <TextField fullWidth label="メールアドレス" id="fullWidth" size="medium" error={false} type={'text'}/>
                             {/* <FormHelperText id="fullWidth" error={false}>Error</FormHelperText> */}
                         </InputForm>
 
                         <InputForm>
-                            <TextField fullWidth label="パスワード" id="fullWidth" size="small" error={false} type={'text'}/>
+                            <TextField fullWidth label="パスワード" id="fullWidth" size="medium" error={false} type={'text'}/>
                             {/* <FormHelperText id="fullWidth" error={false}>Error</FormHelperText> */}
                         </InputForm>
                     </InputFormWrapper>
