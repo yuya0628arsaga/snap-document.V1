@@ -32,7 +32,8 @@ const GoogleLoginButtonWrapper = styled('a')`
         vertical-align: middle;
         white-space: nowrap;
         width: auto;
-        max-width: 400px;
+        /* max-width: 400px; */
+        width: 100%;
         min-width: min-content;
     }
 
