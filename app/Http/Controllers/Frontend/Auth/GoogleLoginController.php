@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers\Frontend\Auth;
 
-use Laravel\Socialite\Facades\Socialite;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\UseCase\Frontend\Auth\GoogleLoginUseCase;
+use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 class GoogleLoginController extends Controller
 {
+    /**
+     * @param GoogleLoginUseCase $googleLoginUseCase
+     */
+    public function __construct(
+        private readonly GoogleLoginUseCase $googleLoginUseCase
+    ){
+    }
+
     /**
      * プロバイダにリダイレクト（認証画面の表示）
      *
@@ -17,7 +26,7 @@ class GoogleLoginController extends Controller
      */
     public function redirect(): RedirectResponse
     {
-        return Socialite::driver('google')->redirect();
+        return $this->googleLoginUseCase->redirectToGoogleAuth();
     }
 
     /**
@@ -27,15 +36,18 @@ class GoogleLoginController extends Controller
      */
     public function callback(): RedirectResponse
     {
-        $socialiteUser = Socialite::driver('google')->user();
-        $email = $socialiteUser->email;
+        try {
+            $user = $this->googleLoginUseCase->getGoogleAuthUser();
+            Auth::guard('web')->login($user);
 
-        $user = User::firstOrCreate(['email' => $email], [
-            'name' => $socialiteUser->name,
-        ]);
+            return redirect()->intended(route('user.home'));
+        } catch (Exception $e) {
+            Log::info('ユーザーの認証処理が失敗しました。', [
+                'method' => __METHOD__,
+                'error' => $e,
+            ]);
 
-        Auth::guard('web')->login($user);
-
-        return redirect()->intended(route('user.home'));
+            return redirect(route('user.auth.index'));
+        }
     }
 }
