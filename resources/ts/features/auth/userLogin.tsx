@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import styled from '@emotion/styled';
 import GoogleLoginButton from './components/GoogleLoginButton';
 import CheckboxLabels from '../../components/Checkbox';
+import { bgColor, borderColor, textColor } from '../../utils/themeClient';
 
 const Wrapper = styled('div')`
     /* display: flex;
@@ -81,6 +82,7 @@ const InputFormWrapper = styled('div')`
 
 const InputForm = styled('div')`
 `
+
 type UserLoginPropsType = {
     googleLoginUrl: string
 }
@@ -127,7 +129,17 @@ const UserLogin = (props: UserLoginPropsType) => {
                     </div>
 
                     <div className='login-button'>
-                        <Button variant="contained" fullWidth size='large'>ログイン</Button>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size='large'
+                            sx={{
+                                color: `${textColor.white}`,
+                                background: `${bgColor.blue}`,
+                            }}
+                        >
+                            ログイン
+                        </Button>
                     </div>
 
                     <div className='google-login-button'>
