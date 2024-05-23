@@ -9,34 +9,22 @@ import CheckboxLabels from '../../components/Checkbox';
 import { bgColor, borderColor, textColor } from '../../utils/themeClient';
 
 const Wrapper = styled('div')`
-    /* display: flex;
-    justify-content: center;
-    flex-direction: column; */
-
-    /* background: red; */
-    background: #F4F7FA;
+    background: ${bgColor.lightBlue};
     height: 100vh;
     padding-top: 40px;
 `
 
 const LoginCard = styled('div')`
-    /* padding: 100px; */
     width: 60%;
-    /* height: 600px; */
     display: flex;
     justify-content: center;
     flex-direction: column;
     margin: 0 auto;
-
-    /* padding: 40px, 0px, 40px, 0px; */
-
-    background: #fff;
+    background: ${bgColor.white};
     padding: 40px;
     padding-top: 64px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-
-    /* background: lawngreen; */
 
     > .google-login-button {
         width: 30%;
@@ -64,7 +52,7 @@ const LoginCard = styled('div')`
             gap: 8px;
 
             > .text {
-                color: #3D89E4;
+                color: ${textColor.linkBlue};
                 font-size: 14px;
             }
         }
@@ -77,7 +65,6 @@ const InputFormWrapper = styled('div')`
     gap: 24px;
     width: 60%;
     margin: 0 auto;
-    /* background: yellow; */
 `
 
 const InputForm = styled('div')`
@@ -117,13 +104,13 @@ const UserLogin = (props: UserLoginPropsType) => {
                         <a href='#' className='link'>
                             <div className='text'>パスワードを忘れた方はこちらから</div>
                             <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2 9.35315L6 5.35315L2 1.35315" stroke="#3D89E4" />
+                                <path d="M2 9.35315L6 5.35315L2 1.35315" stroke={`${textColor.linkBlue}`} />
                             </svg>
                         </a>
                         <a href='#' className='link'>
                             <div className='text'>新規登録はこちらから</div>
                             <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2 9.35315L6 5.35315L2 1.35315" stroke="#3D89E4" />
+                                <path d="M2 9.35315L6 5.35315L2 1.35315" stroke={`${textColor.linkBlue}`} />
                             </svg>
                         </a>
                     </div>
