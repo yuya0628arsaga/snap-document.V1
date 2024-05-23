@@ -39,7 +39,7 @@ const GoogleLoginButtonWrapper = styled('a')`
 
     > .gsi-material-button .gsi-material-button-icon {
         height: 20px;
-        margin-right: 12px;
+        /* margin-right: 12px; */
         min-width: 20px;
         width: 20px;
     }
