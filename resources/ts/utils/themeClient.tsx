@@ -30,6 +30,7 @@ const color = {
       lg: '16px',
       xl: '20px',
       xxl: '24px',
+      xxxl: '32px',
     },
     weight: {
       normal: '400',

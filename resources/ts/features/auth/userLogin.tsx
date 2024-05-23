@@ -6,12 +6,16 @@ import TextField from '@mui/material/TextField';
 import styled from '@emotion/styled';
 import GoogleLoginButton from './components/GoogleLoginButton';
 import CheckboxLabels from '../../components/Checkbox';
-import { bgColor, borderColor, textColor } from '../../utils/themeClient';
+import { bgColor, borderColor, fontSize, fontWeight, textColor } from '../../utils/themeClient';
 
 const Wrapper = styled('div')`
     background: ${bgColor.lightBlue};
     height: 100vh;
-    padding-top: 40px;
+    padding-top: 120px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
 `
 
 const LoginCard = styled('div')`
@@ -22,7 +26,6 @@ const LoginCard = styled('div')`
     margin: 0 auto;
     background: ${bgColor.white};
     padding: 40px;
-    padding-top: 64px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 
@@ -70,16 +73,31 @@ const InputFormWrapper = styled('div')`
 const InputForm = styled('div')`
 `
 
+const Title = styled('div')`
+    margin: 0 auto;
+    font-size: ${fontSize.xxxl};
+    font-weight: ${fontWeight.bold};
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+`
+
 type UserLoginPropsType = {
-    googleLoginUrl: string
+    googleLoginUrl: string,
+    appName: string,
 }
 
 const UserLogin = (props: UserLoginPropsType) => {
-    const { googleLoginUrl } = props
+    const { googleLoginUrl, appName } = props
 
     return (
         <>
             <Wrapper>
+                <Title>
+                    <img src="/images/icon/logo.png" alt="" width={40} />
+                    <div className='text'>{appName}</div>
+                </Title>
                 <LoginCard>
                     <InputFormWrapper>
                         <InputForm>
