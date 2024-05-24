@@ -386,7 +386,11 @@ type GroupByDateChatGroupsType = {
     [lastChatDate: string]: ChatGroup[]
 }
 
-const ChatMessage = () => {
+type ChatMessagePropsType = {
+    userName: string
+}
+const ChatMessage = (props: ChatMessagePropsType) => {
+    const { userName } = props
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -1048,6 +1052,7 @@ const ChatMessage = () => {
                             <AccountPopupMenuButton
                                 isGetPdfPage={isGetPdfPage}
                                 setIsGetPdfPage={setIsGetPdfPage}
+                                userName={userName}
                             />
                         </div>
                     </div>

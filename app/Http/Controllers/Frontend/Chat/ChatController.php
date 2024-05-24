@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Frontend\Chat;
 
 use App\Http\Controllers\Controller;
+use App\Services\Frontend\Auth\AuthUserGetter;
 use Illuminate\View\View;
 
 class ChatController extends Controller
@@ -15,6 +16,9 @@ class ChatController extends Controller
      */
     public function __invoke(): View
     {
-        return view('frontend.home.index');
+        $user = AuthUserGetter::get();
+        return view('frontend.home.index')->with([
+            'userName' => $user->name,
+        ]);
     }
 }

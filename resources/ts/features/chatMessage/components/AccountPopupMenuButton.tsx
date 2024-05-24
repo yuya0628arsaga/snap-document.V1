@@ -35,10 +35,11 @@ const AccountButton = styled('button')`
 type AccountPopupMenuButtonProps = {
     isGetPdfPage: boolean,
     setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
+    userName: string,
 }
 
 const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) => {
-    const { isGetPdfPage, setIsGetPdfPage } = props
+    const { isGetPdfPage, setIsGetPdfPage, userName } = props
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -74,7 +75,7 @@ const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) =
                     <FaRegUserCircle style={{fontSize: '28px'}}/>
                 </div>
                 <div className='user-name'>
-                    ゲスト
+                    {userName}
                 </div>
             </AccountButton>
             <AccountSettingsModal
