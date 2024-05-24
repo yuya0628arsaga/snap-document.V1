@@ -7,6 +7,8 @@ import styled from '@emotion/styled';
 import GoogleLoginButton from './components/GoogleLoginButton';
 import CheckboxLabels from '../../components/Checkbox';
 import { bgColor, borderColor, fontSize, fontWeight, textColor } from '../../utils/themeClient';
+import { StatusCode } from '../../utils/statusCode';
+import { FormHelperText } from '@mui/material';
 
 const Wrapper = styled('div')`
     background: ${bgColor.lightBlue};
@@ -38,6 +40,12 @@ const LoginCard = styled('div')`
     > .login-button {
         width: 30%;
         margin: 0 auto;
+        margin-top: 40px;
+    }
+
+    > .error-message {
+        margin: 0 auto;
+        color: ${textColor.error};
         margin-top: 40px;
     }
 
@@ -91,6 +99,58 @@ type UserLoginPropsType = {
 const UserLogin = (props: UserLoginPropsType) => {
     const { googleLoginUrl, appName } = props
 
+    const [emailErrorMessage, setEmailErrorMessage] = useState('')
+    const [passwordErrorMessage, setPasswordErrorMessage] = useState('')
+    const [failLoginErrorMessage, setFailLoginErrorMessage] = useState('')
+
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+
+    const login = () => {
+
+        if (email === '') {
+            setEmailErrorMessage('メールアドレスは必ず指定してください。')
+            return
+        }
+
+        if (password === '') {
+            setPasswordErrorMessage('パスワードは必ず指定してください。')
+            return
+        }
+
+        setFailLoginErrorMessage('')
+
+        axios({
+            method: 'POST',
+            url: '/auth/login',
+            params: {
+                email: email,
+                password: password,
+            }
+        })
+        .then((res) => {
+            console.log(res.data)
+        })
+        .catch((e: AxiosError) => {
+            if (axios.isAxiosError(e) && e.response) {
+                console.error(e)
+                const { status, message } = e.response.data as { status: number, message: string }
+
+                const errorMessages = {
+                    [StatusCode.UNAUTHORIZED]: `${message}`,
+                    [StatusCode.VALIDATION]: `${status}エラー： ${message}`,
+                    [StatusCode.SERVER_ERROR]: 'サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。'
+                } as any
+
+                setFailLoginErrorMessage(errorMessages[status])
+            } else {
+                // general error
+                console.error(e)
+                setFailLoginErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
+            }
+        })
+    }
+
     return (
         <>
             <Wrapper>
@@ -101,15 +161,39 @@ const UserLogin = (props: UserLoginPropsType) => {
                 <LoginCard>
                     <InputFormWrapper>
                         <InputForm>
-                            <TextField fullWidth label="メールアドレス" id="fullWidth" size="medium" error={false} type={'text'}/>
-                            {/* <FormHelperText id="fullWidth" error={false}>Error</FormHelperText> */}
+                            <TextField fullWidth label="メールアドレス"
+                                size="medium"
+                                error={emailErrorMessage !== ''}
+                                type={'text'}
+                                value={email}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    setEmail(e.target.value)
+                                    setEmailErrorMessage('')
+                                }}
+                            />
+                            {emailErrorMessage !== '' && <FormHelperText id="fullWidth" error={true}>{emailErrorMessage}</FormHelperText>}
                         </InputForm>
 
                         <InputForm>
-                            <TextField fullWidth label="パスワード" id="fullWidth" size="medium" error={false} type={'text'}/>
-                            {/* <FormHelperText id="fullWidth" error={false}>Error</FormHelperText> */}
+                            <TextField fullWidth label="パスワード"
+                                size="medium"
+                                error={passwordErrorMessage !== ''}
+                                type={'password'}
+                                value={password}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                    setPassword(e.target.value)
+                                    setPasswordErrorMessage('')
+                                }}
+                            />
+                            {passwordErrorMessage !== '' && <FormHelperText id="fullWidth" error={true}>{passwordErrorMessage}</FormHelperText>}
                         </InputForm>
                     </InputFormWrapper>
+
+                    {failLoginErrorMessage !== '' &&
+                        <div className='error-message'>
+                            {failLoginErrorMessage}
+                        </div>
+                    }
 
                     <div className='auto-login-checkbox'>
                         <CheckboxLabels
@@ -142,6 +226,7 @@ const UserLogin = (props: UserLoginPropsType) => {
                                 color: `${textColor.white}`,
                                 background: `${bgColor.blue}`,
                             }}
+                            onClick={login}
                         >
                             ログイン
                         </Button>
