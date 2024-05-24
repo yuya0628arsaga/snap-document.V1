@@ -1,7 +1,7 @@
 const color = {
     background: {
         lightGray: '#f9f9f9',
-        lightBlue: '#EFF5F8',
+        lightBlue: '#F4F7FA',
         white: '#FFFFFF',
         blue: '#00A4FF',
         buttonGray: '#ececec',
@@ -17,7 +17,9 @@ const color = {
 
     text: {
         // error: '#ff0000'
-        error: '#b91c1c'
+        error: '#b91c1c',
+        white: '#FFFFFF',
+        linkBlue: '#3D89E4',
     }
 }
 
@@ -28,6 +30,7 @@ const color = {
       lg: '16px',
       xl: '20px',
       xxl: '24px',
+      xxxl: '32px',
     },
     weight: {
       normal: '400',

@@ -105,6 +105,16 @@ class Handler extends ExceptionHandler
             ], $status);
         }
 
+        if ($e instanceof AuthenticationException) {
+            // 401 Unauthorized のエラーハンドリング
+            Log::info('未ログインのため、ログイン画面に遷移します。', [
+                'status' => SymfonyResponse::HTTP_UNAUTHORIZED,
+                'message' => $e->getMessage(),
+            ]);
+
+            return parent::render($request, $e);
+        }
+
         // Web Route でのエラー（ブラウザにエラー用のhtmlを返却する）
         Log::info('apiルート以外で例外が発生しました。デフォルトのレンダリングを適応します。', [
             'method' => __METHOD__,

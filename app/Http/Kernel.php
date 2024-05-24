@@ -42,6 +42,12 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+
+            /******* 以下追加 *******/
+            \App\Http\Middleware\EncryptCookies::class, // APIレスポンスやリクエストで扱われるクッキーが暗号化するため
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, // リクエストの処理中にキューに追加されたクッキーをレスポンスに追加するため
+            \Illuminate\Session\Middleware\StartSession::class, // APIルートでもセッションを利用できるようにするため
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class, // セッションを使ってエラーメッセージを管理し、APIレスポンスでエラーメッセージを表示するため
         ],
     ];
 

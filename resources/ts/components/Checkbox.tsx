@@ -3,26 +3,37 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { lightBlue } from '@mui/material/colors';
+import styled from '@emotion/styled';
 
-const CheckboxLabels = (props) => {
-    const { targetChat, chats, includeToHistory } = props
+type CheckboxLabelsPropsType = {
+    label: string,
+    handleChangeCheckbox: () => void,
+}
 
-    const handleCheckbox = () => {
-        includeToHistory(targetChat, chats)
+const CheckboxLabelsWrapper = styled('div')`
+    >.MuiFormGroup-root >.MuiFormControlLabel-root >.MuiTypography-root {
+        margin-top: 3px;
     }
+`
+
+const CheckboxLabels = (props: CheckboxLabelsPropsType) => {
+    const { label, handleChangeCheckbox } = props
+
     return (
-      <FormGroup>
-            <FormControlLabel
-                label="この会話を次の質問に含める"
-                control={<Checkbox
-                    onChange={handleCheckbox}
-                    sx={{
-                        '&.Mui-checked': {
-                            color: lightBlue[600],
-                        },
-                    }} />}
-             />
-      </FormGroup>
+        <CheckboxLabelsWrapper>
+            <FormGroup>
+                <FormControlLabel
+                    label={label}
+                    control={<Checkbox
+                        onChange={() => handleChangeCheckbox()}
+                        sx={{
+                            '&.Mui-checked': {
+                                color: lightBlue[600],
+                            },
+                        }} />}
+                />
+            </FormGroup>
+        </CheckboxLabelsWrapper>
     );
 }
 

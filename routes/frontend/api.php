@@ -23,16 +23,20 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('chats')->name('chat.')->group(function () {
-    Route::post('/', StoreChatController::class)->name('store');
-    Route::get('/', FetchChatsController::class)->name('fetch');
-});
+Route::middleware(['auth:web'])->group(function () {
+    // chats
+    Route::prefix('chats')->name('chat.')->group(function () {
+        Route::post('/', StoreChatController::class)->name('store');
+        Route::get('/', FetchChatsController::class)->name('fetch');
+    });
 
-Route::prefix('chat-groups')->name('chat_groups.')->group(function () {
-    Route::get('/', FetchChatGroupsController::class)->name('fetch');
-    Route::post('/', UpdateChatGroupController::class)->name('update');
-    Route::delete('/{chat_group_id}', DeleteChatGroupController::class)->name('delete');
-    Route::get('/count', CountChatGroupsController::class)->name('count');
+    // chat-groups
+    Route::prefix('chat-groups')->name('chat_groups.')->group(function () {
+        Route::get('/', FetchChatGroupsController::class)->name('fetch');
+        Route::post('/', UpdateChatGroupController::class)->name('update');
+        Route::delete('/{chat_group_id}', DeleteChatGroupController::class)->name('delete');
+        Route::get('/count', CountChatGroupsController::class)->name('count');
+    });
 });
 
 
