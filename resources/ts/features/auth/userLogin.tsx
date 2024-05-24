@@ -106,6 +106,14 @@ const UserLogin = (props: UserLoginPropsType) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
+    const successConsole = (message: string, result: any = null, color: string = 'green') => {
+        console.log(`%c${message}: `, `color: ${color};`, result)
+    }
+
+    const errorConsole = (message: string, result: any = null, color: string = `${textColor.error}`) => {
+        console.log(`%c${message}: `, `color: ${color};`, result)
+    }
+
     const login = () => {
 
         if (email === '') {
@@ -130,6 +138,8 @@ const UserLogin = (props: UserLoginPropsType) => {
         })
         .then((res) => {
             console.log(res.data)
+            successConsole('ログイン成功', res.data.intendedUrl)
+            window.location.href = res.data.intendedUrl;
         })
         .catch((e: AxiosError) => {
             if (axios.isAxiosError(e) && e.response) {
@@ -148,6 +158,7 @@ const UserLogin = (props: UserLoginPropsType) => {
                 console.error(e)
                 setFailLoginErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
             }
+            errorConsole('ログイン失敗')
         })
     }
 
