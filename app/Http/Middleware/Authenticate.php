@@ -25,12 +25,7 @@ class Authenticate extends Middleware
         $msg = 'Unauthenticated';
 
         if ($request->is('api/*')) {
-            $response = response()->error(
-                status: Response::HTTP_UNAUTHORIZED,
-                msg: $msg,
-            );
-
-            throw new HttpResponseException($response);
+            throw new AuthenticationException($msg);
         }
 
         throw new AuthenticationException(
