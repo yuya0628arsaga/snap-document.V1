@@ -111,7 +111,7 @@ const GoogleLoginButtonWrapper = styled('a')`
 `
 
 type GoogleLoginButtonPropsType = {
-    googleLoginUrl: string
+    googleLoginUrl: string | undefined
 }
 
 /**

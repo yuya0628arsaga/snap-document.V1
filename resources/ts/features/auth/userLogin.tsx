@@ -8,7 +8,7 @@ import GoogleLoginButton from './components/GoogleLoginButton';
 import CheckboxLabels from '../../components/Checkbox';
 import { bgColor, borderColor, fontSize, fontWeight, textColor } from '../../utils/themeClient';
 import { StatusCode } from '../../utils/statusCode';
-import { FormHelperText } from '@mui/material';
+import { CircularProgress, FormHelperText } from '@mui/material';
 
 const Wrapper = styled('div')`
     background: ${bgColor.lightBlue};
@@ -91,6 +91,12 @@ const Title = styled('div')`
     gap: 16px;
 `
 
+const Loading = styled('div')`
+    position: fixed ;
+    left: 50%;
+    top: 50%;
+`
+
 type UserLoginPropsType = {
     googleLoginUrl: string,
     appName: string,
@@ -105,6 +111,8 @@ const UserLogin = (props: UserLoginPropsType) => {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    const [isLoading, setIsLoading] = useState(false)
 
     const successConsole = (message: string, result: any = null, color: string = 'green') => {
         console.log(`%c${message}: `, `color: ${color};`, result)
@@ -125,6 +133,9 @@ const UserLogin = (props: UserLoginPropsType) => {
             setPasswordErrorMessage('パスワードは必ず指定してください。')
             return
         }
+
+        if (isLoading) return
+        setIsLoading(true)
 
         setFailLoginErrorMessage('')
 
@@ -159,12 +170,17 @@ const UserLogin = (props: UserLoginPropsType) => {
                 setFailLoginErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
             }
             errorConsole('ログイン失敗')
+            setIsLoading(false)
         })
     }
 
     return (
         <>
-            <Wrapper>
+            {isLoading &&
+                <Loading>
+                    <CircularProgress disableShrink size={60}/>
+                </Loading>}
+            <Wrapper style={{opacity: isLoading ? 0.4 : 1}}>
                 <Title>
                     <img src="/images/icon/logo.png" alt="" width={40} />
                     <div className='text'>{appName}</div>
@@ -244,7 +260,7 @@ const UserLogin = (props: UserLoginPropsType) => {
                     </div>
 
                     <div className='google-login-button'>
-                        <GoogleLoginButton googleLoginUrl={googleLoginUrl} />
+                        <GoogleLoginButton googleLoginUrl={isLoading ? undefined : googleLoginUrl} />
                     </div>
 
                 </LoginCard>
