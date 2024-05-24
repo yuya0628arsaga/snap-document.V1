@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCase\Frontend\ChatGroup\Api;
 
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
+use App\Services\Frontend\Auth\AuthUserGetter;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -24,7 +25,8 @@ class FetchChatGroupsUseCase
      */
     public function execute(): Collection
     {
-        $chatGroups = $this->chatGroupRepository->fetch();
+        $user = AuthUserGetter::get();
+        $chatGroups = $this->chatGroupRepository->fetch(whereParams: ['user_id' => $user->id]);
 
         return $chatGroups->map(function ($chatGroup) {
             $formatLastChatDate = (new CarbonImmutable($chatGroup->last_chat_date))->format('Y年m月');
