@@ -8,6 +8,7 @@ import { fontSize } from '../../../utils/themeClient';
 import { fontWeight } from '../../../utils/themeClient';
 import { IoSettingsOutline } from "react-icons/io5";
 import AccountSettingsModal, { setIsGetPdfPageParam } from './AccountSettingsModal';
+import axios, { AxiosResponse } from 'axios';
 
 const AccountButton = styled('button')`
     display: flex;
@@ -49,6 +50,20 @@ const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) =
     };
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
+
+    /**
+     * ログアウト処理
+     */
+    const logout = () => {
+        axios({
+            url: '/auth/logout',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse) => {
+            console.log(res.data.redirectUrl)
+            window.location.href = res.data.redirectUrl;
+        })
+    }
 
     return (
         <>
@@ -92,7 +107,10 @@ const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) =
                     <IoSettingsOutline />
                     <p>設定</p>
                 </MenuItem>
-                <MenuItem onClick={handleClose}>Logout</MenuItem>
+                <MenuItem onClick={() => {
+                    logout()
+                    handleClose()
+                }}>ログアウト</MenuItem>
             </Menu>
         </>
     );
