@@ -48,5 +48,5 @@ Route::middleware('auth:web')->get('/ogawa2', function () {
 Route::get('/test-regi', function () {
     return User::firstOrCreate([
         'email' => 'test@test.com'
-    ], ['name' => 'テスト', 'password' => 'test']);
+    ], ['name' => 'テストユーザー', 'password' => 'test']);
 });
