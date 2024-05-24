@@ -14,19 +14,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::middleware(['guest:web'])->group(function () {
+    Route::prefix('auth')->name('auth.')->group(function () {
+        // デフォルトのログイン
+        Route::get('/login', [LoginController::class, 'index'])->name('index');
+        Route::post('/login', [LoginController::class, 'login'])->name('login');
+
+        // Googleログイン
+        Route::get('/google', [GoogleLoginController::class, 'redirect'])->name('login.google');
+        Route::get('/google/callback', [GoogleLoginController::class, 'callback'])->name('login.google.callback');
+    });
+});
+
 Route::middleware('auth:web')->get('/', function () {
     return view('frontend.home.index');
 })->name('home');
-
-// デフォルトのログイン
-Route::middleware('guest:web')->prefix('auth')->name('auth.')->group(function () {
-    Route::get('/login', [LoginController::class, 'index'])->name('index');
-    Route::post('/login', [LoginController::class, 'login'])->name('login');
-});
-
-// Googleログイン
-Route::get('/auth/google', [GoogleLoginController::class, 'redirect'])->name('login.google');
-Route::get('/auth/google/callback', [GoogleLoginController::class, 'callback'])->name('login.google.callback');
 
 
 
