@@ -622,14 +622,22 @@ const ChatMessage = () => {
 
             const { chatGroupsCount } = await getChatGroupsCount()
 
-            // pagination出力処理
-            const MAX_CHAT_GROUPS_COUNTS = 10 // サーバから取得する一回のchatGroupsの最大数
-            const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
-            const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
-            const maxPage = remainder ? quotient + 1 : quotient
-            setMaxPagination(maxPage ? maxPage : 1) // maxPageが0の場合は1を表示
+            const maxPage: number = getMaxPage(chatGroupsCount)
+            setMaxPagination(maxPage)
         })()
     }, [])
+
+    /**
+     * paginationのページ数を出力
+     */
+    const getMaxPage = (chatGroupsCount: number): number => {
+        const MAX_CHAT_GROUPS_COUNTS = 10 // サーバから取得する一回のchatGroupsの最大数
+        const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
+        const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
+        const maxPage = remainder ? quotient + 1 : quotient
+
+        return maxPage ? maxPage : 1 // maxPageが0の場合は1を表示
+    }
 
     /**
      * chatGroupsの初期化
