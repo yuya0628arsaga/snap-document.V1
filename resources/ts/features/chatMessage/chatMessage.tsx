@@ -627,7 +627,7 @@ const ChatMessage = () => {
             const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
             const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
             const maxPage = remainder ? quotient + 1 : quotient
-            setMaxPagination(maxPage)
+            setMaxPagination(maxPage ? maxPage : 1) // maxPageが0の場合は1を表示
         })()
     }, [])
 
