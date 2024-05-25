@@ -21,7 +21,7 @@ const Wrapper = styled('div')`
 `
 
 const LoginCard = styled('div')`
-    width: 60%;
+    width: 45%;
     display: flex;
     justify-content: center;
     flex-direction: column;
