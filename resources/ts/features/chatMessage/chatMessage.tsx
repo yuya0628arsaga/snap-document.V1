@@ -132,7 +132,10 @@ const SidebarContainer = styled('div')`
         background: ${bgColor.lightGray};
         height: 120px;
         @media (max-width: ${responsive.sp}) {
-            width: 0;
+            position: fixed;
+            left: 120%;
+            width: 100%;
+            transition: all 0.5s;
         }
         >.hoge {
             height: 50%;
@@ -142,6 +145,10 @@ const SidebarContainer = styled('div')`
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        &.open {
+            left: 0;
         }
     }
 `
@@ -1046,7 +1053,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
                         </div>
                     </div>
-                    <div className='sidebar-footer'>
+                    <div className={`sidebar-footer ${isSpMenuOpen ? 'open' : ''}`}>
                         <div className='hoge'></div>
                         <div className='account'>
                             <AccountPopupMenuButton
