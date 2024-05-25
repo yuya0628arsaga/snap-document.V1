@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import styled from '@emotion/styled';
 import GoogleLoginButton from './components/GoogleLoginButton';
 import CheckboxLabels from '../../components/Checkbox';
-import { bgColor, borderColor, fontSize, fontWeight, textColor } from '../../utils/themeClient';
+import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import { StatusCode } from '../../utils/statusCode';
 import { CircularProgress, FormHelperText } from '@mui/material';
 
@@ -18,10 +18,13 @@ const Wrapper = styled('div')`
     display: flex;
     flex-direction: column;
     gap: 40px;
+    @media (max-width: ${responsive.tab}) {
+        padding-top: 32px;
+    }
 `
 
 const LoginCard = styled('div')`
-    width: 60%;
+    width: 45%;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -30,17 +33,33 @@ const LoginCard = styled('div')`
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    @media (max-width: ${responsive.tab}) {
+        width: 88%;
+        padding: 40px 20px 40px 20px;
+    }
 
     > .google-login-button {
-        width: 30%;
+        min-width: 30%;
         margin: 0 auto;
         margin-top: 40px;
+        @media (max-width: ${responsive.tab}) {
+            width: 56%;
+        }
+        @media (max-width: ${responsive.sp}) {
+            width: 88%;
+        }
     }
 
     > .login-button {
-        width: 30%;
+        min-width: 30%;
         margin: 0 auto;
         margin-top: 40px;
+        @media (max-width: ${responsive.tab}) {
+            width: 56%;
+        }
+        @media (max-width: ${responsive.sp}) {
+            width: 88%;
+        }
     }
 
     > .error-message {
@@ -76,9 +95,18 @@ const InputFormWrapper = styled('div')`
     gap: 24px;
     width: 60%;
     margin: 0 auto;
+    @media (max-width: ${responsive.tab}) {
+        width: 80%;
+    }
+    @media (max-width: ${responsive.sp}) {
+        width: 100%;
+    }
 `
 
 const InputForm = styled('div')`
+    @media (max-width: ${responsive.tab}) {
+        width: 100%;
+    }
 `
 
 const Title = styled('div')`
@@ -89,12 +117,16 @@ const Title = styled('div')`
     justify-content: center;
     align-items: center;
     gap: 16px;
+    @media (max-width: ${responsive.sp}) {
+        font-size: ${fontSize.xxl};
+    }
 `
 
 const Loading = styled('div')`
     position: fixed ;
     left: 50%;
     top: 50%;
+    transform: translateX(-50%) translateY(-50%);
 `
 
 type UserLoginPropsType = {

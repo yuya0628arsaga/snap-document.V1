@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Frontend\Auth\GoogleLoginController;
 use App\Http\Controllers\Frontend\Auth\LoginController;
+use App\Http\Controllers\Frontend\Auth\LogoutController;
 use App\Http\Controllers\Frontend\Chat\ChatController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,8 @@ Route::middleware(['guest:web'])->group(function () {
 });
 
 Route::middleware('auth:web')->group(function () {
+    Route::get('/auth/logout', LogoutController::class)->name('logout');
+
     Route::get('/', ChatController::class)->name('home');
 });
 
@@ -45,5 +48,5 @@ Route::middleware('auth:web')->get('/ogawa2', function () {
 Route::get('/test-regi', function () {
     return User::firstOrCreate([
         'email' => 'test@test.com'
-    ], ['name' => 'テスト', 'password' => 'test']);
+    ], ['name' => 'テストユーザー', 'password' => 'test']);
 });

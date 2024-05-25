@@ -10,19 +10,23 @@ class StoreChatGroupParams
 {
     private readonly string $title;
     private readonly CarbonImmutable $lastChatDate;
+    private readonly string $userId;
 
     /**
      * @param string $title
      * @param CarbonImmutable $lastChatDate
+     * @param string $userId
      *
      * @return void
      */
     public function __construct(
         string $title,
         CarbonImmutable $lastChatDate,
+        string $userId,
     ) {
         $this->title = $title;
         $this->lastChatDate = $lastChatDate;
+        $this->userId = $userId;
     }
 
     /**
@@ -33,6 +37,7 @@ class StoreChatGroupParams
         return [
             'title' => $this->title,
             'last_chat_date' => $this->lastChatDate,
+            'user_id' => $this->userId,
         ];
     }
 }

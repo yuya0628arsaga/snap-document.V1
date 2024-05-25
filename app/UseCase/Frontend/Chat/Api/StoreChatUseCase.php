@@ -15,6 +15,7 @@ use App\Repositories\Frontend\ChatImage\Params\StoreChatImageParams;
 use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
+use App\Services\Frontend\Auth\AuthUserGetter;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -56,19 +57,20 @@ class StoreChatUseCase
         [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage);
 
         [$chatGroupId, $imageDatum] = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
+            $userId = AuthUserGetter::get()->id;
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
             if (! $chatGroupId) {
                 // chatGroupの中で初めての質問の場合
                 Log::info('[Start] チャットグループの保存処理を開始します。', [
                     'method' => __METHOD__,
-                    'user_id' => $userId ?? null,
+                    'user_id' => $userId,
                 ]);
 
                 $title = '質問_'.((string) Str::uuid());
                 $lastChatDate = $this->getCurrentTime();
 
-                $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate);
+                $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate, $userId);
                 $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
                 $chatGroupId = $chatGroup->id;
             } else {
@@ -76,7 +78,7 @@ class StoreChatUseCase
                 Log::info('[Start] チャットグループの更新処理を開始します。', [
                     'method' => __METHOD__,
                     'chat_group_id' => $chatGroupId,
-                    'user_id' => $userId ?? null,
+                    'user_id' => $userId,
                 ]);
 
                 $lastChatDate = $this->getCurrentTime();
@@ -89,16 +91,16 @@ class StoreChatUseCase
             Log::info('[Start] チャットの保存処理を開始します。', [
                 'method' => __METHOD__,
                 'question' => $question,
-                'user_id' => $userId ?? null,
+                'user_id' => $userId,
             ]);
 
-            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId);
+            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId, $userId);
             $chat = $this->chatRepository->store($storeChatParams);
 
             Log::info('[Start] ページの保存処理を開始します。', [
                 'method' => __METHOD__,
                 'chat_id' => $chat->id,
-                'user_id' => $userId ?? null,
+                'user_id' => $userId,
                 'pages' => $pdfPages,
             ]);
 
@@ -110,7 +112,7 @@ class StoreChatUseCase
             Log::info('[Start] 画像情報の保存処理を開始します。', [
                 'method' => __METHOD__,
                 'chat_id' => $chat->id,
-                'user_id' => $userId ?? null,
+                'user_id' => $userId,
                 'imageDatum' => $imageDatum,
             ]);
 
@@ -121,7 +123,7 @@ class StoreChatUseCase
                 'method' => __METHOD__,
                 'question' => $question,
                 'chat_id' => $chat->id,
-                'user_id' => $userId ?? null,
+                'user_id' => $userId,
             ]);
 
             return [$chatGroupId, $imageDatum];
@@ -186,10 +188,11 @@ class StoreChatUseCase
      * @param string $documentId
      * @param array $tokenCounts
      * @param string $chatGroupId
+     * @param string $userId
      *
      * @return StoreChatParams
      */
-    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId): StoreChatParams
+    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId, $userId): StoreChatParams
     {
         return
             new StoreChatParams(
@@ -199,7 +202,7 @@ class StoreChatUseCase
                 questionTokenCount: $tokenCounts['promptTokens'],
                 answerTokenCount: $tokenCounts['completionTokens'],
                 cost: $cost,
-                userId: null,
+                userId: $userId,
                 documentId: $documentId,
                 chatGroupId: $chatGroupId,
             );
@@ -238,15 +241,17 @@ class StoreChatUseCase
      *
      * @param string $title
      * @param CarbonImmutable $lastChatDate
+     * @param string $userId
      *
      * @return StoreChatGroupParams
      */
-    private function makeStoreChatGroupParams(string $title, CarbonImmutable $lastChatDate): StoreChatGroupParams
+    private function makeStoreChatGroupParams(string $title, CarbonImmutable $lastChatDate, string $userId): StoreChatGroupParams
     {
         return
             new StoreChatGroupParams(
                 title: $title,
                 lastChatDate: $lastChatDate,
+                userId: $userId,
             );
     }
 

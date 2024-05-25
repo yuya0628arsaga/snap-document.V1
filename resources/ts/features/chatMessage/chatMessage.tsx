@@ -132,7 +132,10 @@ const SidebarContainer = styled('div')`
         background: ${bgColor.lightGray};
         height: 120px;
         @media (max-width: ${responsive.sp}) {
-            width: 0;
+            position: fixed;
+            left: 120%;
+            width: 100%;
+            transition: all 0.5s;
         }
         >.hoge {
             height: 50%;
@@ -142,6 +145,10 @@ const SidebarContainer = styled('div')`
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        &.open {
+            left: 0;
         }
     }
 `
@@ -283,6 +290,9 @@ const AiAnswer = styled('div')`
                 width: 80%;
                 height: auto;
                 margin: 0 auto;
+                @media (max-width: ${responsive.sp}) {
+                    width: 100%;
+                }
             }
             >.img-text{
             }
@@ -386,7 +396,11 @@ type GroupByDateChatGroupsType = {
     [lastChatDate: string]: ChatGroup[]
 }
 
-const ChatMessage = () => {
+type ChatMessagePropsType = {
+    userName: string
+}
+const ChatMessage = (props: ChatMessagePropsType) => {
+    const { userName } = props
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -622,14 +636,22 @@ const ChatMessage = () => {
 
             const { chatGroupsCount } = await getChatGroupsCount()
 
-            // pagination出力処理
-            const MAX_CHAT_GROUPS_COUNTS = 10 // サーバから取得する一回のchatGroupsの最大数
-            const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
-            const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
-            const maxPage = remainder ? quotient + 1 : quotient
+            const maxPage: number = getMaxPage(chatGroupsCount)
             setMaxPagination(maxPage)
         })()
     }, [])
+
+    /**
+     * paginationのページ数を出力
+     */
+    const getMaxPage = (chatGroupsCount: number): number => {
+        const MAX_CHAT_GROUPS_COUNTS = 10 // サーバから取得する一回のchatGroupsの最大数
+        const quotient = Math.floor(chatGroupsCount / MAX_CHAT_GROUPS_COUNTS)
+        const remainder = chatGroupsCount % MAX_CHAT_GROUPS_COUNTS
+        const maxPage = remainder ? quotient + 1 : quotient
+
+        return maxPage ? maxPage : 1 // maxPageが0の場合は1を表示
+    }
 
     /**
      * chatGroupsの初期化
@@ -1034,12 +1056,13 @@ const ChatMessage = () => {
 
                         </div>
                     </div>
-                    <div className='sidebar-footer'>
+                    <div className={`sidebar-footer ${isSpMenuOpen ? 'open' : ''}`}>
                         <div className='hoge'></div>
                         <div className='account'>
                             <AccountPopupMenuButton
                                 isGetPdfPage={isGetPdfPage}
                                 setIsGetPdfPage={setIsGetPdfPage}
+                                userName={userName}
                             />
                         </div>
                     </div>

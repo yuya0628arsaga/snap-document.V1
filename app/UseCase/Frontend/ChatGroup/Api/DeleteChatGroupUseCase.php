@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\UseCase\Frontend\ChatGroup\Api;
 
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
+use App\Services\Frontend\Auth\AuthUserGetter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -28,10 +29,12 @@ class DeleteChatGroupUseCase
     public function execute(string $chatGroupId): void
     {
         DB::transaction(function () use ($chatGroupId) {
+            $userId = AuthUserGetter::get()->id;
+
             Log::info('[Start] チャットグループの削除処理を開始します。', [
                 'method' => __METHOD__,
                 'chat_group_id' => $chatGroupId,
-                'user_id' => $userId ?? null,
+                'user_id' => $userId,
             ]);
 
             $chatGroup = $this->chatGroupRepository->findOrFail($chatGroupId);
@@ -40,7 +43,7 @@ class DeleteChatGroupUseCase
             Log::info('[End] チャットグループの削除処理を完了しました。', [
                 'method' => __METHOD__,
                 'chat_group_id' => $chatGroupId,
-                'user_id' => $userId ?? null,
+                'user_id' => $userId,
             ]);
         });
     }
