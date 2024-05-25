@@ -49,8 +49,8 @@ const color = {
   }
 
 export const responsive = {
-    pc: '960px',
-    tab: '768px',
+    pc: '1280px',
+    tab: '960px',
     sp: '520px',
 }
 
