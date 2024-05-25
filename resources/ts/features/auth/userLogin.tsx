@@ -117,6 +117,7 @@ const Loading = styled('div')`
     position: fixed ;
     left: 50%;
     top: 50%;
+    transform: translateX(-50%) translateY(-50%);
 `
 
 type UserLoginPropsType = {
