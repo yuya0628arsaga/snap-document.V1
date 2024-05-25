@@ -290,6 +290,9 @@ const AiAnswer = styled('div')`
                 width: 80%;
                 height: auto;
                 margin: 0 auto;
+                @media (max-width: ${responsive.sp}) {
+                    width: 100%;
+                }
             }
             >.img-text{
             }
