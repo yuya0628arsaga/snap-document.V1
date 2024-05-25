@@ -18,7 +18,7 @@ const Wrapper = styled('div')`
     display: flex;
     flex-direction: column;
     gap: 40px;
-    @media (max-width: ${responsive.sp}) {
+    @media (max-width: ${responsive.tab}) {
         padding-top: 32px;
     }
 `
@@ -33,24 +33,30 @@ const LoginCard = styled('div')`
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    @media (max-width: ${responsive.sp}) {
+    @media (max-width: ${responsive.tab}) {
         width: 88%;
         padding: 40px 20px 40px 20px;
     }
 
     > .google-login-button {
-        width: 30%;
+        min-width: 30%;
         margin: 0 auto;
         margin-top: 40px;
+        @media (max-width: ${responsive.tab}) {
+            width: 56%;
+        }
         @media (max-width: ${responsive.sp}) {
             width: 88%;
         }
     }
 
     > .login-button {
-        width: 30%;
+        min-width: 30%;
         margin: 0 auto;
         margin-top: 40px;
+        @media (max-width: ${responsive.tab}) {
+            width: 56%;
+        }
         @media (max-width: ${responsive.sp}) {
             width: 88%;
         }
@@ -89,13 +95,16 @@ const InputFormWrapper = styled('div')`
     gap: 24px;
     width: 60%;
     margin: 0 auto;
+    @media (max-width: ${responsive.tab}) {
+        width: 80%;
+    }
     @media (max-width: ${responsive.sp}) {
         width: 100%;
     }
 `
 
 const InputForm = styled('div')`
-    @media (max-width: ${responsive.sp}) {
+    @media (max-width: ${responsive.tab}) {
         width: 100%;
     }
 `
