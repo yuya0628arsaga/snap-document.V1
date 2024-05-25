@@ -36,10 +36,12 @@ type AccountPopupMenuButtonProps = {
     isGetPdfPage: boolean,
     setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
     userName: string,
+    gptModel: string,
+    setGptModel: (gptModel: string) => void,
 }
 
 const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) => {
-    const { isGetPdfPage, setIsGetPdfPage, userName } = props
+    const { isGetPdfPage, setIsGetPdfPage, userName, gptModel, setGptModel } = props
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -83,6 +85,8 @@ const AccountPopupMenuButton = React.memo((props: AccountPopupMenuButtonProps) =
                 setOpen={setIsSettingsModalOpen}
                 isGetPdfPage={isGetPdfPage}
                 setIsGetPdfPage={setIsGetPdfPage}
+                gptModel={gptModel}
+                setGptModel={setGptModel}
             />
             <Menu
                 open={open}

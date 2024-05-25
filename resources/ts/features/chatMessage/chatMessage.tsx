@@ -415,6 +415,8 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
     // PDFページを取得するか否か
     const [isGetPdfPage, setIsGetPdfPage] = useState(true)
+    // GPTのモデル
+    const [gptModel, setGptModel] = useState('gpt-4o')
 
     // chatsの更新によるautoScroll()制御のため
     const [isChecking, setIsChecking] = useState(false)
@@ -1063,6 +1065,8 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                                 isGetPdfPage={isGetPdfPage}
                                 setIsGetPdfPage={setIsGetPdfPage}
                                 userName={userName}
+                                gptModel={gptModel}
+                                setGptModel={setGptModel}
                             />
                         </div>
                     </div>
