@@ -29,6 +29,8 @@ class StoreChatRequest extends FormRequest
             'manualName' => ['required', 'string', 'exists:documents,name'],
             'chatHistory' => ['array'],
             'chatGroupId' => [new StoreChatRule()],
+            'isGetPdfPage' => ['required', 'boolean'],
+            'gptModel' => ['required', 'string'],
         ];
     }
 
@@ -41,7 +43,9 @@ class StoreChatRequest extends FormRequest
             'question' => __('chats.question'),
             'manualName' => __('documents.name'),
             'chatHistory' => __('chats.history'),
-            'chatGroupId' => __('chat_groups.id')
+            'chatGroupId' => __('chat_groups.id'),
+            'isGetPdfPage' => __('chats.is_get_pdf_page'),
+            'gptModel' => __('chats.gpt_model'),
         ];
     }
 
@@ -93,5 +97,15 @@ class StoreChatRequest extends FormRequest
     public function getIsGetPdfPage(): bool
     {
         return $this->input('isGetPdfPage');
+    }
+
+    /**
+     * 使用するGPTモデルを取得
+     *
+     * @return string
+     */
+    public function getGptModel(): string
+    {
+        return $this->input('gptModel');
     }
 }

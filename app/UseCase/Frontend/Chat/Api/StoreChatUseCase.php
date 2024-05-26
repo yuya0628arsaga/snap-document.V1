@@ -47,14 +47,15 @@ class StoreChatUseCase
      * @param array $chatHistory チャット履歴
      * @param ?string $chatGroupId チャットグループID
      * @param bool $isGetPdfPage PDFページ取得フラグ
+     * @param string $gptModel GPTモデル
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId, bool $isGetPdfPage): array
+    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId, bool $isGetPdfPage, string $gptModel): array
     {
-        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage);
+        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage, $gptModel);
 
         [$chatGroupId, $imageDatum] = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
             $userId = AuthUserGetter::get()->id;
@@ -144,12 +145,13 @@ class StoreChatUseCase
      * @param string $documentName
      * @param array $chatHistory
      * @param bool $isGetPdfPage
+     * @param string $gptModel
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage): array
+    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage, string $gptModel): array
     {
         $responseFromGptEngine =
             Http::timeout(-1)->withHeaders([
@@ -159,6 +161,7 @@ class StoreChatUseCase
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
                 'is_get_pdf_page' => $isGetPdfPage,
+                'gpt_model' => $gptModel,
             ]);
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {

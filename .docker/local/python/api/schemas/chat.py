@@ -6,6 +6,7 @@ class Chat(BaseModel):
     document_name: str
     chat_history: list
     is_get_pdf_page: bool
+    gpt_model: str
 
 class GetImagesParams(BaseModel):
     answer: str

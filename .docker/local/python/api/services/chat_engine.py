@@ -15,7 +15,10 @@ from api.models.s3 import S3
 import settings
 
 
-GPT_MODEL = 'gpt-3.5-turbo'
+GPT_MODEL_LIST = [
+    'gpt-4o',
+    'gpt-3.5-turbo'
+]
 MAX_TOKENS = 1024
 TEMPERATURE = 0
 
@@ -26,7 +29,10 @@ IMG_EXTENSION = settings.IMG_EXTENSION or 'jpg'
 class ChatEngine(object):
     """GPTと通信するクラス"""
 
-    def __init__(self, model=GPT_MODEL, max_tokens=MAX_TOKENS, temperature=TEMPERATURE) -> None:
+    def __init__(self, model, max_tokens=MAX_TOKENS, temperature=TEMPERATURE) -> None:
+        if model not in GPT_MODEL_LIST:
+            raise GptModelNotExistError(f"{model}モデルは存在しません。")
+
         self.LLM = ChatOpenAI(
             model=model,
             max_tokens=max_tokens,
@@ -164,3 +170,6 @@ class ChatEngine(object):
         pdf_pages = [document.metadata['page'] + 1 for document in source_documents]
 
         return pdf_pages
+
+class GptModelNotExistError(Exception):
+    """存在しないGPTモデルを指定したエラー"""
