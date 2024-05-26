@@ -81,10 +81,10 @@ const SidebarContainer = styled('div')`
     display: flex;
     flex-direction: column;
     >.contents {
-        height: calc(100vh - 120px);
+        height: calc(100vh - 60px);
         width: 100%;
         >.past-chats-container {
-            height: calc(100vh - 120px - 80px);
+            height: calc(100vh - 60px - 80px);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -132,21 +132,22 @@ const SidebarContainer = styled('div')`
         bottom: 0;
         width: 20%;
         background: ${bgColor.lightGray};
-        height: 120px;
+        height: 60px;
         @media (max-width: ${responsive.sp}) {
             position: fixed;
             left: 120%;
             width: 100%;
             transition: all 0.5s;
         }
-        >.hoge {
-            height: 50%;
-        }
         >.account {
             height: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            display: none;
+            @media (max-width: ${responsive.sp}) {
+                display: block;
+            }
         }
 
         &.open {
@@ -206,6 +207,11 @@ const Header = styled('div')`
                     transform: rotate(-45deg);
                 }
             }
+        }
+    }
+    .account-menu-button {
+        @media (max-width: ${responsive.sp}) {
+            display: none;
         }
     }
 `
@@ -1065,7 +1071,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         </div>
                     </div>
                     <div className={`sidebar-footer ${isSpMenuOpen ? 'open' : ''}`}>
-                        <div className='hoge'></div>
                         <div className='account'>
                             <AccountPopupMenuButton
                                 isGetPdfPage={isGetPdfPage}
@@ -1084,13 +1089,15 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                             <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                         </div>
                         <button className={`hamburger ${isSpMenuOpen ? 'open' : ''}`} onClick={openSpMenu}><span></span></button>
-                        <AccountMenuButton
-                            isGetPdfPage={isGetPdfPage}
-                            setIsGetPdfPage={setIsGetPdfPage}
-                            gptModel={gptModel}
-                            setGptModel={setGptModel}
-                            avatarUrl={avatarUrl}
-                        />
+                        <div className='account-menu-button'>
+                            <AccountMenuButton
+                                isGetPdfPage={isGetPdfPage}
+                                setIsGetPdfPage={setIsGetPdfPage}
+                                gptModel={gptModel}
+                                setGptModel={setGptModel}
+                                avatarUrl={avatarUrl}
+                            />
+                        </div>
                     </Header>
                     <div className="messages" id="scroll-target">
                         {isChatLoading &&
