@@ -1,19 +1,29 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import PersonAdd from '@mui/icons-material/PersonAdd';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { AccountCircle } from '@mui/icons-material';
+import AccountSettingsModal, { setIsGetPdfPageParam } from './AccountSettingsModal';
+import axios, { AxiosResponse } from 'axios';
 
-export default function AccountMenuButton() {
+type AccountPopupMenuButtonProps = {
+    isGetPdfPage: boolean,
+    setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
+    gptModel: string,
+    setGptModel: (gptModel: string) => void,
+}
+
+const AccountMenuButton = (props: AccountPopupMenuButtonProps) => {
+    const { isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel } = props
+
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
+
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -22,9 +32,24 @@ export default function AccountMenuButton() {
     const handleClose = () => {
         setAnchorEl(null);
     };
+
+     /**
+     * ログアウト処理
+     */
+     const logout = () => {
+        axios({
+            url: '/auth/logout',
+            method: 'GET',
+        })
+        .then((res: AxiosResponse) => {
+            console.log(res.data.redirectUrl)
+            window.location.href = res.data.redirectUrl;
+        })
+    }
+
+
     return (
         <>
-
             <Tooltip title="アカウント設定">
                 <IconButton
                     onClick={handleClick}
@@ -38,6 +63,14 @@ export default function AccountMenuButton() {
                     <Avatar />
                 </IconButton>
             </Tooltip>
+            <AccountSettingsModal
+                open={isSettingsModalOpen}
+                setOpen={setIsSettingsModalOpen}
+                isGetPdfPage={isGetPdfPage}
+                setIsGetPdfPage={setIsGetPdfPage}
+                gptModel={gptModel}
+                setGptModel={setGptModel}
+            />
 
             <Menu
                 anchorEl={anchorEl}
@@ -76,21 +109,27 @@ export default function AccountMenuButton() {
             >
                 <MenuItem onClick={handleClose}>
                     <ListItemIcon>
-                        <AccountCircle fontSize="small" />
+                        <AccountCircle fontSize="medium" />
                     </ListItemIcon>
                     プロフィール
                 </MenuItem>
 
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                    handleClose()
+                    setIsSettingsModalOpen(true)
+                }}>
                     <ListItemIcon>
-                        <Settings fontSize="small" />
+                        <Settings fontSize="medium" />
                     </ListItemIcon>
                     設定
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                    logout()
+                    handleClose()
+                }}>
                     <ListItemIcon>
-                        <Logout fontSize="small" />
+                        <Logout fontSize="medium" />
                     </ListItemIcon>
                     ログアウト
                 </MenuItem>
@@ -98,3 +137,5 @@ export default function AccountMenuButton() {
         </>
     );
 }
+
+export default AccountMenuButton
