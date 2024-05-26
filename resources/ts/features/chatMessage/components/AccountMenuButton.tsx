@@ -12,15 +12,16 @@ import { AccountCircle } from '@mui/icons-material';
 import AccountSettingsModal, { setIsGetPdfPageParam } from './AccountSettingsModal';
 import axios, { AxiosResponse } from 'axios';
 
-type AccountPopupMenuButtonProps = {
+type AccountMenuButtonPropsType = {
     isGetPdfPage: boolean,
     setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
     gptModel: string,
     setGptModel: (gptModel: string) => void,
+    avatarUrl: string,
 }
 
-const AccountMenuButton = (props: AccountPopupMenuButtonProps) => {
-    const { isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel } = props
+const AccountMenuButton = (props: AccountMenuButtonPropsType) => {
+    const { isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel, avatarUrl } = props
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
 
@@ -33,10 +34,10 @@ const AccountMenuButton = (props: AccountPopupMenuButtonProps) => {
         setAnchorEl(null);
     };
 
-     /**
+    /**
      * ログアウト処理
      */
-     const logout = () => {
+    const logout = () => {
         axios({
             url: '/auth/logout',
             method: 'GET',
@@ -55,12 +56,8 @@ const AccountMenuButton = (props: AccountPopupMenuButtonProps) => {
                     onClick={handleClick}
                     size="small"
                     sx={{ ml: 2 }}
-                    aria-controls={open ? 'account-menu' : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={open ? 'true' : undefined}
                 >
-                    {/* <Avatar sx={{ width: 32, height: 32 }}>M</Avatar> */}
-                    <Avatar />
+                    <Avatar src={avatarUrl ?? ''} sx={{ width: 40, height: 40 }} />
                 </IconButton>
             </Tooltip>
             <AccountSettingsModal

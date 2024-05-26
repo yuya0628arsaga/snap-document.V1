@@ -17,6 +17,7 @@ import PastChat from './components/PastChat';
 import SearchQuestionInput from './components/SearchQuestionInput';
 import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
+import AccountMenuButton from './components/AccountMenuButton';
 
 
 const Wrapper = styled('div')`
@@ -398,10 +399,11 @@ type GroupByDateChatGroupsType = {
 }
 
 type ChatMessagePropsType = {
-    userName: string
+    userName: string,
+    avatarUrl: string,
 }
 const ChatMessage = (props: ChatMessagePropsType) => {
-    const { userName } = props
+    const { userName, avatarUrl } = props
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -1079,7 +1081,14 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         <div className='select-box'>
                             <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                         </div>
-                        <button className={ `hamburger ${ isSpMenuOpen ? 'open' : ''}` } onClick={openSpMenu}><span></span></button>
+                        <button className={`hamburger ${isSpMenuOpen ? 'open' : ''}`} onClick={openSpMenu}><span></span></button>
+                        <AccountMenuButton
+                            isGetPdfPage={isGetPdfPage}
+                            setIsGetPdfPage={setIsGetPdfPage}
+                            gptModel={gptModel}
+                            setGptModel={setGptModel}
+                            avatarUrl={avatarUrl}
+                        />
                     </Header>
                     <div className="messages" id="scroll-target">
                         {isChatLoading &&
