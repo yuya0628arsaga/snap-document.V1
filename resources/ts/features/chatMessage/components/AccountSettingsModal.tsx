@@ -7,6 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import styled from '@emotion/styled';
 import SelectMenuButton from '../../../components/SelectMenuButton';
+import { GPT_MODEL_LIST } from '../../../utils/constants';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -59,10 +60,6 @@ type AccountSettingsModalProps = {
 const AccountSettingsModal = (props: AccountSettingsModalProps) => {
     const { open, setOpen, isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel } = props
 
-    const GPT_MODELS = [
-        { label: 'GPT-4o （賢くて、速い）', value: 'gpt-4o' },
-        { label: 'GPT-3.5 Turbo （速い）', value: 'gpt-3.5-turbo' },
-    ]
     const handleClose = () => setOpen(false);
 
     return (
@@ -95,7 +92,7 @@ const AccountSettingsModal = (props: AccountSettingsModalProps) => {
                                 GPTモデル
                             </div>
                             <SelectMenuButton
-                                menuItems={GPT_MODELS}
+                                menuItems={GPT_MODEL_LIST}
                                 value={gptModel}
                                 setValue={setGptModel}
                             />

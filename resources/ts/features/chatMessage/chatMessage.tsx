@@ -16,6 +16,7 @@ import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 import PastChat from './components/PastChat';
 import SearchQuestionInput from './components/SearchQuestionInput';
 import NewChatButton from './components/NewChatButton';
+import { GPT_MODEL_LIST } from '../../utils/constants';
 
 
 const Wrapper = styled('div')`
@@ -416,7 +417,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     // PDFページを取得するか否か
     const [isGetPdfPage, setIsGetPdfPage] = useState(true)
     // GPTのモデル
-    const [gptModel, setGptModel] = useState('gpt-4o')
+    const [gptModel, setGptModel] = useState(GPT_MODEL_LIST[0].value)
 
     // chatsの更新によるautoScroll()制御のため
     const [isChecking, setIsChecking] = useState(false)
