@@ -34,6 +34,7 @@ class StoreChatController extends Controller
             $request->getChatHistory(),
             $request->getChatGroupId(),
             $request->getIsGetPdfPage(),
+            $request->getGptModel(),
         );
 
         return response()->json(new StoreChatResource($response), Response::HTTP_OK);

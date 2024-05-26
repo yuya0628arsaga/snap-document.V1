@@ -1,11 +1,13 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
-import { borderColor } from '../../../utils/themeClient';
+import { borderColor, textColor } from '../../../utils/themeClient';
 import { fontSize } from '../../../utils/themeClient';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import styled from '@emotion/styled';
+import SelectMenuButton from '../../../components/SelectMenuButton';
+import { GPT_MODEL_LIST } from '../../../utils/constants';
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -31,10 +33,15 @@ const Wrapper = styled('div')`
     }
     >.contents {
         padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         >.toggle-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 16px;
+            border-bottom: solid 1px ${borderColor.gray};
         }
     }
 `
@@ -46,10 +53,13 @@ type AccountSettingsModalProps = {
     setOpen: (open: boolean) => void,
     isGetPdfPage: boolean,
     setIsGetPdfPage: (isGetPdfPage: setIsGetPdfPageParam) => void,
+    gptModel: string,
+    setGptModel: (gptModel: string) => void,
 }
 
 const AccountSettingsModal = (props: AccountSettingsModalProps) => {
-    const { open, setOpen, isGetPdfPage, setIsGetPdfPage } = props
+    const { open, setOpen, isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel } = props
+
     const handleClose = () => setOpen(false);
 
     return (
@@ -67,10 +77,25 @@ const AccountSettingsModal = (props: AccountSettingsModalProps) => {
                     </div>
                     <div className='contents'>
                         <div className='toggle-container'>
-                            <div className='label'>参照したドキュメントのページを表示する</div>
-                                <FormControlLabel control={<Switch checked={isGetPdfPage} />} label="" onChange={() => {
+                            <div className='label'>
+                                参照したドキュメントのページを表示する
+                            </div>
+                            <FormControlLabel
+                                control={<Switch checked={isGetPdfPage} />} label=""
+                                onChange={() => {
                                     setIsGetPdfPage(prev => !prev)
-                                }}/>
+                                }}
+                            />
+                        </div>
+                        <div className='toggle-container'>
+                            <div className='label'>
+                                GPTモデル
+                            </div>
+                            <SelectMenuButton
+                                menuItems={GPT_MODEL_LIST}
+                                value={gptModel}
+                                setValue={setGptModel}
+                            />
                         </div>
                     </div>
                 </Wrapper>

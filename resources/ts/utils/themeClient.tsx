@@ -20,6 +20,7 @@ const color = {
         error: '#b91c1c',
         white: '#FFFFFF',
         linkBlue: '#3D89E4',
+        black: '#0D0D0D'
     }
 }
 

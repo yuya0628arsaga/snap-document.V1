@@ -11,7 +11,8 @@ router = APIRouter()
 async def answer(chat: Chat):
     try:
         params = chat.dict()
-        data = ChatEngine().get_answer(
+
+        data = ChatEngine(params['gpt_model']).get_answer(
             params['question'],
             params['document_name'],
             params['chat_history'],

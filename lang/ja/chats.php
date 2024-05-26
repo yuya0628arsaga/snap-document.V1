@@ -18,5 +18,7 @@ return [
     'cost' => 'GPTの料金',
 
     'history' => 'チャット履歴',
+    'is_get_pdf_page' => 'PDFページ取得フラグ',
+    'gpt_model' => 'GPTモデル',
 ];
 
