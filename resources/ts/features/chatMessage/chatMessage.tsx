@@ -17,6 +17,7 @@ import PastChat from './components/PastChat';
 import SearchQuestionInput from './components/SearchQuestionInput';
 import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
+import AccountMenuButton from './components/AccountMenuButton';
 
 
 const Wrapper = styled('div')`
@@ -80,10 +81,10 @@ const SidebarContainer = styled('div')`
     display: flex;
     flex-direction: column;
     >.contents {
-        height: calc(100vh - 120px);
+        height: calc(100vh - 60px);
         width: 100%;
         >.past-chats-container {
-            height: calc(100vh - 120px - 80px);
+            height: calc(100vh - 60px - 80px);
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -131,21 +132,22 @@ const SidebarContainer = styled('div')`
         bottom: 0;
         width: 20%;
         background: ${bgColor.lightGray};
-        height: 120px;
+        height: 60px;
         @media (max-width: ${responsive.sp}) {
             position: fixed;
             left: 120%;
             width: 100%;
             transition: all 0.5s;
         }
-        >.hoge {
-            height: 50%;
-        }
         >.account {
             height: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            display: none;
+            @media (max-width: ${responsive.sp}) {
+                display: block;
+            }
         }
 
         &.open {
@@ -157,7 +159,9 @@ const SidebarContainer = styled('div')`
 const Header = styled('div')`
     display: flex;
     align-items: center;
-    gap: 28%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 0 16px 0 16px;
     >.select-box {
         min-width: 60%;
     }
@@ -203,6 +207,11 @@ const Header = styled('div')`
                     transform: rotate(-45deg);
                 }
             }
+        }
+    }
+    .account-menu-button {
+        @media (max-width: ${responsive.sp}) {
+            display: none;
         }
     }
 `
@@ -398,10 +407,11 @@ type GroupByDateChatGroupsType = {
 }
 
 type ChatMessagePropsType = {
-    userName: string
+    userName: string,
+    avatarUrl: string,
 }
 const ChatMessage = (props: ChatMessagePropsType) => {
-    const { userName } = props
+    const { userName, avatarUrl } = props
 
     const [inputQuestion, setInputQuestion] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -1061,7 +1071,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         </div>
                     </div>
                     <div className={`sidebar-footer ${isSpMenuOpen ? 'open' : ''}`}>
-                        <div className='hoge'></div>
                         <div className='account'>
                             <AccountPopupMenuButton
                                 isGetPdfPage={isGetPdfPage}
@@ -1079,7 +1088,16 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         <div className='select-box'>
                             <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />
                         </div>
-                        <button className={ `hamburger ${ isSpMenuOpen ? 'open' : ''}` } onClick={openSpMenu}><span></span></button>
+                        <button className={`hamburger ${isSpMenuOpen ? 'open' : ''}`} onClick={openSpMenu}><span></span></button>
+                        <div className='account-menu-button'>
+                            <AccountMenuButton
+                                isGetPdfPage={isGetPdfPage}
+                                setIsGetPdfPage={setIsGetPdfPage}
+                                gptModel={gptModel}
+                                setGptModel={setGptModel}
+                                avatarUrl={avatarUrl}
+                            />
+                        </div>
                     </Header>
                     <div className="messages" id="scroll-target">
                         {isChatLoading &&

@@ -9,12 +9,12 @@ use App\Models\User;
 interface UserRepository
 {
    /**
-    * userデータの取得or保存
+    * userデータの保存or更新
     *
     * @param array $where
     * @param array $params
     *
     * @return User
     */
-    public function firstOrCreate(array $where, array $params): User;
+    public function updateOrCreate(array $where, array $params): User;
 }

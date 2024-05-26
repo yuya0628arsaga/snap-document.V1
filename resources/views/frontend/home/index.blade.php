@@ -2,7 +2,8 @@
     <div
         id="chat-message"
         data-props="{{ json_encode([
-            'userName' => $userName
+            'userName' => $userName,
+            'avatarUrl' => $avatarUrl,
         ])}}">
     </div>
 </x-base>

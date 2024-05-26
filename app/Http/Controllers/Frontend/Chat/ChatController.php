@@ -19,6 +19,7 @@ class ChatController extends Controller
         $user = AuthUserGetter::get();
         return view('frontend.home.index')->with([
             'userName' => $user->name,
+            'avatarUrl' => $user->avatar_url,
         ]);
     }
 }

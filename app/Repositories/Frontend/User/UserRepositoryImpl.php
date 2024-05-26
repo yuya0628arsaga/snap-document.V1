@@ -11,8 +11,8 @@ class UserRepositoryImpl implements UserRepository
     /**
      * {@inheritdoc}
      */
-    public function firstOrCreate(array $where, array $params): User
+    public function updateOrCreate(array $where, array $params): User
     {
-        return User::firstOrCreate($where, $params);
+        return User::updateOrCreate($where, $params);
     }
 }

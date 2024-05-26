@@ -39,15 +39,19 @@ class GoogleLoginUseCase
     public function getGoogleAuthUser(): User
     {
         $socialiteUser = Socialite::driver('google')->user();
-        $email = $socialiteUser->email;
-        $name = $socialiteUser->name;
+        $email = $socialiteUser->getEmail();
+        $name = $socialiteUser->getName();
+        $avatarUrl = $socialiteUser->getAvatar();
 
-        return DB::transaction(function () use ($email, $name) {
+        return DB::transaction(function () use ($email, $name, $avatarUrl) {
             Log::info('[Start] ユーザーの認証処理を開始します。');
 
-            $user = $this->userRepository->firstOrCreate(
+            $user = $this->userRepository->updateOrCreate(
                 ['email' => $email],
-                ['name' => $name],
+                [
+                    'name' => $name,
+                    'avatar_url' => $avatarUrl,
+                ],
             );
 
             Log::info('[end] ユーザーの認証処理が終了しました。', [

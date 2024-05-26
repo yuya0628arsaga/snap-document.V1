@@ -11,4 +11,5 @@ return [
     'email' => 'メールアドレス',
     'email_verified_at' => 'メールアドレス認証日時',
     'password' => 'パスワード',
+    'avatar_url' => 'アバター画像のURL'
 ];
