@@ -158,7 +158,9 @@ const SidebarContainer = styled('div')`
 const Header = styled('div')`
     display: flex;
     align-items: center;
-    gap: 28%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 0 16px 0 16px;
     >.select-box {
         min-width: 60%;
     }

@@ -11,6 +11,11 @@ import Logout from '@mui/icons-material/Logout';
 import { AccountCircle } from '@mui/icons-material';
 import AccountSettingsModal, { setIsGetPdfPageParam } from './AccountSettingsModal';
 import axios, { AxiosResponse } from 'axios';
+import styled from '@emotion/styled';
+
+const AccountMenuButtonWrapper = styled('div')`
+    margin-right: 16px;
+`
 
 type AccountMenuButtonPropsType = {
     isGetPdfPage: boolean,
@@ -50,7 +55,7 @@ const AccountMenuButton = (props: AccountMenuButtonPropsType) => {
 
 
     return (
-        <>
+        <AccountMenuButtonWrapper>
             <Tooltip title="アカウント設定">
                 <IconButton
                     onClick={handleClick}
@@ -131,7 +136,7 @@ const AccountMenuButton = (props: AccountMenuButtonPropsType) => {
                     ログアウト
                 </MenuItem>
             </Menu>
-        </>
+        </AccountMenuButtonWrapper>
     );
 }
 
