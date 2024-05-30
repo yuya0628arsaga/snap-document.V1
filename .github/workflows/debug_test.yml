@@ -1,0 +1,90 @@
+name: Debug and Test
+
+on: [push]
+
+jobs:
+  debug-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: snap_document_test
+          MYSQL_USER: root
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: password
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: snap_document_test
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_EC2_METADATA_DISABLED: true
+      ORGANIZATION_APPLICATION_PERIOD: 9999-12-31 00:00
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # デフォルトの挙動だと先頭コミットしかfetchしない
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, cs2pr
+          coverage: pcov
+
+      - name: Cache composer
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: ./vendor
+          key: ${{ runner.os }}-composer-#{{ hashFiles('**/composer.lock') }}
+
+      - name: Composer install
+        env:
+          COMPOSER_MEMORY_LIMIT: -1
+        if: ${{ !steps.compser-cache.outputs.cache-hit }}
+        run: composer install -q --no-ansi --no-interaction --no-suggest --optimize-autoloader --prefer-dist
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v29.0.3
+
+      - name: Copy env
+        run: |
+          sed -e 's/APP_ENV=local/APP_ENV=testing/' \
+              -e 's/DB_DATABASE=.*/DB_DATABASE=snap_document_test' \
+              -e 's/PUBLIC_BUCKET_NAME=.*/PUBLIC_BUCKET_NAME=mel-document-public-test/' \
+              .env.example > .env.testing
+
+      - name: Install npm packages
+        run: yarn install
+
+      - name: Build Node
+        run: yarn build
+
+      - name: Generate key
+        run: php artisan key:generate --env=testing
+
+      - name: Composer Dump Autoload
+        run: composer dump-autoload
+
+      - name: Migrate
+        run: php artisan migrate --env=testing
+
+      - name: Run tests
+        run: php artisan test --coverage
