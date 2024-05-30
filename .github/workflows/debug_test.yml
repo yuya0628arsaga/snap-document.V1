@@ -13,7 +13,7 @@ jobs:
           - 3306:3306
         env:
           MYSQL_DATABASE: snap_document_test
-          MYSQL_USER: root
+          MYSQL_USER: snap-document
           MYSQL_PASSWORD: password
           MYSQL_ROOT_PASSWORD: password
         options: >-
@@ -26,7 +26,7 @@ jobs:
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
       DB_DATABASE: snap_document_test
-      DB_USERNAME: root
+      DB_USERNAME: snap-document
       DB_PASSWORD: password
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
