@@ -67,7 +67,7 @@ jobs:
       - name: Copy env
         run: |
           sed -e 's/APP_ENV=local/APP_ENV=testing/' \
-              -e 's/DB_DATABASE=.*/DB_DATABASE=snap_document_test' \
+              -e 's/DB_DATABASE=.*/DB_DATABASE=snap_document_test/' \
               -e 's/PUBLIC_BUCKET_NAME=.*/PUBLIC_BUCKET_NAME=mel-document-public-test/' \
               .env.example > .env.testing
 
