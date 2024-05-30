@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -11,10 +13,11 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
+     /** @var string */
+     protected $model = User::class;
+
+     /** @var string */
+     static protected ?string $password;
 
     /**
      * Define the model's default state.
@@ -24,11 +27,15 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'nickname' => 'test_nickname',
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'email_verified_at' => CarbonImmutable::now(),
             'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'remember_token' => null,
+            'created_at' => CarbonImmutable::now(),
+            'updated_at' => CarbonImmutable::now(),
+            'deleted_at' => null,
         ];
     }
 
