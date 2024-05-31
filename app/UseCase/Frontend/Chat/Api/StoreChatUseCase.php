@@ -16,9 +16,9 @@ use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
 use App\Services\Frontend\Auth\AuthUserGetter;
+use App\Services\GptEngineConnection;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
@@ -153,16 +153,16 @@ class StoreChatUseCase
      */
     private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage, string $gptModel): array
     {
-        $responseFromGptEngine =
-            Http::timeout(-1)->withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post(config('api.gpt_engine.endpoint').'/chat/answer/', [
+        $responseFromGptEngine = GptEngineConnection::post(
+            url: '/chat/answer/',
+            params: [
                 'question' => $question,
                 'document_name' => $documentName,
                 'chat_history' => $chatHistory,
                 'is_get_pdf_page' => $isGetPdfPage,
                 'gpt_model' => $gptModel,
-            ]);
+            ]
+        );
 
         if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
             ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
