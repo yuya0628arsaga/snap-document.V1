@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Tests\Feature\Frontend\Auth;
+
 use Tests\TestCase;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery as m;
