@@ -41,7 +41,7 @@ class StoreChatTest extends TestCase
     }
 
     /**
-     * 正常系
+     * 正常系 - chatGroupIdが既に存在する場合（2回目以降の質問）
      */
     public function test_store_chat_success(): void
     {
@@ -91,6 +91,73 @@ class StoreChatTest extends TestCase
             'cost' => $responseFromGptEngine['cost'],
             'chat_group_id' => $requestParams['chatGroupId'],
         ]);
+
+        foreach ($responseFromGptEngine['pdf_pages'] as $pdfPage) {
+            $this->assertDatabaseHas('pages', [
+                'page' => $pdfPage,
+            ]);
+        }
+    }
+
+    /**
+     * 正常系 - chatGroupIdがnullの場合（1回目の質問）
+     */
+    public function test_store_chat_success_when_chat_group_id_is_null(): void
+    {
+        $requestParams = [
+            'question' => '質問テスト',
+            'manualName' => $this->document->name,
+            'chatHistory' => [],
+            'chatGroupId' => null,
+            'isGetPdfPage' => false,
+            'gptModel' => 'gpt-3.5-turbo',
+        ];
+
+        $responseFromGptEngine = [
+            'status' => 200,
+            'answer' => 'テスト回答',
+            'source_documents' => 'テスト回答_source',
+            'token_counts' => [
+                'prompt_tokens' => 10,
+                'completion_tokens' => 10,
+            ],
+            'cost' => 00000010,
+            'pdf_pages' => [1, 2, 3],
+        ];
+
+        $gptEngineConnectionMock = m::mock(GptEngineConnection::class);
+        $gptEngineConnectionMock->shouldReceive('post')
+            ->andReturn($responseFromGptEngine);
+
+        // 具象クラスの中身をmockにする
+        $this->app->instance(GptEngineConnectionInterface::class, $gptEngineConnectionMock);
+
+        $response = $this->commonExecution($requestParams);
+
+        $chatGroupId = ChatGroup::latest()->first()->id;
+
+        $response->assertStatus(SymfonyResponse::HTTP_CREATED)
+            ->assertJson([
+                'answer' => $responseFromGptEngine['answer'],
+                'images' => [],
+                'pdfPages' => $responseFromGptEngine['pdf_pages'],
+                'chatGroupId' => $chatGroupId,
+            ]);
+
+        $this->assertDatabaseHas('chats', [
+            'question' => $requestParams['question'],
+            'answer' => $responseFromGptEngine['answer'],
+            'question_token_count' => $responseFromGptEngine['token_counts']['prompt_tokens'],
+            'answer_token_count' => $responseFromGptEngine['token_counts']['completion_tokens'],
+            'cost' => $responseFromGptEngine['cost'],
+            'chat_group_id' => $chatGroupId,
+        ]);
+
+        foreach ($responseFromGptEngine['pdf_pages'] as $pdfPage) {
+            $this->assertDatabaseHas('pages', [
+                'page' => $pdfPage,
+            ]);
+        }
     }
 
     /**
