@@ -45,33 +45,10 @@ class StoreChatTest extends TestCase
      */
     public function test_store_chat_success(): void
     {
-        $requestParams = [
-            'question' => '質問テスト',
-            'manualName' => $this->document->name,
-            'chatHistory' => [],
-            'chatGroupId' => $this->chatGroup->id,
-            'isGetPdfPage' => false,
-            'gptModel' => 'gpt-3.5-turbo',
-        ];
+        $requestParams = $this->makeRequestParams(chatGroupId: $this->chatGroup->id);
+        $responseFromGptEngine = $this->makeResponseFromGptEngine();
 
-        $responseFromGptEngine = [
-            'status' => 200,
-            'answer' => 'テスト回答',
-            'source_documents' => 'テスト回答_source',
-            'token_counts' => [
-                'prompt_tokens' => 10,
-                'completion_tokens' => 10,
-            ],
-            'cost' => 00000010,
-            'pdf_pages' => [1, 2, 3],
-        ];
-
-        $gptEngineConnectionMock = m::mock(GptEngineConnection::class);
-        $gptEngineConnectionMock->shouldReceive('post')
-            ->andReturn($responseFromGptEngine);
-
-        // 具象クラスの中身をmockにする
-        $this->app->instance(GptEngineConnectionInterface::class, $gptEngineConnectionMock);
+        $this->setGptEngineConnectionMock($responseFromGptEngine);
 
         $response = $this->commonExecution($requestParams);
 
@@ -104,33 +81,10 @@ class StoreChatTest extends TestCase
      */
     public function test_store_chat_success_when_chat_group_id_is_null(): void
     {
-        $requestParams = [
-            'question' => '質問テスト',
-            'manualName' => $this->document->name,
-            'chatHistory' => [],
-            'chatGroupId' => null,
-            'isGetPdfPage' => false,
-            'gptModel' => 'gpt-3.5-turbo',
-        ];
+        $requestParams = $this->makeRequestParams(chatGroupId: null);
+        $responseFromGptEngine = $this->makeResponseFromGptEngine();
 
-        $responseFromGptEngine = [
-            'status' => 200,
-            'answer' => 'テスト回答',
-            'source_documents' => 'テスト回答_source',
-            'token_counts' => [
-                'prompt_tokens' => 10,
-                'completion_tokens' => 10,
-            ],
-            'cost' => 00000010,
-            'pdf_pages' => [1, 2, 3],
-        ];
-
-        $gptEngineConnectionMock = m::mock(GptEngineConnection::class);
-        $gptEngineConnectionMock->shouldReceive('post')
-            ->andReturn($responseFromGptEngine);
-
-        // 具象クラスの中身をmockにする
-        $this->app->instance(GptEngineConnectionInterface::class, $gptEngineConnectionMock);
+        $this->setGptEngineConnectionMock($responseFromGptEngine);
 
         $response = $this->commonExecution($requestParams);
 
@@ -158,6 +112,64 @@ class StoreChatTest extends TestCase
                 'page' => $pdfPage,
             ]);
         }
+    }
+
+    /**
+     * storeChatへのリクエストパラメータ作成
+     *
+     * @param ?string $chatGroupId
+     *
+     * @return array
+     */
+    private function makeRequestParams(?string $chatGroupId): array
+    {
+        return [
+            'question' => '質問テスト',
+            'manualName' => $this->document->name,
+            'chatHistory' => [],
+            'chatGroupId' => $chatGroupId,
+            'isGetPdfPage' => false,
+            'gptModel' => 'gpt-3.5-turbo',
+        ];
+    }
+
+    /**
+     * gpt_engineからのレスポンス作成
+     *
+     * @param int $status
+     *
+     * @return array
+     */
+    private function makeResponseFromGptEngine(int $status = 200): array
+    {
+        return [
+            'status' => $status,
+            'answer' => 'テスト回答',
+            'source_documents' => 'テスト回答_source',
+            'token_counts' => [
+                'prompt_tokens' => 10,
+                'completion_tokens' => 10,
+            ],
+            'cost' => 00000010,
+            'pdf_pages' => [1, 2, 3],
+        ];
+    }
+
+    /**
+     * GptEngineConnectionをモック化
+     *
+     * @param array $responseFromGptEngine
+     *
+     * @return void
+     */
+    private function setGptEngineConnectionMock(array $responseFromGptEngine): void
+    {
+        $gptEngineConnectionMock = m::mock(GptEngineConnection::class);
+        $gptEngineConnectionMock->shouldReceive('post')
+            ->andReturn($responseFromGptEngine);
+
+        // 具象クラスの中身をmockにする
+        $this->app->instance(GptEngineConnectionInterface::class, $gptEngineConnectionMock);
     }
 
     /**
