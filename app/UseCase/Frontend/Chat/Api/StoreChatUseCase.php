@@ -16,7 +16,7 @@ use App\Repositories\Frontend\Document\DocumentRepository;
 use App\Repositories\Frontend\Page\PageRepository;
 use App\Repositories\Frontend\Page\Params\StorePageParams;
 use App\Services\Frontend\Auth\AuthUserGetter;
-use App\Services\GptEngineConnection;
+use App\Services\GptEngineConnectionInterface;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -31,13 +31,15 @@ class StoreChatUseCase
      * @param DocumentRepository $documentRepository
      * @param PageRepository $pageRepository
      * @param ChatImageRepository $chatImageRepository
+     * @param GptEngineConnectionInterface $gptEngineConnection
      */
     public function __construct(
         private readonly ChatGroupRepository $chatGroupRepository,
         private readonly ChatRepository $chatRepository,
         private readonly DocumentRepository $documentRepository,
         private readonly PageRepository $pageRepository,
-        private readonly ChatImageRepository $chatImageRepository
+        private readonly ChatImageRepository $chatImageRepository,
+        private readonly GptEngineConnectionInterface $gptEngineConnection,
     ) {
     }
 
@@ -153,7 +155,7 @@ class StoreChatUseCase
      */
     private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage, string $gptModel): array
     {
-        $responseFromGptEngine = GptEngineConnection::post(
+        $responseFromGptEngine = $this->gptEngineConnection::post(
             url: '/chat/answer/',
             params: [
                 'question' => $question,

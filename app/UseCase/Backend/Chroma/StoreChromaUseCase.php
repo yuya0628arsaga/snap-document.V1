@@ -5,11 +5,19 @@ declare(strict_types=1);
 namespace App\UseCase\Backend\Chroma;
 
 use App\Exceptions\GptEngineProcessException;
-use App\Services\GptEngineConnection;
+use App\Services\GptEngineConnectionInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class StoreChromaUseCase
 {
+    /**
+     * @param GptEngineConnectionInterface $gptEngineConnection
+     */
+    public function __construct(
+        private readonly GptEngineConnectionInterface $gptEngineConnection,
+    ){
+    }
+
     /**
      * @param string $documentName 使用するドキュメント名
      *
@@ -37,7 +45,7 @@ class StoreChromaUseCase
      */
     private function getResFromGptEngine(string $documentName): array
     {
-        $responseFromGptEngine = GptEngineConnection::post(
+        $responseFromGptEngine = $this->gptEngineConnection::post(
             url: '/chroma',
             params: [
                 'document_name' => $documentName,

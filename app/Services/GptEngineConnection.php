@@ -6,18 +6,10 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 
-/**
- * gpt_engineと通信する
- */
-class GptEngineConnection
+class GptEngineConnection implements GptEngineConnectionInterface
 {
     /**
-     * POSTリクエスト
-     *
-     * @param string $url
-     * @param array $params
-     *
-     * @return array
+     * {@inheritDoc}
      */
     public static function post(string $url, array $params): array
     {

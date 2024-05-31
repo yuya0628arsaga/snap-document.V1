@@ -16,6 +16,8 @@ use App\Repositories\Frontend\User\UserRepository;
 use App\Repositories\Frontend\User\UserRepositoryImpl;
 use App\Repositories\S3\S3Repository;
 use App\Repositories\S3\S3RepositoryImpl;
+use App\Services\GptEngineConnection;
+use App\Services\GptEngineConnectionInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -37,6 +39,7 @@ class RepositoryServiceProvider extends ServiceProvider
 
         // general
         $this->app->bind(S3Repository::class, S3RepositoryImpl::class);
+        $this->app->bind(GptEngineConnectionInterface::class, GptEngineConnection::class);
     }
 
     /**
