@@ -118,4 +118,24 @@ class AuthenticationTest extends TestCase
 
         $response->assertRedirect(route('user.home'));
     }
+
+    /**
+     * 正常系 - ログアウト
+     */
+    public function test_user_can_logout(): void
+    {
+        $response = $this->actingAs($this->user, static::$guard)
+            ->get(route('user.auth.logout'));
+
+        $this->assertGuest(static::$guard);
+        $response->assertStatus(SymfonyResponse::HTTP_OK);
+
+        $response->assertJsonStructure([
+            'redirectUrl'
+        ]);
+
+        $response->assertJson([
+            'redirectUrl' => route('user.auth.index')
+        ]);
+    }
 }

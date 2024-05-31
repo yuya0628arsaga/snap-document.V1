@@ -29,7 +29,7 @@ Route::middleware(['guest:web'])->group(function () {
 });
 
 Route::middleware('auth:web')->group(function () {
-    Route::get('/auth/logout', LogoutController::class)->name('logout');
+    Route::get('/auth/logout', LogoutController::class)->name('auth.logout');
 
     Route::get('/', ChatController::class)->name('home');
 });
