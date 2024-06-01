@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\UseCase\Backend\Chroma;
 
+use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
 use App\Services\GptEngineConnectionInterface;
-use Symfony\Component\HttpFoundation\Response;
 
 class StoreChromaUseCase
 {
@@ -52,7 +52,7 @@ class StoreChromaUseCase
             ]
         );
 
-        if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
+        if ($responseFromGptEngine['status'] !== GptEngineStatus::HTTP_OK->value) {
             ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
 
             throw new GptEngineProcessException(message: $errorMessage, code: $status);

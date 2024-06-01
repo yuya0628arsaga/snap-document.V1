@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\UseCase\Frontend\Chat\Api;
 
+use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
@@ -20,7 +21,6 @@ use App\Services\GptEngineConnectionInterface;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
 
 class StoreChatUseCase
@@ -166,7 +166,7 @@ class StoreChatUseCase
             ]
         );
 
-        if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
+        if ($responseFromGptEngine['status'] !== GptEngineStatus::HTTP_OK->value) {
             ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
 
             throw new GptEngineProcessException(message: $errorMessage, code: $status);
