@@ -58,11 +58,11 @@ class Chat extends Model
     /**
      *  documentsテーブルとのリレーション
      *
-     * @return HasOne
+     * @return BelongsTo
      */
-    public function document(): HasOne
+    public function document(): BelongsTo
     {
-        return $this->hasOne(Document::class);
+        return $this->belongsTo(Document::class);
     }
 
     /**
@@ -85,13 +85,25 @@ class Chat extends Model
         return $this->hasMany(ChatImage::class);
     }
 
-    // /**
-    //  * usersテーブルとのリレーション
-    //  *
-    //  * @return BelongsTo
-    //  */
-    // public function user(): BelongsTo
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
+    /**
+     * usersテーブルとのリレーション
+     *
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * chatGroupsテーブルとのリレーション
+     * FIXME::factoryで生成するときにスネークケースだとエラーが出るためキャメルケースにしている
+     * （ex. Chat::factory()->for($this->chatGroup)...）
+     *
+     * @return BelongsTo
+     */
+    public function chatGroup(): BelongsTo
+    {
+        return $this->belongsTo(ChatGroup::class);
+    }
 }
