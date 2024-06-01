@@ -55,11 +55,31 @@ class StoreChatUseCase
      *
      * @return array
      */
-    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId, bool $isGetPdfPage, string $gptModel): array
-    {
-        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage, $gptModel);
+    public function execute(
+        string $question,
+        string $documentName,
+        array $chatHistory,
+        ?string $chatGroupId,
+        bool $isGetPdfPage,
+        string $gptModel
+    ): array {
+        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine(
+            $question,
+            $documentName,
+            $chatHistory,
+            $isGetPdfPage,
+            $gptModel
+        );
 
-        [$chatGroupId, $imageDatum] = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
+        [$chatGroupId, $imageDatum] = DB::transaction(function () use (
+            $question,
+            $documentName,
+            $answer,
+            $pdfPages,
+            $tokenCounts,
+            $cost,
+            $chatGroupId,
+        ) {
             $userId = AuthUserGetter::get()->id;
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
@@ -153,8 +173,13 @@ class StoreChatUseCase
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage, string $gptModel): array
-    {
+    private function getAnswerFromGptEngine(
+        string $question,
+        string $documentName,
+        array $chatHistory,
+        bool $isGetPdfPage,
+        string $gptModel,
+    ): array {
         $responseFromGptEngine = $this->gptEngineConnection::post(
             url: '/chat/answer/',
             params: [
@@ -192,13 +217,21 @@ class StoreChatUseCase
      * @param string $answer
      * @param string $documentId
      * @param array $tokenCounts
+     * @param float $cost
      * @param string $chatGroupId
      * @param string $userId
      *
      * @return StoreChatParams
      */
-    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId, $userId): StoreChatParams
-    {
+    private function makeStoreChatParams(
+        string $question,
+        string $answer,
+        string $documentId,
+        array $tokenCounts,
+        float $cost,
+        string $chatGroupId,
+        string $userId
+    ): StoreChatParams {
         return
             new StoreChatParams(
                 date: $this->getCurrentTime(),
@@ -221,7 +254,7 @@ class StoreChatUseCase
      *
      * @return array
      */
-    private function makeInsertPageParams($pdfPages, $chatId): array
+    private function makeInsertPageParams(array $pdfPages, string $chatId): array
     {
         $insertPageParams = [];
 
@@ -334,7 +367,7 @@ class StoreChatUseCase
      *
      * @return array
      */
-    private function makeInsertChatImageParams($imageDatum, $chatId): array
+    private function makeInsertChatImageParams(array $imageDatum, string $chatId): array
     {
         $insertChatImageParams = [];
 
