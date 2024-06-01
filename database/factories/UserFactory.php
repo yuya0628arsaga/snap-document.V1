@@ -6,7 +6,6 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -27,9 +26,10 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'nickname' => 'test_nickname',
+            'nickname' => fake()->name(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'avatar_url' => fake()->url(),
             'email_verified_at' => CarbonImmutable::now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => null,
