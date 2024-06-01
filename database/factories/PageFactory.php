@@ -2,17 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\Document;
+use App\Models\Chat;
+use App\Models\Page;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Document>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Page>
  */
-class DocumentFactory extends Factory
+class PageFactory extends Factory
 {
      /** @var string */
-     protected $model = Document::class;
+     protected $model = Page::class;
 
     /**
      * Define the model's default state.
@@ -21,12 +22,9 @@ class DocumentFactory extends Factory
      */
     public function definition(): array
     {
-        $BUCKET = config('filesystems.disks.s3.bucket');
-
         return [
-            'name' => fake()->randomElement(['Man_Digest_v9', 'PCBmanualV5', 'PCBmanual3DV5']),
-            'extension' => 'pdf',
-            'url' => 'https://'.$BUCKET.'.s3.ap-northeast-1.amazonaws.com',
+            'page' => fake()->numberBetween(1, 99),
+            'chat_id' => Chat::factory(),
             'created_at' => CarbonImmutable::now(),
             'updated_at' => CarbonImmutable::now(),
             'deleted_at' => null,
