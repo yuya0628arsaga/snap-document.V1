@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Frontend\Chat;
 
+use App\Enums\GptEngineStatus;
 use App\Models\ChatGroup;
 use App\Models\Document;
 use App\Models\User;
@@ -49,7 +50,7 @@ class StoreChatTest extends TestCase
     public function test_store_chat_success(): void
     {
         $requestParams = $this->makeRequestParams(chatGroupId: $this->chatGroup->id);
-        $responseFromGptEngine = $this->makeResponseFromGptEngine();
+        $responseFromGptEngine = $this->makeResponseFromGptEngine(GptEngineStatus::HTTP_OK->value);
 
         $this->gptEngineConnectionMock->post($responseFromGptEngine);
 
@@ -85,7 +86,7 @@ class StoreChatTest extends TestCase
     public function test_store_chat_success_when_chat_group_id_is_null(): void
     {
         $requestParams = $this->makeRequestParams(chatGroupId: null);
-        $responseFromGptEngine = $this->makeResponseFromGptEngine();
+        $responseFromGptEngine = $this->makeResponseFromGptEngine(GptEngineStatus::HTTP_OK->value);
 
         $this->gptEngineConnectionMock->post($responseFromGptEngine);
 
@@ -123,7 +124,7 @@ class StoreChatTest extends TestCase
     public function test_store_chat_fail(): void
     {
         $requestParams = $this->makeRequestParams(chatGroupId: $this->chatGroup->id);
-        $responseFromGptEngine = $this->makeResponseFromGptEngine(status: 500);
+        $responseFromGptEngine = $this->makeResponseFromGptEngine(GptEngineStatus::HTTP_INTERNAL_SERVER_ERROR->value);
 
         $this->gptEngineConnectionMock->post($responseFromGptEngine);
 
@@ -131,7 +132,7 @@ class StoreChatTest extends TestCase
 
         $response->assertStatus(SymfonyResponse::HTTP_INTERNAL_SERVER_ERROR)
             ->assertJson([
-                'status' => 500,
+                'status' => SymfonyResponse::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => 'gpt_engine Internal Server Error',
                 'errors' => [],
             ]);
@@ -163,10 +164,10 @@ class StoreChatTest extends TestCase
      *
      * @return array
      */
-    private function makeResponseFromGptEngine(int $status = 200): array
+    private function makeResponseFromGptEngine(int $status): array
     {
         return
-            $status === 200
+            $status === GptEngineStatus::HTTP_OK->value
             ? [
                 'status' => $status,
                 'answer' => 'テスト回答',
@@ -179,7 +180,7 @@ class StoreChatTest extends TestCase
                 'pdf_pages' => [1, 2, 3],
             ]
             : [
-                'status' => 500,
+                'status' => $status,
                 'message' => 'gpt_engine Internal Server Error',
                 'errors' => [],
             ];
