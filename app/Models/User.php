@@ -63,4 +63,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Chat::class);
     }
+
+    /**
+     *  chatGroupsテーブルとのリレーション
+     *
+     * @return HasMany
+     */
+    public function chat_groups(): HasMany
+    {
+        return $this->hasMany(ChatGroup::class);
+    }
 }

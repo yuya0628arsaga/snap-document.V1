@@ -24,7 +24,7 @@ class StoreChromaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'documentName' => ['required', 'string'],
+            'documentName' => ['required', 'string', 'exists:documents,name'],
         ];
     }
 

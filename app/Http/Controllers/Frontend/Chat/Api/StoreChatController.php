@@ -37,6 +37,6 @@ class StoreChatController extends Controller
             $request->getGptModel(),
         );
 
-        return response()->json(new StoreChatResource($response), Response::HTTP_OK);
+        return response()->json(new StoreChatResource($response), Response::HTTP_CREATED);
     }
 }

@@ -4,12 +4,20 @@ declare(strict_types=1);
 
 namespace App\UseCase\Backend\Chroma;
 
+use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
-use Illuminate\Support\Facades\Http;
-use Symfony\Component\HttpFoundation\Response;
+use App\Services\GptEngineConnectionInterface;
 
 class StoreChromaUseCase
 {
+    /**
+     * @param GptEngineConnectionInterface $gptEngineConnection
+     */
+    public function __construct(
+        private readonly GptEngineConnectionInterface $gptEngineConnection,
+    ){
+    }
+
     /**
      * @param string $documentName 使用するドキュメント名
      *
@@ -37,13 +45,14 @@ class StoreChromaUseCase
      */
     private function getResFromGptEngine(string $documentName): array
     {
-        $responseFromGptEngine = Http::timeout(-1)->withHeaders([
-            'Content-Type' => 'application/json',
-        ])->post(config('api.gpt_engine.endpoint').'/chroma', [
-            'document_name' => $documentName,
-        ]);
+        $responseFromGptEngine = $this->gptEngineConnection::post(
+            url: '/chroma',
+            params: [
+                'document_name' => $documentName,
+            ]
+        );
 
-        if ($responseFromGptEngine['status'] !== Response::HTTP_OK) {
+        if ($responseFromGptEngine['status'] !== GptEngineStatus::HTTP_OK->value) {
             ['status' => $status, 'message' => $errorMessage] = $responseFromGptEngine;
 
             throw new GptEngineProcessException(message: $errorMessage, code: $status);

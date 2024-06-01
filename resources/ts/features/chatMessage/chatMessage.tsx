@@ -1131,7 +1131,12 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                                             <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
                                             <div className="text">
                                                 <span className="name">ChatGPT</span>
-                                                {chat.answer}
+                                                {/* Fix::改行反映のため */}
+                                                {chat.answer.split("\n").map((item, index) => {
+                                                    return (
+                                                        <React.Fragment key={index}>{item}<br /></React.Fragment>
+                                                    )
+                                                })}
                                                 {chat.images &&
                                                     chat.images.map((image, i) => {
                                                         return (
