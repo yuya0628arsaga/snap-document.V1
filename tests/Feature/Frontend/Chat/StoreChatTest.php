@@ -5,13 +5,11 @@ namespace Tests\Feature\Frontend\Chat;
 use App\Models\ChatGroup;
 use App\Models\Document;
 use App\Models\User;
-use App\Services\GptEngineConnection;
-use App\Services\GptEngineConnectionInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
-use Mockery as m;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Tests\Feature\Mock\GptEngineConnectionMock;
 
 class StoreChatTest extends TestCase
 {
@@ -29,6 +27,9 @@ class StoreChatTest extends TestCase
     /** @var ChatGroup */
     private ChatGroup $chatGroup;
 
+    /** @var GptEngineConnectionMock */
+    private GptEngineConnectionMock $gptEngineConnectionMock;
+
     /**
      * @return void
      */
@@ -38,6 +39,8 @@ class StoreChatTest extends TestCase
         $this->user = User::factory()->create();
         $this->document = Document::factory()->create();
         $this->chatGroup = ChatGroup::factory()->create();
+
+        $this->gptEngineConnectionMock = new GptEngineConnectionMock();
     }
 
     /**
@@ -48,7 +51,7 @@ class StoreChatTest extends TestCase
         $requestParams = $this->makeRequestParams(chatGroupId: $this->chatGroup->id);
         $responseFromGptEngine = $this->makeResponseFromGptEngine();
 
-        $this->setGptEngineConnectionMock($responseFromGptEngine);
+        $this->gptEngineConnectionMock->post($responseFromGptEngine);
 
         $response = $this->commonExecution($requestParams);
 
@@ -84,7 +87,7 @@ class StoreChatTest extends TestCase
         $requestParams = $this->makeRequestParams(chatGroupId: null);
         $responseFromGptEngine = $this->makeResponseFromGptEngine();
 
-        $this->setGptEngineConnectionMock($responseFromGptEngine);
+        $this->gptEngineConnectionMock->post($responseFromGptEngine);
 
         $response = $this->commonExecution($requestParams);
 
@@ -122,7 +125,7 @@ class StoreChatTest extends TestCase
         $requestParams = $this->makeRequestParams(chatGroupId: $this->chatGroup->id);
         $responseFromGptEngine = $this->makeResponseFromGptEngine(status: 500);
 
-        $this->setGptEngineConnectionMock($responseFromGptEngine);
+        $this->gptEngineConnectionMock->post($responseFromGptEngine);
 
         $response = $this->commonExecution($requestParams);
 
@@ -180,23 +183,6 @@ class StoreChatTest extends TestCase
                 'message' => 'gpt_engine Internal Server Error',
                 'errors' => [],
             ];
-    }
-
-    /**
-     * GptEngineConnectionをモック化
-     *
-     * @param array $responseFromGptEngine
-     *
-     * @return void
-     */
-    private function setGptEngineConnectionMock(array $responseFromGptEngine): void
-    {
-        $gptEngineConnectionMock = m::mock(GptEngineConnection::class);
-        $gptEngineConnectionMock->shouldReceive('post')
-            ->andReturn($responseFromGptEngine);
-
-        // 具象クラスの中身をmockにする
-        $this->app->instance(GptEngineConnectionInterface::class, $gptEngineConnectionMock);
     }
 
     /**
