@@ -88,7 +88,7 @@ class StoreChatTest extends TestCase
 
         $response = $this->commonExecution($requestParams);
 
-        $chatGroupId = ChatGroup::latest()->first()->id;
+        $chatGroupId = ChatGroup::latest()->orderBy('id', 'DESC')->first()->id;
 
         $response->assertStatus(SymfonyResponse::HTTP_CREATED)
             ->assertJson([
@@ -112,6 +112,26 @@ class StoreChatTest extends TestCase
                 'page' => $pdfPage,
             ]);
         }
+    }
+
+    /**
+     * 異常系 - gpt_engineでエラーが発生した場合
+     */
+    public function test_store_chat_fail(): void
+    {
+        $requestParams = $this->makeRequestParams(chatGroupId: $this->chatGroup->id);
+        $responseFromGptEngine = $this->makeResponseFromGptEngine(status: 500);
+
+        $this->setGptEngineConnectionMock($responseFromGptEngine);
+
+        $response = $this->commonExecution($requestParams);
+
+        $response->assertStatus(SymfonyResponse::HTTP_INTERNAL_SERVER_ERROR)
+            ->assertJson([
+                'status' => 500,
+                'message' => 'gpt_engine Internal Server Error',
+                'errors' => [],
+            ]);
     }
 
     /**
@@ -142,17 +162,24 @@ class StoreChatTest extends TestCase
      */
     private function makeResponseFromGptEngine(int $status = 200): array
     {
-        return [
-            'status' => $status,
-            'answer' => 'テスト回答',
-            'source_documents' => 'テスト回答_source',
-            'token_counts' => [
-                'prompt_tokens' => 10,
-                'completion_tokens' => 10,
-            ],
-            'cost' => 00000010,
-            'pdf_pages' => [1, 2, 3],
-        ];
+        return
+            $status === 200
+            ? [
+                'status' => $status,
+                'answer' => 'テスト回答',
+                'source_documents' => 'テスト回答_source',
+                'token_counts' => [
+                    'prompt_tokens' => 10,
+                    'completion_tokens' => 10,
+                ],
+                'cost' => 00000010,
+                'pdf_pages' => [1, 2, 3],
+            ]
+            : [
+                'status' => 500,
+                'message' => 'gpt_engine Internal Server Error',
+                'errors' => [],
+            ];
     }
 
     /**
