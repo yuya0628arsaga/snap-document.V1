@@ -51,7 +51,7 @@ type QuestionInputPropsType = {
     isLoading: boolean,
 }
 
-const QuestionInput = (props: QuestionInputPropsType) => {
+const QuestionInput = React.memo((props: QuestionInputPropsType) => {
     const { inputQuestion, handleChangeInput, sendQuestion, isLoading } = props
 
     const SendButton = styled('button')`
@@ -99,6 +99,6 @@ const QuestionInput = (props: QuestionInputPropsType) => {
             </SendButton>
         </QuestionInputWrapper>
     )
-}
+})
 
 export default QuestionInput

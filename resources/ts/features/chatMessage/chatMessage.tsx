@@ -395,10 +395,10 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * 質問入力のhandling
      */
-    const handleChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleChangeInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputQuestion(e.target.value)
         setErrorMessage('')
-    }
+    }, [])
 
     /**
      * 質問に含めるチャット履歴を取得
@@ -471,7 +471,10 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         })
     }
 
-    const sendQuestion = () => {
+    /**
+     * 質問を送信
+     */
+    const sendQuestion = useCallback(() => {
         const MAX_CHAT = 15 // 一つのchatGroupに対して表示できるchatの最大数
         if (chats.length >= MAX_CHAT) {
             setErrorMessage(`1つのタイトルに対して${MAX_CHAT}回以上の質問はできません。\n質問するには「New Chat」ボタンで新しく会話を開始してください。`)
@@ -500,7 +503,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
         // 現在のchatGroupsのページネーションを１に
         setCurrentPage(1)
-    }
+    }, [chats, isLoading, inputQuestion, manual, chatGroupId])
 
     /**
      * 質問が追加されたときに質問箇所まで自動スクロールする
