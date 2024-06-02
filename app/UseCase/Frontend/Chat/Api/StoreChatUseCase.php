@@ -56,17 +56,14 @@ class StoreChatUseCase
      */
     public function execute(?string $chatGroupId, ChatParams $chatParams): array
     {
-        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($chatParams);
+        $gptResponse = $this->getAnswerFromGptEngine($chatParams);
         $question = $chatParams->getQuestion();
         $documentName = $chatParams->getDocumentName();
 
-        [$chatGroupId, $imageDatum] = DB::transaction(function () use (
+        [$chatGroupId, $imageDatum, $answer, $pdfPages] = DB::transaction(function () use (
             $question,
             $documentName,
-            $answer,
-            $pdfPages,
-            $tokenCounts,
-            $cost,
+            $gptResponse,
             $chatGroupId,
         ) {
             $userId = AuthUserGetter::get()->id;
@@ -76,9 +73,11 @@ class StoreChatUseCase
 
             $chatGroupId = $chatGroup->id;
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
+            $answer = $gptResponse['answer'];
+            $pdfPages = $gptResponse['pdfPages'];
 
             // チャット保存
-            $chat = $this->storeChat($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId, $userId);
+            $chat = $this->storeChat($question, $document->id, $gptResponse, $chatGroupId, $userId);
 
             // ページ保存
             $this->storePages($userId, $chat->id, $pdfPages);
@@ -87,7 +86,7 @@ class StoreChatUseCase
             $imageDatum = $this->makeImageDatum($answer, $documentName);
             $this->storeChatImages($userId, $chatGroupId, $imageDatum);
 
-            return [$chatGroupId, $imageDatum];
+            return [$chatGroupId, $imageDatum, $answer, $pdfPages];
         });
 
         return [
@@ -126,10 +125,10 @@ class StoreChatUseCase
         ];
 
         return [
-            $responseFromGptEngine['answer'],
-            $responseFromGptEngine['pdf_pages'],
-            $tokenCounts,
-            $responseFromGptEngine['cost'],
+            'answer' => $responseFromGptEngine['answer'],
+            'pdfPages' => $responseFromGptEngine['pdf_pages'],
+            'tokenCounts' => $tokenCounts,
+            'cost' => $responseFromGptEngine['cost'],
         ];
     }
 
@@ -216,10 +215,8 @@ class StoreChatUseCase
      * チャットの保存処理
      *
      * @param string $question
-     * @param string $answer
      * @param string $documentId
-     * @param array $tokenCounts
-     * @param float $cost
+     * @param array $gptResponse
      * @param string $chatGroupId
      * @param string $userId
      *
@@ -227,12 +224,10 @@ class StoreChatUseCase
      */
     private function storeChat(
         string $question,
-        string $answer,
         string $documentId,
-        array $tokenCounts,
-        float $cost,
+        array $gptResponse,
         string $chatGroupId,
-        string $userId
+        string $userId,
     ): Chat {
         Log::info('[Start] チャットの保存処理を開始します。', [
             'method' => __METHOD__,
@@ -240,7 +235,7 @@ class StoreChatUseCase
             'user_id' => $userId,
         ]);
 
-        $storeChatParams = $this->makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId, $userId);
+        $storeChatParams = $this->makeStoreChatParams($question, $documentId, $gptResponse, $chatGroupId, $userId);
         $chat = $this->chatRepository->store($storeChatParams);
 
         Log::info('[End] チャットの保存処理が完了しました。', [
@@ -256,10 +251,8 @@ class StoreChatUseCase
      * チャットを保存するためのオブジェクト作成
      *
      * @param string $question
-     * @param string $answer
      * @param string $documentId
-     * @param array $tokenCounts
-     * @param float $cost
+     * @param array $gptResponse
      * @param string $chatGroupId
      * @param string $userId
      *
@@ -267,10 +260,8 @@ class StoreChatUseCase
      */
     private function makeStoreChatParams(
         string $question,
-        string $answer,
         string $documentId,
-        array $tokenCounts,
-        float $cost,
+        array $gptResponse,
         string $chatGroupId,
         string $userId
     ): StoreChatParams {
@@ -278,10 +269,10 @@ class StoreChatUseCase
             new StoreChatParams(
                 date: $this->getCurrentTime(),
                 question: $question,
-                answer: $answer,
-                questionTokenCount: $tokenCounts['promptTokens'],
-                answerTokenCount: $tokenCounts['completionTokens'],
-                cost: $cost,
+                answer: $gptResponse['answer'],
+                questionTokenCount: $gptResponse['tokenCounts']['promptTokens'],
+                answerTokenCount: $gptResponse['tokenCounts']['completionTokens'],
+                cost: $gptResponse['cost'],
                 userId: $userId,
                 documentId: $documentId,
                 chatGroupId: $chatGroupId,
