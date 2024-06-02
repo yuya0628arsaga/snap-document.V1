@@ -346,7 +346,6 @@ const InputText = styled('textarea')`
     }
     @media (max-width: ${responsive.sp}) {
         width: 90%;
-        /* margin: 0 auto; */
     }
 
     // スクロールバー（質問入力欄）
@@ -364,7 +363,6 @@ const InputText = styled('textarea')`
     }
     &:hover::-webkit-scrollbar-thumb {
         visibility: visible;
-        /* visibility: hidden; */
         background: ${bgColor.buttonGray};
     }
 `
@@ -454,6 +452,9 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     }
     }, [inputQuestion]);
 
+    /**
+     * 質問入力のhandling
+     */
     const handleChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputQuestion(e.target.value)
         setErrorMessage('')
@@ -489,8 +490,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 isGetPdfPage: isGetPdfPage,
                 gptModel: gptModel,
             }
-            // data: { question: inputQuestion, manualName: manual, chatHistory: [['question1', 'answer1'], ['question2', 'answer2']] }
-            // data: { question: '具体的にどの学部に行けばいいか教えてください。', manualName: manual, chatHistory: [['私は医者です。医者の平均収入を教えて下さい。', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の間になることがあります。'], ['具体的にいくらですか？', '医者の平均収入は、専門性や経験によって異なりますが、一般的には年間で数百万円から数千万円の範囲になることがあります。例えば、一般開業医の場合、年収は1000万円以上になることが一般的です。特に専門医や大学病院の医師などは、それ以上の高収入を得ることもあります。']] }
         })
         .then((res: AxiosResponse): void => {
             const { data } = res
@@ -546,7 +545,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         // エラーメッセージを空に
         setErrorMessage('')
 
-        // const elementId = crypto.randomUUID();
         const elementId = Math.random().toString(36).slice(-8);
         const newChats: Chat[] = [...chats, { id: elementId, question: inputQuestion, answer: '', images: [], documentName: manual, pdfPages: [], isGenerating: true , isIncludeToHistory: false}]
         setChats(newChats)
@@ -761,6 +759,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
+
     /**
      * 過去の質問を表示
      */
@@ -918,10 +917,10 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         chatGroupTitleInputRef.current?.focus()
     }, [chatGroups])
 
-
     const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
     const [modalDescription, setModalDescription] = useState('')
     const [deleteTargetChatGroupId, setDeleteTargetChatGroupId] = useState('')
+
     /**
      * 削除モーダルをopen
      */
