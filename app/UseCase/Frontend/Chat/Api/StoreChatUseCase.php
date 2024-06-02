@@ -7,6 +7,7 @@ namespace App\UseCase\Frontend\Chat\Api;
 use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
 use App\Http\Controllers\Frontend\Chat\Api\Params\ChatParams;
+use App\Models\ChatGroup;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
@@ -68,35 +69,12 @@ class StoreChatUseCase
             $chatGroupId,
         ) {
             $userId = AuthUserGetter::get()->id;
+            $chatGroup = $chatGroupId
+                ? $this->updateChatGroup($userId, $chatGroupId)
+                : $this->storeChatGroup($userId);
+
+            $chatGroupId = $chatGroup->id;
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
-
-            if (! $chatGroupId) {
-                // chatGroupの中で初めての質問の場合
-                Log::info('[Start] チャットグループの保存処理を開始します。', [
-                    'method' => __METHOD__,
-                    'user_id' => $userId,
-                ]);
-
-                $title = '質問_'.((string) Str::uuid());
-                $lastChatDate = $this->getCurrentTime();
-
-                $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate, $userId);
-                $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
-                $chatGroupId = $chatGroup->id;
-            } else {
-                // chatGroupの中で２回目以降の質問の場合
-                Log::info('[Start] チャットグループの更新処理を開始します。', [
-                    'method' => __METHOD__,
-                    'chat_group_id' => $chatGroupId,
-                    'user_id' => $userId,
-                ]);
-
-                $lastChatDate = $this->getCurrentTime();
-                $params = new UpdateChatGroupParams(
-                    lastChatDate: $lastChatDate
-                );
-                $this->chatGroupRepository->update($chatGroupId, $params);
-            }
 
             Log::info('[Start] チャットの保存処理を開始します。', [
                 'method' => __METHOD__,
@@ -180,6 +158,66 @@ class StoreChatUseCase
             $tokenCounts,
             $responseFromGptEngine['cost'],
         ];
+    }
+
+    /**
+     * チャットグループの保存処理
+     *
+     * @param string $userId
+     *
+     * @return ChatGroup
+     */
+    private function storeChatGroup(string $userId): ChatGroup
+    {
+        Log::info('[Start] チャットグループの保存処理を開始します。', [
+            'method' => __METHOD__,
+            'user_id' => $userId,
+        ]);
+
+        $title = '質問_'.((string) Str::uuid());
+        $lastChatDate = $this->getCurrentTime();
+
+        $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate, $userId);
+        $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
+
+        Log::info('[End] チャットグループの保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'user_id' => $userId,
+        ]);
+
+        return $chatGroup;
+    }
+
+    /**
+     * チャットグループの更新処理
+     *
+     * @param string $userId
+     * @param string $chatGroupId
+     *
+     * @return ChatGroup
+     */
+    private function updateChatGroup(string $userId, string $chatGroupId): ChatGroup
+    {
+        Log::info('[Start] チャットグループの更新処理を開始します。', [
+            'method' => __METHOD__,
+            'chat_group_id' => $chatGroupId,
+            'user_id' => $userId,
+        ]);
+
+        $lastChatDate = $this->getCurrentTime();
+        $params = new UpdateChatGroupParams(
+            lastChatDate: $lastChatDate
+        );
+
+        $chatGroup = $this->chatGroupRepository->update($chatGroupId, $params);
+
+        Log::info('[End] チャットグループの更新処理が完了しました', [
+            'method' => __METHOD__,
+            'chat_group_id' => $chatGroupId,
+            'user_id' => $userId,
+        ]);
+
+        return $chatGroup;
     }
 
     /**
