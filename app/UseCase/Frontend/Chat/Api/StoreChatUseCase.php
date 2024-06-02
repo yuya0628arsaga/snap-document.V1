@@ -7,6 +7,7 @@ namespace App\UseCase\Frontend\Chat\Api;
 use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
 use App\Http\Controllers\Frontend\Chat\Api\Params\ChatParams;
+use App\Models\Chat;
 use App\Models\ChatGroup;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
@@ -76,14 +77,8 @@ class StoreChatUseCase
             $chatGroupId = $chatGroup->id;
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
 
-            Log::info('[Start] チャットの保存処理を開始します。', [
-                'method' => __METHOD__,
-                'question' => $question,
-                'user_id' => $userId,
-            ]);
-
-            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId, $userId);
-            $chat = $this->chatRepository->store($storeChatParams);
+            // チャット保存
+            $chat = $this->storeChat($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId, $userId);
 
             // ページ保存
             $this->storePages($userId, $chat->id, $pdfPages);
@@ -215,6 +210,46 @@ class StoreChatUseCase
                 lastChatDate: $lastChatDate,
                 userId: $userId,
             );
+    }
+
+    /**
+     * チャットの保存処理
+     *
+     * @param string $question
+     * @param string $answer
+     * @param string $documentId
+     * @param array $tokenCounts
+     * @param float $cost
+     * @param string $chatGroupId
+     * @param string $userId
+     *
+     * @return Chat
+     */
+    private function storeChat(
+        string $question,
+        string $answer,
+        string $documentId,
+        array $tokenCounts,
+        float $cost,
+        string $chatGroupId,
+        string $userId
+    ): Chat {
+        Log::info('[Start] チャットの保存処理を開始します。', [
+            'method' => __METHOD__,
+            'question' => $question,
+            'user_id' => $userId,
+        ]);
+
+        $storeChatParams = $this->makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId, $userId);
+        $chat = $this->chatRepository->store($storeChatParams);
+
+        Log::info('[End] チャットの保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'question' => $question,
+            'user_id' => $userId,
+        ]);
+
+        return $chat;
     }
 
     /**
