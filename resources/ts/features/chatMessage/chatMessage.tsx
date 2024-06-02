@@ -504,12 +504,8 @@ const ChatMessage = (props: ChatMessagePropsType) => {
             setChats(newChats)
             setChatGroupId(data.chatGroupId);
 
-            // chatGroupで一番最初の質問だった場合サイドバーのchatGroup更新
-            (async () => {
-                const resChatGroups = await getChatGroups(1)
-                const chatGroups = initChatGroups(resChatGroups)
-                setChatGroups(chatGroups)
-            })()
+            // chatが投稿されたらサイドバーのchatGroupとpaginationを更新
+            updateSidebarContents()
         })
         .catch((e: AxiosError): void => {
             if (axios.isAxiosError(e) && e.response) {
@@ -621,19 +617,24 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
-        (async (): Promise<void> => {
-            const resChatGroups: ResChatGroup[] = await getChatGroups()
-            const chatGroups = initChatGroups(resChatGroups)
-
-            setChatGroups(chatGroups)
-            setAllChatGroups(chatGroups) // 質問検索のキャッシュのため
-
-            const { chatGroupsCount } = await getChatGroupsCount()
-
-            const maxPage: number = getMaxPage(chatGroupsCount)
-            setMaxPagination(maxPage)
-        })()
+        updateSidebarContents()
     }, [])
+
+    /**
+     * サイドバー（chatGroupsとpagination）を更新する
+     */
+    const updateSidebarContents = async () => {
+        const resChatGroups: ResChatGroup[] = await getChatGroups()
+        const chatGroups = initChatGroups(resChatGroups)
+
+        setChatGroups(chatGroups)
+        setAllChatGroups(chatGroups) // 質問検索のキャッシュのため
+
+        const { chatGroupsCount } = await getChatGroupsCount()
+
+        const maxPage: number = getMaxPage(chatGroupsCount)
+        setMaxPagination(maxPage)
+    }
 
     /**
      * paginationのページ数を出力
