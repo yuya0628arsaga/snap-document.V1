@@ -456,6 +456,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
     const handleChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputQuestion(e.target.value)
+        setErrorMessage('')
     }
 
     /**
@@ -503,6 +504,9 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
             setChats(newChats)
             setChatGroupId(data.chatGroupId);
+
+            // 質問入力欄を空に
+            setInputQuestion('')
 
             // chatが投稿されたらサイドバーのchatGroupとpaginationを更新
             updateSidebarContents()
@@ -555,9 +559,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
         // API通信
         postChats(inputQuestion, manual, newChats, chats, chatGroupId)
-
-        // 質問入力欄を空に
-        setInputQuestion('')
 
         // 現在のchatGroupsのページネーションを１に
         setCurrentPage(1)
