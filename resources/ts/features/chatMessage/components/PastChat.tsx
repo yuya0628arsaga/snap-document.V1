@@ -63,6 +63,7 @@ type PastChatPropsType = {
     chatGroupId: string | null,
     displayPastChat: (chatGroup: ChatGroup) => void,
     renameTitle: (e: React.ChangeEvent<HTMLInputElement>, chatGroupsId: string, chatGroups: ChatGroup[]) => void,
+    onKeyDownTitleInput: (e: React.KeyboardEvent<HTMLInputElement>) => void,
     outOfTitleInput: () => void,
     chatGroupTitleInputRef: React.RefObject<HTMLInputElement>,
     convertTitleToInput: (chatGroupId: string) => void,
@@ -79,6 +80,7 @@ const PastChat = React.memo((props: PastChatPropsType) => {
         chatGroupId,
         displayPastChat,
         renameTitle,
+        onKeyDownTitleInput,
         outOfTitleInput,
         chatGroupTitleInputRef,
         convertTitleToInput,
@@ -98,6 +100,7 @@ const PastChat = React.memo((props: PastChatPropsType) => {
                             id={chatGroup.id}
                             value={chatGroup.title}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => { renameTitle(e, chatGroup.id, chatGroups) }}
+                            onKeyDown={onKeyDownTitleInput}
                             onBlur={outOfTitleInput}
                             ref={chatGroupTitleInputRef}
                         />

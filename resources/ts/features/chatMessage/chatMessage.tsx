@@ -811,12 +811,30 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
 
     /**
-     * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
+     * titleのinputからフォーカスが外れた時に更新する
      */
     const outOfTitleInput = useCallback(() => {
+        updateTitle(chatGroups)
+    }, [chatGroups])
+
+    /**
+     * titleのinputでEnterが押された時に更新する
+     */
+    const onKeyDownTitleInput = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            updateTitle(chatGroups)
+        };
+    }, [chatGroups])
+
+    /**
+     * chatGroupのtitle名を更新する
+     */
+    const updateTitle = (chatGroups: ChatGroup[]) => {
         if (!chatGroupTitleInputRef.current) return;
+
         const chatGroupId = chatGroupTitleInputRef.current.id
         const title = chatGroupTitleInputRef.current.value
+
         const MAX_STR_COUNT = 255
 
         if (!title || title.length > MAX_STR_COUNT) {
@@ -832,7 +850,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         })
 
         setChatGroups(editedChatGroups)
-    }, [chatGroups])
+    }
 
     /**
      * チャットグループtitleを更新
@@ -971,6 +989,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                                                             chatGroupId={chatGroupId}
                                                             displayPastChat={displayPastChat}
                                                             renameTitle={renameTitle}
+                                                            onKeyDownTitleInput={onKeyDownTitleInput}
                                                             outOfTitleInput={outOfTitleInput}
                                                             chatGroupTitleInputRef={chatGroupTitleInputRef}
                                                             convertTitleToInput={convertTitleToInput}
