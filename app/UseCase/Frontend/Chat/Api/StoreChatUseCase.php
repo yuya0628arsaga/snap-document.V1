@@ -84,7 +84,7 @@ class StoreChatUseCase
 
             // 画像保存
             $imageDatum = $this->makeImageDatum($answer, $documentName);
-            $this->storeChatImages($userId, $chatGroupId, $imageDatum);
+            $this->storeChatImages($userId, $chat->id, $imageDatum);
 
             return [$chatGroupId, $imageDatum, $answer, $pdfPages];
         });
