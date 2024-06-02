@@ -4,7 +4,6 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState }
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
-import SendIcon from '@mui/icons-material/Send';
 import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
@@ -15,6 +14,7 @@ import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 import PastChat from './components/PastChat';
 import SearchQuestionInput from './components/SearchQuestionInput';
+import QuestionInput from './components/QuestionInput';
 import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
 import AccountMenuButton from './components/AccountMenuButton';
@@ -321,49 +321,10 @@ const AiAnswer = styled('div')`
     }
 `
 
-const FormContainer = styled('div')`
+const QuestionInputContainer = styled('div')`
     margin: 48px;
     @media (max-width: ${responsive.sp}) {
         margin: 16px 8px;
-    }
-    > div {
-        position: relative;
-    }
-`
-
-const InputText = styled('textarea')`
-    resize: none;
-    height:200px;
-
-    background: ${bgColor.lightGray};
-    border: 1px solid ${borderColor.gray};
-    border-radius: 5px;
-    height: 40px;
-    width: 85%;
-    padding: 8px;
-    :focus {
-        outline: 1px ${borderColor.blue} solid;
-    }
-    @media (max-width: ${responsive.sp}) {
-        width: 90%;
-    }
-
-    // スクロールバー（質問入力欄）
-    overflow-y: scroll;
-    &::-webkit-scrollbar {
-        visibility: hidden;
-        width: 10px;
-    }
-    &::-webkit-scrollbar-thumb {
-        visibility: hidden;
-        border-radius: 20px;
-    }
-    &:hover::-webkit-scrollbar {
-        visibility: visible;
-    }
-    &:hover::-webkit-scrollbar-thumb {
-        visibility: visible;
-        background: ${bgColor.buttonGray};
     }
 `
 
@@ -430,27 +391,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     const [isChecking, setIsChecking] = useState(false)
 
     const [errorMessage, setErrorMessage] = useState('')
-
-    const SendButton = styled('button')`
-        cursor: ${ (isLoading || !inputQuestion) && 'default'};
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        right: 10%;
-    `
-
-    const [ textareaHeight, setTextareaHeight ] = useState(0);
-    const textAreaRef = useRef(null);
-    const invisibleTextAreaRef = useRef<HTMLTextAreaElement>(null);
-
-    // テキスト量に応じてtextareaの高さを自動調整する
-    useEffect(() => {
-    if (invisibleTextAreaRef.current) {
-        const MAX_HEIGHT = 256
-        if (invisibleTextAreaRef.current.scrollHeight >= MAX_HEIGHT) return;
-        setTextareaHeight(invisibleTextAreaRef.current.scrollHeight);
-    }
-    }, [inputQuestion]);
 
     /**
      * 質問入力のhandling
@@ -1157,28 +1097,14 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         })}
                     </div>
 
-                    <FormContainer>
-                        <div className='ta_c'>
-                            <InputText
-                                onChange={handleChangeInput}
-                                value={inputQuestion}
-                                placeholder='質問を入力してください。'
-                                disabled={isLoading}
-                                ref={textAreaRef}
-                                style={{ height: textareaHeight && `${textareaHeight}px` }}
-                            >
-                            </InputText>
-                            <InputText // 高さ計算用テキストエリア
-                                ref={ invisibleTextAreaRef }
-                                value={ inputQuestion }
-                                onChange={ () => {} }
-                                style={{ position: 'fixed', top: -999 }} // 見えない範囲へ移動
-                            >
-                            </InputText>
-
-                            <SendButton onClick={sendQuestion}><SendIcon style={{ color: inputQuestion ? `${bgColor.blue}` : `${borderColor.gray}`}}/></SendButton>
-                        </div>
-                    </FormContainer>
+                    <QuestionInputContainer>
+                        <QuestionInput
+                            inputQuestion={inputQuestion}
+                            handleChangeInput={handleChangeInput}
+                            sendQuestion={sendQuestion}
+                            isLoading={isLoading}
+                        />
+                    </QuestionInputContainer>
                     {errorMessage &&
                         <ErrorMessageContainer>
                             <div className='error-message'>
