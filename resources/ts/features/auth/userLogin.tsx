@@ -193,7 +193,7 @@ const UserLogin = (props: UserLoginPropsType) => {
                     [StatusCode.UNAUTHORIZED]: `${message}`,
                     [StatusCode.VALIDATION]: `${status}エラー： ${message}`,
                     [StatusCode.SERVER_ERROR]: 'サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。'
-                } as any
+                } as Record<number, string>
 
                 setFailLoginErrorMessage(errorMessages[status])
             } else {

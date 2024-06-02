@@ -402,14 +402,13 @@ type ResChatGroup = {
     lastChatDate: string,
 }
 
-type GroupByDateChatGroupsType = {
-    [lastChatDate: string]: ChatGroup[]
-}
+type GroupByDateChatGroupsType = Record<string, ChatGroup[]>
 
 type ChatMessagePropsType = {
     userName: string,
     avatarUrl: string,
 }
+
 const ChatMessage = (props: ChatMessagePropsType) => {
     const { userName, avatarUrl } = props
 
@@ -519,7 +518,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 const errorMessages = {
                     [StatusCode.VALIDATION]: `${status}エラー： ${message}`,
                     [StatusCode.SERVER_ERROR]: 'サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。'
-                }
+                } as Record<number, string>
                 setErrorMessage(errorMessages[status])
             } else {
                 // general error
@@ -566,28 +565,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
         // 現在のchatGroupsのページネーションを１に
         setCurrentPage(1)
-    }
-
-    /**
-     * chatGroupに新しい質問を投稿した場合に、サイドバーにてそのchatGroupを一番上に持ってくる
-     */
-    const sortChatGroups = (chatGroups: ResChatGroup[]) => {
-        Object.keys(chatGroups).map((date: string) => {
-            const otherChatGroups = chatGroups[date].filter((chatGroup: ChatGroup) => {
-                return chatGroup.id !== chatGroupId
-            })
-            const targetChatGroup = chatGroups[date].filter((chatGroup: ChatGroup) => {
-                return chatGroup.id === chatGroupId
-            })
-
-            chatGroups[date] = otherChatGroups
-
-            if (!targetChatGroup.length) return
-            const firstOfChatGroups: ChatGroup[] = Object.entries<ChatGroup[]>(chatGroups)[0][1]
-            firstOfChatGroups.unshift(targetChatGroup[0])
-        })
-
-        return chatGroups
     }
 
     /**
@@ -686,14 +663,14 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      * chatGroupsを日付でグルーピング
      */
     const groupByDateChatGroups = (chatGroups: ChatGroup[]) => {
-        const groupByDateChatGroups: GroupByDateChatGroupsType[] = chatGroups.reduce((group: any, chatGroup: ChatGroup) => {
+        const groupByDateChatGroups = chatGroups.reduce((group: GroupByDateChatGroupsType, chatGroup: ChatGroup) => {
 
             group[chatGroup.lastChatDate] = group[chatGroup.lastChatDate] ?? [];
             group[chatGroup.lastChatDate].push(chatGroup);
 
             return group;
 
-        }, []);
+        }, {} as GroupByDateChatGroupsType);
 
         return groupByDateChatGroups
     }
@@ -842,7 +819,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         setChatGroups(editedChatGroups)
     }, [chatGroups])
 
-    const chatGroupTitleInputRef = useRef(null)
+    const chatGroupTitleInputRef = useRef<HTMLInputElement>(null)
 
     /**
      * titleをinputタグに変換する
@@ -893,6 +870,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      * inputからフォーカスが外れた時にchatGroupのtitleの編集モードを解除
      */
     const outOfTitleInput = useCallback(() => {
+        if (!chatGroupTitleInputRef.current) return;
         const chatGroupId = chatGroupTitleInputRef.current.id
         const title = chatGroupTitleInputRef.current.value
         const MAX_STR_COUNT = 255

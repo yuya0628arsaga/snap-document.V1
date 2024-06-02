@@ -64,7 +64,7 @@ type PastChatPropsType = {
     displayPastChat: (chatGroup: ChatGroup) => void,
     renameTitle: (e: React.ChangeEvent<HTMLInputElement>, chatGroupsId: string, chatGroups: ChatGroup[]) => void,
     outOfTitleInput: () => void,
-    chatGroupTitleInputRef: React.MutableRefObject<null>,
+    chatGroupTitleInputRef: React.RefObject<HTMLInputElement>,
     convertTitleToInput: (chatGroupId: string) => void,
     openDeleteModal: (chatGroupId: string, chatGroupTitle: string) => void,
     displayPastChatMenu: (chatGroupId: string) => void,
