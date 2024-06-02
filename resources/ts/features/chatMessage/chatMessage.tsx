@@ -616,6 +616,8 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
 
     const [chatGroups, setChatGroups] = useState<ChatGroup[]>([])
+    const [allChatGroups, setAllChatGroups] = useState<ChatGroup[]>([])
+
     const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
@@ -624,6 +626,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
             const chatGroups = initChatGroups(resChatGroups)
 
             setChatGroups(chatGroups)
+            setAllChatGroups(chatGroups) // 質問検索のキャッシュのため
 
             const { chatGroupsCount } = await getChatGroupsCount()
 
@@ -746,16 +749,13 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      */
     const searchChatGroups = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchWord: string = e.target.value
-        const resChatGroups: ResChatGroup[] = await getChatGroups()
-        const chatGroups = initChatGroups(resChatGroups)
-
-        const filteredChangeGroup = chatGroups.filter((chatGroup) => {
+        const filteredChangeGroup = allChatGroups.filter((chatGroup) => {
             const isMatch = chatGroup.title.indexOf(searchWord) !== -1
             return isMatch
         })
 
         setChatGroups(filteredChangeGroup)
-    }, [chatGroups])
+    }, [allChatGroups])
 
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
