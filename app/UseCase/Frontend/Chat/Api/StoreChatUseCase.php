@@ -85,34 +85,12 @@ class StoreChatUseCase
             $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId, $userId);
             $chat = $this->chatRepository->store($storeChatParams);
 
-            Log::info('[Start] ページの保存処理を開始します。', [
-                'method' => __METHOD__,
-                'chat_id' => $chat->id,
-                'user_id' => $userId,
-                'pages' => $pdfPages,
-            ]);
+            // ページ保存
+            $this->storePages($userId, $chat->id, $pdfPages);
 
-            $insertPageParams = $this->makeInsertPageParams($pdfPages, $chat->id);
-            $this->pageRepository->insert($insertPageParams);
-
+            // 画像保存
             $imageDatum = $this->makeImageDatum($answer, $documentName);
-
-            Log::info('[Start] 画像情報の保存処理を開始します。', [
-                'method' => __METHOD__,
-                'chat_id' => $chat->id,
-                'user_id' => $userId,
-                'imageDatum' => $imageDatum,
-            ]);
-
-            $insertChatImageParams = $this->makeInsertChatImageParams($imageDatum, $chat->id);
-            $this->chatImageRepository->insert($insertChatImageParams);
-
-            Log::info('[End] チャット, ページ, 画像の保存処理が完了しました。', [
-                'method' => __METHOD__,
-                'question' => $question,
-                'chat_id' => $chat->id,
-                'user_id' => $userId,
-            ]);
+            $this->storeChatImages($userId, $chatGroupId, $imageDatum);
 
             return [$chatGroupId, $imageDatum];
         });
@@ -221,6 +199,25 @@ class StoreChatUseCase
     }
 
     /**
+     * チャットグループを保存するためのオブジェクト作成
+     *
+     * @param string $title
+     * @param CarbonImmutable $lastChatDate
+     * @param string $userId
+     *
+     * @return StoreChatGroupParams
+     */
+    private function makeStoreChatGroupParams(string $title, CarbonImmutable $lastChatDate, string $userId): StoreChatGroupParams
+    {
+        return
+            new StoreChatGroupParams(
+                title: $title,
+                lastChatDate: $lastChatDate,
+                userId: $userId,
+            );
+    }
+
+    /**
      * チャットを保存するためのオブジェクト作成
      *
      * @param string $question
@@ -257,6 +254,35 @@ class StoreChatUseCase
     }
 
     /**
+     * ページの保存処理
+     *
+     * @param string $userId
+     * @param string $chatId
+     * @param array $pdfPages
+     *
+     * @return void
+     */
+    private function storePages(string $userId, string $chatId, array $pdfPages): void
+    {
+        Log::info('[Start] ページの保存処理を開始します。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'pages' => $pdfPages,
+        ]);
+
+        $insertPageParams = $this->makeInsertPageParams($pdfPages, $chatId);
+        $this->pageRepository->insert($insertPageParams);
+
+        Log::info('[End] ページの保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'pages' => $pdfPages,
+        ]);
+    }
+
+    /**
      * ページ配列をinsertするためのオブジェクト作成
      *
      * @param array $pdfPages
@@ -285,25 +311,6 @@ class StoreChatUseCase
     }
 
     /**
-     * チャットグループを保存するためのオブジェクト作成
-     *
-     * @param string $title
-     * @param CarbonImmutable $lastChatDate
-     * @param string $userId
-     *
-     * @return StoreChatGroupParams
-     */
-    private function makeStoreChatGroupParams(string $title, CarbonImmutable $lastChatDate, string $userId): StoreChatGroupParams
-    {
-        return
-            new StoreChatGroupParams(
-                title: $title,
-                lastChatDate: $lastChatDate,
-                userId: $userId,
-            );
-    }
-
-    /**
      * 今の日時を取得
      *
      * @return CarbonImmutable
@@ -311,6 +318,35 @@ class StoreChatUseCase
     private function getCurrentTime(): CarbonImmutable
     {
         return CarbonImmutable::now();
+    }
+
+    /**
+     * 画像の保存処理
+     *
+     * @param string $userId
+     * @param string $chatId
+     * @param array $imageDatum
+     *
+     * @return void
+     */
+    private function storeChatImages(string $userId, string $chatId, array $imageDatum): void
+    {
+        Log::info('[Start] 画像情報の保存処理を開始します。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'imageDatum' => $imageDatum,
+        ]);
+
+        $insertChatImageParams = $this->makeInsertChatImageParams($imageDatum, $chatId);
+        $this->chatImageRepository->insert($insertChatImageParams);
+
+        Log::info('[End] 画像情報の保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'imageDatum' => $imageDatum,
+        ]);
     }
 
     /**
