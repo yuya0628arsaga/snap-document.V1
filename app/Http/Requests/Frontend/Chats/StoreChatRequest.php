@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Frontend\Chats;
 
+use App\Http\Controllers\Frontend\Chat\Api\Params\ChatParams;
 use App\Rules\StoreChatRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -54,7 +55,7 @@ class StoreChatRequest extends FormRequest
      *
      * @return string
      */
-    public function getQuestion(): string
+    private function getQuestion(): string
     {
         return $this->input('question');
     }
@@ -64,7 +65,7 @@ class StoreChatRequest extends FormRequest
      *
      * @return string
      */
-    public function getManualName(): string
+    private function getManualName(): string
     {
         return $this->input('manualName');
     }
@@ -74,7 +75,7 @@ class StoreChatRequest extends FormRequest
      *
      * @return array
      */
-    public function getChatHistory(): array
+    private function getChatHistory(): array
     {
         return $this->input('chatHistory');
     }
@@ -94,7 +95,7 @@ class StoreChatRequest extends FormRequest
      *
      * @return bool
      */
-    public function getIsGetPdfPage(): bool
+    private function getIsGetPdfPage(): bool
     {
         return $this->input('isGetPdfPage');
     }
@@ -104,8 +105,23 @@ class StoreChatRequest extends FormRequest
      *
      * @return string
      */
-    public function getGptModel(): string
+    private function getGptModel(): string
     {
         return $this->input('gptModel');
+    }
+
+    /**
+     *
+     * @return ChatParams
+     */
+    public function getChatParams(): ChatParams
+    {
+        return new ChatParams(
+            question: $this->getQuestion(),
+            documentName: $this->getManualName(),
+            chatHistory: $this->getChatHistory(),
+            isGetPdfPage: $this->getIsGetPdfPage(),
+            gptModel: $this->getGptModel(),
+        );
     }
 }

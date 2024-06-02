@@ -6,6 +6,7 @@ namespace App\UseCase\Frontend\Chat\Api;
 
 use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
+use App\Http\Controllers\Frontend\Chat\Api\Params\ChatParams;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
@@ -44,32 +45,18 @@ class StoreChatUseCase
     }
 
     /**
-     * @param string $question 質問
-     * @param string $documentName 使用するドキュメント名
-     * @param array $chatHistory チャット履歴
      * @param ?string $chatGroupId チャットグループID
-     * @param bool $isGetPdfPage PDFページ取得フラグ
-     * @param string $gptModel GPTモデル
+     * @param ChatParams $chatParams
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    public function execute(
-        string $question,
-        string $documentName,
-        array $chatHistory,
-        ?string $chatGroupId,
-        bool $isGetPdfPage,
-        string $gptModel
-    ): array {
-        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine(
-            $question,
-            $documentName,
-            $chatHistory,
-            $isGetPdfPage,
-            $gptModel
-        );
+    public function execute(?string $chatGroupId, ChatParams $chatParams): array
+    {
+        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($chatParams);
+        $question = $chatParams->getQuestion();
+        $documentName = $chatParams->getDocumentName();
 
         [$chatGroupId, $imageDatum] = DB::transaction(function () use (
             $question,
@@ -163,32 +150,17 @@ class StoreChatUseCase
     /**
      * gpt_engine から回答を取得
      *
-     * @param string $question
-     * @param string $documentName
-     * @param array $chatHistory
-     * @param bool $isGetPdfPage
-     * @param string $gptModel
+     * @param ChatParams $chatParams
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(
-        string $question,
-        string $documentName,
-        array $chatHistory,
-        bool $isGetPdfPage,
-        string $gptModel,
-    ): array {
+    private function getAnswerFromGptEngine(ChatParams $chatParams): array
+    {
         $responseFromGptEngine = $this->gptEngineConnection::post(
             url: '/chat/answer/',
-            params: [
-                'question' => $question,
-                'document_name' => $documentName,
-                'chat_history' => $chatHistory,
-                'is_get_pdf_page' => $isGetPdfPage,
-                'gpt_model' => $gptModel,
-            ]
+            params: $chatParams->toArray()
         );
 
         if ($responseFromGptEngine['status'] !== GptEngineStatus::HTTP_OK->value) {
