@@ -4,12 +4,9 @@ import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState }
 import styled from '@emotion/styled'
 import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
-import FaceOutlinedIcon from '@mui/icons-material/FaceOutlined';
-import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
 import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
 import { StatusCode } from '../../utils/statusCode';
-import CheckboxLabels from '../../components/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import AccountPopupMenuButton from './components/AccountPopupMenuButton';
 import PastChat from './components/PastChat';
@@ -18,6 +15,7 @@ import QuestionInput from './components/QuestionInput';
 import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
 import AccountMenuButton from './components/AccountMenuButton';
+import Chat from './components/Chat';
 
 
 const Wrapper = styled('div')`
@@ -216,109 +214,12 @@ const Header = styled('div')`
     }
 `
 
-const MessageContainer = styled('div')`
-    max-width: 60%;
-    margin: 1% auto;
-    /* height: 80vh; */
-    overflow-y: scroll;
-    ::-webkit-scrollbar {
-        display:none;
-    }
-    @media (max-width: ${responsive.sp}) {
-        max-width: 90%;
-    }
-`
-
-const UsersQuestion = styled('div')`
-    padding: 20px;
-    background: ${bgColor.lightGray};
-    display: flex;
-    gap: 10px;
-    border-radius: 5px;
-    align-items: flex-start;
-    > .icon {
-        /* background: ${bgColor.blue}; */
-        background: ${bgColor.yellow};
-        border-radius: 5px;
-        padding: 3px;
-        display: flex;
-    }
-    >.text {
-        >.name {
-            font-weight: ${fontWeight.bold};
-            margin: 3px 0;
-            display: block;
-        }
-    }
-`
-
-// 回答表示のloading
-const Load = styled('div')`
-    display: flex;
-    gap: 10px;
-    margin: 16px 0;
-`
-
 // 過去のchat表示のloading
 const ChatLoading = styled('div')`
     position: absolute;
     top:50%;
     left: 50%;
     transform: translate(-50%, -50%);
-`
-
-const AiAnswer = styled('div')`
-    padding: 20px;
-    background: ${bgColor.lightGray};
-    display: flex;
-    gap: 10px;
-    /* border-radius: 5px; */
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    align-items: flex-start;
-
-    > .icon {
-        background: ${bgColor.blue};
-        border-radius: 5px;
-        padding: 3px;
-        display: flex;
-    }
-    >.text {
-        >.name {
-            font-weight: ${fontWeight.bold};
-            margin: 3px 0;
-            display: block;
-        }
-        >.img-container {
-            text-align: center;
-            margin-top: 32px;
-
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            >.img {
-                width: 80%;
-                height: auto;
-                margin: 0 auto;
-                @media (max-width: ${responsive.sp}) {
-                    width: 100%;
-                }
-            }
-            >.img-text{
-            }
-        }
-        >.url-title {
-            margin-top: 32px;
-        }
-        >.url {
-            > a {
-                color: ${borderColor.blue};
-            }
-        }
-        >.checkbox-container {
-            margin-top: 32px;
-        }
-    }
 `
 
 const QuestionInputContainer = styled('div')`
@@ -336,7 +237,7 @@ const ErrorMessageContainer = styled('div')`
     }
 `
 
-type Chat = {
+export type Chat = {
     id: string
     question: string,
     answer: string,
@@ -1048,74 +949,14 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         }
                         {chats.map((chat: Chat, i: number) => {
                             return (
-                                <MessageContainer id={chat.id} key={i}>
-                                    <UsersQuestion>
-                                        <div className="icon"><FaceOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                        <p className="text">
-                                            <span className="name">You</span>
-                                            {/* Fix::改行反映のため */}
-                                            {chat.question.split("\n").map((item, index) => {
-                                                return (
-                                                    <React.Fragment key={index}>{item}<br /></React.Fragment>
-                                                )
-                                            })}
-                                        </p>
-                                    </UsersQuestion>
-                                    {chat.isGenerating &&
-                                        <Load>
-                                            <CircularProgress disableShrink size={25}/>
-                                            <p>回答を生成中です...</p>
-                                        </Load>
-                                    }
-                                    {isDisplayChatGPT &&
-                                        <AiAnswer>
-                                            <div className='icon'><SmartToyOutlinedIcon style={{ color: `${borderColor.white}` }} /></div>
-                                            <div className="text">
-                                                <span className="name">ChatGPT</span>
-                                                {/* Fix::改行反映のため */}
-                                                {chat.answer.split("\n").map((item, index) => {
-                                                    return (
-                                                        <React.Fragment key={index}>{item}<br /></React.Fragment>
-                                                    )
-                                                })}
-                                                {chat.images &&
-                                                    chat.images.map((image, i) => {
-                                                        return (
-                                                            <div className='img-container' key={i}>
-                                                                <img src={image.url} className="img" alt="" />
-                                                                <div className='img-text'>{image.name}</div>
-                                                            </div>
-                                                        )
-                                                    })
-                                                }
-                                                {(!chat.isGenerating && (chat.pdfPages.length ? true : false)) &&
-                                                    <div className='url-title'>
-                                                        {`詳細は、${chat.documentName}ドキュメントの以下のページを参照してください。`}
-                                                    </div>
-                                                }
-                                                {chat.pdfPages &&
-                                                    chat.pdfPages.map((pdfPage: number, i: number) => {
-                                                        return (
-                                                            <React.Fragment key={i}>
-                                                                <div className='url'>
-                                                                    ・<a target="_blank" href={`https://mel-document-public.s3.ap-northeast-1.amazonaws.com/${chat.documentName}.pdf#page=${pdfPage}`}>{pdfPage}ページ</a>
-                                                                </div>
-                                                            </React.Fragment>
-                                                        )
-                                                    })
-                                                }
-                                                {!chat.isGenerating &&
-                                                    <div className='checkbox-container'>
-                                                        <CheckboxLabels
-                                                            label={'この会話を次の質問に含める'}
-                                                            handleChangeCheckbox={() => includeToHistory(chat, chats)}
-                                                        />
-                                                    </div>
-                                                }
-                                            </div>
-                                        </AiAnswer>
-                                    }
-                            </MessageContainer>)
+                                <Chat
+                                    key={i}
+                                    chat={chat}
+                                    chats={chats}
+                                    isDisplayChatGPT={isDisplayChatGPT}
+                                    includeToHistory={includeToHistory}
+                                />
+                            )
                         })}
                     </div>
 
