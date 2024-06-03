@@ -25,7 +25,7 @@ type AccountMenuButtonPropsType = {
     avatarUrl: string,
 }
 
-const AccountMenuButton = (props: AccountMenuButtonPropsType) => {
+const AccountMenuButton = React.memo((props: AccountMenuButtonPropsType) => {
     const { isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel, avatarUrl } = props
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
@@ -140,6 +140,6 @@ const AccountMenuButton = (props: AccountMenuButtonPropsType) => {
             </Menu>
         </AccountMenuButtonWrapper>
     );
-}
+})
 
 export default AccountMenuButton
