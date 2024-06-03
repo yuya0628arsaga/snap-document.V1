@@ -10,13 +10,14 @@ const SearchQuestionInputWrapper = styled('div')`
 
 type SearchQuestionInputPropsType = {
     searchChatGroups: (e: React.ChangeEvent<HTMLInputElement>) => void
+    refreshChatGroupsCache: () => void
 }
 
 /**
  * 質問検索欄
  */
 const SearchQuestionInput = React.memo((props: SearchQuestionInputPropsType) => {
-    const { searchChatGroups } = props
+    const { searchChatGroups, refreshChatGroupsCache } = props
 
     return (
         <SearchQuestionInputWrapper>
@@ -29,6 +30,7 @@ const SearchQuestionInput = React.memo((props: SearchQuestionInputPropsType) => 
                     sx={{ ml: 1, flex: 1, mt: 1 }}
                     placeholder="質問を検索"
                     onChange={searchChatGroups}
+                    onFocus={refreshChatGroupsCache}
                 />
             </Paper>
         </SearchQuestionInputWrapper>

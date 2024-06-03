@@ -601,6 +601,13 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         setChatGroups(filteredChangeGroup)
     }, [allChatGroups])
 
+    /**
+     * 質問検索欄にフォーカスが当たった時にChatGroupsのキャッシュを更新
+     */
+    const refreshChatGroupsCache = useCallback(() => {
+        setAllChatGroups(chatGroups)
+    }, [chatGroups])
+
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -873,6 +880,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                         <div className='past-chats-container'>
                             <SearchQuestionInput
                                 searchChatGroups={searchChatGroups}
+                                refreshChatGroupsCache={refreshChatGroupsCache}
                             />
                             <div className='past-chats'>
                                 {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
