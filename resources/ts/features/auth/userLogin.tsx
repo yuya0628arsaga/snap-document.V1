@@ -10,6 +10,7 @@ import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } fro
 import { StatusCode } from '../../utils/statusCode';
 import { CircularProgress, FormHelperText } from '@mui/material';
 import { GENERAL_ERROR_MESSAGE, getErrorMessageList } from '../../utils/helpers/getErrorMessageList';
+import { errorConsole, successConsole } from '../../utils/helpers/console';
 
 const Wrapper = styled('div')`
     background: ${bgColor.lightBlue};
@@ -146,14 +147,6 @@ const UserLogin = (props: UserLoginPropsType) => {
     const [password, setPassword] = useState('')
 
     const [isLoading, setIsLoading] = useState(false)
-
-    const successConsole = (message: string, result: any = null, color: string = 'green') => {
-        console.log(`%c${message}: `, `color: ${color};`, result)
-    }
-
-    const errorConsole = (message: string, result: any = null, color: string = `${textColor.error}`) => {
-        console.log(`%c${message}: `, `color: ${color};`, result)
-    }
 
     const login = () => {
 
