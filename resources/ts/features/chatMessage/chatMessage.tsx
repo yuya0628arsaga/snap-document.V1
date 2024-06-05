@@ -16,6 +16,7 @@ import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
 import AccountMenuButton from './components/AccountMenuButton';
 import Chat from './components/Chat';
+import { GENERAL_ERROR_MESSAGE, getErrorMessageList } from '../../utils/helpers/getErrorMessageList';
 
 
 const Wrapper = styled('div')`
@@ -350,15 +351,12 @@ const ChatMessage = (props: ChatMessagePropsType) => {
             if (axios.isAxiosError(e) && e.response) {
                 console.error(e)
                 const { status, message } = e.response.data as { status: number, message: string }
-                const errorMessages = {
-                    [StatusCode.VALIDATION]: `${status}エラー： ${message}`,
-                    [StatusCode.SERVER_ERROR]: 'サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。'
-                } as Record<number, string>
+                const errorMessages = getErrorMessageList(status, message)
                 setErrorMessage(errorMessages[status])
             } else {
                 // general error
                 console.error(e)
-                setErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
+                setErrorMessage(GENERAL_ERROR_MESSAGE)
             }
             setChats(chats)
         })
