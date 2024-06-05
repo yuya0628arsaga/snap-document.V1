@@ -23,11 +23,9 @@ const Wrapper = styled('div')`
 `
 
 const MainContainer = styled('div')`
-    /* flex-grow: 8; */
     width: 80%;
     display: flex;
     flex-direction: column;
-    /* padding-top: 48px; */
     height: 100vh;
     > .messages {
         position: relative; // ChatLoading表示のため
@@ -57,11 +55,8 @@ const MainContainer = styled('div')`
 `
 
 const SidebarContainer = styled('div')`
-    /* flex-grow: 2; */
-    /* min-width: 220px; */
     width: 20%;
     height: 100vh;
-    /* background: yellow; */
     background: ${bgColor.lightGray};
     @media (max-width: ${responsive.sp}) {
         position: fixed;
