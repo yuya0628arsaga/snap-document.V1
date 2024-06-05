@@ -6,6 +6,9 @@ namespace App\UseCase\Frontend\Chat\Api;
 
 use App\Enums\GptEngineStatus;
 use App\Exceptions\GptEngineProcessException;
+use App\Http\Controllers\Frontend\Chat\Api\Params\ChatParams;
+use App\Models\Chat;
+use App\Models\ChatGroup;
 use App\Repositories\Frontend\Chat\ChatRepository;
 use App\Repositories\Frontend\Chat\Params\StoreChatParams;
 use App\Repositories\Frontend\ChatGroup\ChatGroupRepository;
@@ -44,92 +47,46 @@ class StoreChatUseCase
     }
 
     /**
-     * @param string $question 質問
-     * @param string $documentName 使用するドキュメント名
-     * @param array $chatHistory チャット履歴
      * @param ?string $chatGroupId チャットグループID
-     * @param bool $isGetPdfPage PDFページ取得フラグ
-     * @param string $gptModel GPTモデル
+     * @param ChatParams $chatParams
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    public function execute(string $question, string $documentName, array $chatHistory, ?string $chatGroupId, bool $isGetPdfPage, string $gptModel): array
+    public function execute(?string $chatGroupId, ChatParams $chatParams): array
     {
-        [$answer, $pdfPages, $tokenCounts, $cost] = $this->getAnswerFromGptEngine($question, $documentName, $chatHistory, $isGetPdfPage, $gptModel);
+        $gptResponse = $this->getAnswerFromGptEngine($chatParams);
+        $question = $chatParams->getQuestion();
+        $documentName = $chatParams->getDocumentName();
 
-        [$chatGroupId, $imageDatum] = DB::transaction(function () use ($question, $documentName, $answer, $pdfPages, $tokenCounts, $cost, $chatGroupId) {
+        [$chatGroupId, $imageDatum, $answer, $pdfPages] = DB::transaction(function () use (
+            $question,
+            $documentName,
+            $gptResponse,
+            $chatGroupId,
+        ) {
             $userId = AuthUserGetter::get()->id;
+            $chatGroup = $chatGroupId
+                ? $this->updateChatGroup($userId, $chatGroupId)
+                : $this->storeChatGroup($userId);
+
+            $chatGroupId = $chatGroup->id;
             $document = $this->documentRepository->firstOrFailByDocumentName($documentName);
+            $answer = $gptResponse['answer'];
+            $pdfPages = $gptResponse['pdfPages'];
 
-            if (! $chatGroupId) {
-                // chatGroupの中で初めての質問の場合
-                Log::info('[Start] チャットグループの保存処理を開始します。', [
-                    'method' => __METHOD__,
-                    'user_id' => $userId,
-                ]);
+            // チャット保存
+            $chat = $this->storeChat($question, $document->id, $gptResponse, $chatGroupId, $userId);
 
-                $title = '質問_'.((string) Str::uuid());
-                $lastChatDate = $this->getCurrentTime();
+            // ページ保存
+            $this->storePages($userId, $chat->id, $pdfPages);
 
-                $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate, $userId);
-                $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
-                $chatGroupId = $chatGroup->id;
-            } else {
-                // chatGroupの中で２回目以降の質問の場合
-                Log::info('[Start] チャットグループの更新処理を開始します。', [
-                    'method' => __METHOD__,
-                    'chat_group_id' => $chatGroupId,
-                    'user_id' => $userId,
-                ]);
-
-                $lastChatDate = $this->getCurrentTime();
-                $params = new UpdateChatGroupParams(
-                    lastChatDate: $lastChatDate
-                );
-                $this->chatGroupRepository->update($chatGroupId, $params);
-            }
-
-            Log::info('[Start] チャットの保存処理を開始します。', [
-                'method' => __METHOD__,
-                'question' => $question,
-                'user_id' => $userId,
-            ]);
-
-            $storeChatParams = $this->makeStoreChatParams($question, $answer, $document->id, $tokenCounts, $cost, $chatGroupId, $userId);
-            $chat = $this->chatRepository->store($storeChatParams);
-
-            Log::info('[Start] ページの保存処理を開始します。', [
-                'method' => __METHOD__,
-                'chat_id' => $chat->id,
-                'user_id' => $userId,
-                'pages' => $pdfPages,
-            ]);
-
-            $insertPageParams = $this->makeInsertPageParams($pdfPages, $chat->id);
-            $this->pageRepository->insert($insertPageParams);
-
+            // 画像保存
             $imageDatum = $this->makeImageDatum($answer, $documentName);
+            $this->storeChatImages($userId, $chat->id, $imageDatum);
 
-            Log::info('[Start] 画像情報の保存処理を開始します。', [
-                'method' => __METHOD__,
-                'chat_id' => $chat->id,
-                'user_id' => $userId,
-                'imageDatum' => $imageDatum,
-            ]);
-
-            $insertChatImageParams = $this->makeInsertChatImageParams($imageDatum, $chat->id);
-            $this->chatImageRepository->insert($insertChatImageParams);
-
-            Log::info('[End] チャット, ページ, 画像の保存処理が完了しました。', [
-                'method' => __METHOD__,
-                'question' => $question,
-                'chat_id' => $chat->id,
-                'user_id' => $userId,
-            ]);
-
-            return [$chatGroupId, $imageDatum];
+            return [$chatGroupId, $imageDatum, $answer, $pdfPages];
         });
 
         return [
@@ -143,27 +100,17 @@ class StoreChatUseCase
     /**
      * gpt_engine から回答を取得
      *
-     * @param string $question
-     * @param string $documentName
-     * @param array $chatHistory
-     * @param bool $isGetPdfPage
-     * @param string $gptModel
+     * @param ChatParams $chatParams
      *
      * @throws \App\Exceptions\GptEngineProcessException
      *
      * @return array
      */
-    private function getAnswerFromGptEngine(string $question, string $documentName, array $chatHistory, bool $isGetPdfPage, string $gptModel): array
+    private function getAnswerFromGptEngine(ChatParams $chatParams): array
     {
         $responseFromGptEngine = $this->gptEngineConnection::post(
             url: '/chat/answer/',
-            params: [
-                'question' => $question,
-                'document_name' => $documentName,
-                'chat_history' => $chatHistory,
-                'is_get_pdf_page' => $isGetPdfPage,
-                'gpt_model' => $gptModel,
-            ]
+            params: $chatParams->toArray()
         );
 
         if ($responseFromGptEngine['status'] !== GptEngineStatus::HTTP_OK->value) {
@@ -178,67 +125,71 @@ class StoreChatUseCase
         ];
 
         return [
-            $responseFromGptEngine['answer'],
-            $responseFromGptEngine['pdf_pages'],
-            $tokenCounts,
-            $responseFromGptEngine['cost'],
+            'answer' => $responseFromGptEngine['answer'],
+            'pdfPages' => $responseFromGptEngine['pdf_pages'],
+            'tokenCounts' => $tokenCounts,
+            'cost' => $responseFromGptEngine['cost'],
         ];
     }
 
     /**
-     * チャットを保存するためのオブジェクト作成
+     * チャットグループの保存処理
      *
-     * @param string $question
-     * @param string $answer
-     * @param string $documentId
-     * @param array $tokenCounts
-     * @param string $chatGroupId
      * @param string $userId
      *
-     * @return StoreChatParams
+     * @return ChatGroup
      */
-    private function makeStoreChatParams($question, $answer, $documentId, $tokenCounts, $cost, $chatGroupId, $userId): StoreChatParams
+    private function storeChatGroup(string $userId): ChatGroup
     {
-        return
-            new StoreChatParams(
-                date: $this->getCurrentTime(),
-                question: $question,
-                answer: $answer,
-                questionTokenCount: $tokenCounts['promptTokens'],
-                answerTokenCount: $tokenCounts['completionTokens'],
-                cost: $cost,
-                userId: $userId,
-                documentId: $documentId,
-                chatGroupId: $chatGroupId,
-            );
+        Log::info('[Start] チャットグループの保存処理を開始します。', [
+            'method' => __METHOD__,
+            'user_id' => $userId,
+        ]);
+
+        $title = '質問_'.((string) Str::uuid());
+        $lastChatDate = $this->getCurrentTime();
+
+        $storeChatGroupParams = $this->makeStoreChatGroupParams($title, $lastChatDate, $userId);
+        $chatGroup = $this->chatGroupRepository->store($storeChatGroupParams);
+
+        Log::info('[End] チャットグループの保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'user_id' => $userId,
+        ]);
+
+        return $chatGroup;
     }
 
     /**
-     * ページ配列をinsertするためのオブジェクト作成
+     * チャットグループの更新処理
      *
-     * @param array $pdfPages
-     * @param string $chatId
+     * @param string $userId
+     * @param string $chatGroupId
      *
-     * @return array
+     * @return ChatGroup
      */
-    private function makeInsertPageParams($pdfPages, $chatId): array
+    private function updateChatGroup(string $userId, string $chatGroupId): ChatGroup
     {
-        $insertPageParams = [];
+        Log::info('[Start] チャットグループの更新処理を開始します。', [
+            'method' => __METHOD__,
+            'chat_group_id' => $chatGroupId,
+            'user_id' => $userId,
+        ]);
 
-        foreach ($pdfPages as $pdfPage) {
-            $storePageParams =
-                new StorePageParams(
-                    id: strtolower((string) Str::ulid()),
-                    page: $pdfPage,
-                    chatId: $chatId,
-                    createdAt: CarbonImmutable::now(),
-                    updatedAt: CarbonImmutable::now(),
-                    deletedAt: null,
-                );
+        $lastChatDate = $this->getCurrentTime();
+        $params = new UpdateChatGroupParams(
+            lastChatDate: $lastChatDate
+        );
 
-            $insertPageParams[] = $storePageParams->toArrayForInsert();
-        }
-        return $insertPageParams;
+        $chatGroup = $this->chatGroupRepository->update($chatGroupId, $params);
+
+        Log::info('[End] チャットグループの更新処理が完了しました', [
+            'method' => __METHOD__,
+            'chat_group_id' => $chatGroupId,
+            'user_id' => $userId,
+        ]);
+
+        return $chatGroup;
     }
 
     /**
@@ -261,6 +212,131 @@ class StoreChatUseCase
     }
 
     /**
+     * チャットの保存処理
+     *
+     * @param string $question
+     * @param string $documentId
+     * @param array $gptResponse
+     * @param string $chatGroupId
+     * @param string $userId
+     *
+     * @return Chat
+     */
+    private function storeChat(
+        string $question,
+        string $documentId,
+        array $gptResponse,
+        string $chatGroupId,
+        string $userId,
+    ): Chat {
+        Log::info('[Start] チャットの保存処理を開始します。', [
+            'method' => __METHOD__,
+            'question' => $question,
+            'user_id' => $userId,
+        ]);
+
+        $storeChatParams = $this->makeStoreChatParams($question, $documentId, $gptResponse, $chatGroupId, $userId);
+        $chat = $this->chatRepository->store($storeChatParams);
+
+        Log::info('[End] チャットの保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'question' => $question,
+            'user_id' => $userId,
+        ]);
+
+        return $chat;
+    }
+
+    /**
+     * チャットを保存するためのオブジェクト作成
+     *
+     * @param string $question
+     * @param string $documentId
+     * @param array $gptResponse
+     * @param string $chatGroupId
+     * @param string $userId
+     *
+     * @return StoreChatParams
+     */
+    private function makeStoreChatParams(
+        string $question,
+        string $documentId,
+        array $gptResponse,
+        string $chatGroupId,
+        string $userId
+    ): StoreChatParams {
+        return
+            new StoreChatParams(
+                date: $this->getCurrentTime(),
+                question: $question,
+                answer: $gptResponse['answer'],
+                questionTokenCount: $gptResponse['tokenCounts']['promptTokens'],
+                answerTokenCount: $gptResponse['tokenCounts']['completionTokens'],
+                cost: $gptResponse['cost'],
+                userId: $userId,
+                documentId: $documentId,
+                chatGroupId: $chatGroupId,
+            );
+    }
+
+    /**
+     * ページの保存処理
+     *
+     * @param string $userId
+     * @param string $chatId
+     * @param array $pdfPages
+     *
+     * @return void
+     */
+    private function storePages(string $userId, string $chatId, array $pdfPages): void
+    {
+        Log::info('[Start] ページの保存処理を開始します。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'pages' => $pdfPages,
+        ]);
+
+        $insertPageParams = $this->makeInsertPageParams($pdfPages, $chatId);
+        $this->pageRepository->insert($insertPageParams);
+
+        Log::info('[End] ページの保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'pages' => $pdfPages,
+        ]);
+    }
+
+    /**
+     * ページ配列をinsertするためのオブジェクト作成
+     *
+     * @param array $pdfPages
+     * @param string $chatId
+     *
+     * @return array
+     */
+    private function makeInsertPageParams(array $pdfPages, string $chatId): array
+    {
+        $insertPageParams = [];
+
+        foreach ($pdfPages as $pdfPage) {
+            $storePageParams =
+                new StorePageParams(
+                    id: strtolower((string) Str::ulid()),
+                    page: $pdfPage,
+                    chatId: $chatId,
+                    createdAt: CarbonImmutable::now(),
+                    updatedAt: CarbonImmutable::now(),
+                    deletedAt: null,
+                );
+
+            $insertPageParams[] = $storePageParams->toArrayForInsert();
+        }
+        return $insertPageParams;
+    }
+
+    /**
      * 今の日時を取得
      *
      * @return CarbonImmutable
@@ -268,6 +344,35 @@ class StoreChatUseCase
     private function getCurrentTime(): CarbonImmutable
     {
         return CarbonImmutable::now();
+    }
+
+    /**
+     * 画像の保存処理
+     *
+     * @param string $userId
+     * @param string $chatId
+     * @param array $imageDatum
+     *
+     * @return void
+     */
+    private function storeChatImages(string $userId, string $chatId, array $imageDatum): void
+    {
+        Log::info('[Start] 画像情報の保存処理を開始します。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'imageDatum' => $imageDatum,
+        ]);
+
+        $insertChatImageParams = $this->makeInsertChatImageParams($imageDatum, $chatId);
+        $this->chatImageRepository->insert($insertChatImageParams);
+
+        Log::info('[End] 画像情報の保存処理が完了しました。', [
+            'method' => __METHOD__,
+            'chat_id' => $chatId,
+            'user_id' => $userId,
+            'imageDatum' => $imageDatum,
+        ]);
     }
 
     /**
@@ -334,7 +439,7 @@ class StoreChatUseCase
      *
      * @return array
      */
-    private function makeInsertChatImageParams($imageDatum, $chatId): array
+    private function makeInsertChatImageParams(array $imageDatum, string $chatId): array
     {
         $insertChatImageParams = [];
 

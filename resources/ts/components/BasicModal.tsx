@@ -39,7 +39,18 @@ const theme = createTheme({
     },
 });
 
-export default function BasicModal(props) {
+
+type BasicModalPropsType = {
+    open: boolean,
+    setOpen: (open: boolean) => void,
+    modalTitle: string,
+    modalDescription: string,
+    buttonType: "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning",
+    buttonText: string,
+    handleExecute: () => void,
+}
+
+export default function BasicModal(props: BasicModalPropsType) {
     const { open, setOpen, modalTitle, modalDescription, buttonType, buttonText, handleExecute } = props
     const handleClose = () => setOpen(false);
 

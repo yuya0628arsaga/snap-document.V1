@@ -57,7 +57,7 @@ type AccountSettingsModalProps = {
     setGptModel: (gptModel: string) => void,
 }
 
-const AccountSettingsModal = (props: AccountSettingsModalProps) => {
+const AccountSettingsModal = React.memo((props: AccountSettingsModalProps) => {
     const { open, setOpen, isGetPdfPage, setIsGetPdfPage, gptModel, setGptModel } = props
 
     const handleClose = () => setOpen(false);
@@ -103,6 +103,6 @@ const AccountSettingsModal = (props: AccountSettingsModalProps) => {
         </Modal>
         </div>
     );
-}
+})
 
 export default AccountSettingsModal

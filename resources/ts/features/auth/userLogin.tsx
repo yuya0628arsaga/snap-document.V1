@@ -9,6 +9,8 @@ import CheckboxLabels from '../../components/Checkbox';
 import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import { StatusCode } from '../../utils/statusCode';
 import { CircularProgress, FormHelperText } from '@mui/material';
+import { GENERAL_ERROR_MESSAGE, getErrorMessageList } from '../../utils/helpers/getErrorMessageList';
+import { errorConsole, successConsole } from '../../utils/helpers/console';
 
 const Wrapper = styled('div')`
     background: ${bgColor.lightBlue};
@@ -146,16 +148,10 @@ const UserLogin = (props: UserLoginPropsType) => {
 
     const [isLoading, setIsLoading] = useState(false)
 
-    const successConsole = (message: string, result: any = null, color: string = 'green') => {
-        console.log(`%c${message}: `, `color: ${color};`, result)
-    }
-
-    const errorConsole = (message: string, result: any = null, color: string = `${textColor.error}`) => {
-        console.log(`%c${message}: `, `color: ${color};`, result)
-    }
-
+    /**
+     * ログイン処理
+     */
     const login = () => {
-
         if (email === '') {
             setEmailErrorMessage('メールアドレスは必ず指定してください。')
             return
@@ -188,18 +184,13 @@ const UserLogin = (props: UserLoginPropsType) => {
             if (axios.isAxiosError(e) && e.response) {
                 console.error(e)
                 const { status, message } = e.response.data as { status: number, message: string }
-
-                const errorMessages = {
-                    [StatusCode.UNAUTHORIZED]: `${message}`,
-                    [StatusCode.VALIDATION]: `${status}エラー： ${message}`,
-                    [StatusCode.SERVER_ERROR]: 'サーバーとの通信に問題があり処理が失敗しました。再度お試し下さい。'
-                } as any
+                const errorMessages = getErrorMessageList(status, message)
 
                 setFailLoginErrorMessage(errorMessages[status])
             } else {
                 // general error
                 console.error(e)
-                setFailLoginErrorMessage('不具合のため処理が失敗しました。再度お試し下さい。')
+                setFailLoginErrorMessage(GENERAL_ERROR_MESSAGE)
             }
             errorConsole('ログイン失敗')
             setIsLoading(false)

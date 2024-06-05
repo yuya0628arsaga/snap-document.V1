@@ -28,8 +28,19 @@ const SelectMenuButton = (props: SelectMenuButtonPropsType) => {
     };
 
     const [label, setLabel] = React.useState('')
+
+    /**
+     * 選択中のlabelを表示
+     */
+    const setSelectedLabel = () => {
+        const selectedItem = menuItems.filter((item) => {
+            return item.value === value
+        })
+        setLabel(selectedItem[0].label)
+    }
+
     React.useEffect(() => {
-        setLabel(menuItems[0].label)
+        setSelectedLabel()
     }, [])
 
     return (

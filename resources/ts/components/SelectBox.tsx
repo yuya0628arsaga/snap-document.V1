@@ -11,7 +11,14 @@ const SelectBoxContainer = styled('div')`
     padding: 16px;
 `
 
-const SelectBox = (props) => {
+type SelectBoxPropsType = {
+    isSelectManual: boolean,
+    setIsSelectManual: (isSelectManual: boolean) => void,
+    manual: string,
+    setManual: (manual: string) => void,
+}
+
+const SelectBox = (props: SelectBoxPropsType) => {
     const { isSelectManual, setIsSelectManual, manual, setManual } = props
 
     const handleChange = (event: SelectChangeEvent) => {
