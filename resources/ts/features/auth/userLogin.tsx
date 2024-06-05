@@ -148,8 +148,10 @@ const UserLogin = (props: UserLoginPropsType) => {
 
     const [isLoading, setIsLoading] = useState(false)
 
+    /**
+     * ログイン処理
+     */
     const login = () => {
-
         if (email === '') {
             setEmailErrorMessage('メールアドレスは必ず指定してください。')
             return
