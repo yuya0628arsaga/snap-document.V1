@@ -472,14 +472,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         dispatch(toggleIsDisplayPastChatMenu(chatGroupId))
     }, [chatGroups])
 
-    /**
-     * pastChatのポップアップメニューを閉じる（クリック時に3点リーダーを非活性にさせるため）
-     */
-    const closePastChatMenu = useCallback(() => {
-        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
-        dispatch(toggleIsDisplayPastChatMenu(''))
-    }, [chatGroups])
-
     const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
     const [modalDescription, setModalDescription] = useState('')
     const [deleteTargetChatGroupId, setDeleteTargetChatGroupId] = useState('')
@@ -568,7 +560,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                     displayPastChat={displayPastChat}
                     openDeleteModal={openDeleteModal}
                     displayPastChatMenu={displayPastChatMenu}
-                    closePastChatMenu={closePastChatMenu}
                     maxPagination={maxPagination}
                     getChatGroupsPagination={getChatGroupsPagination}
                     currentPage={currentPage}

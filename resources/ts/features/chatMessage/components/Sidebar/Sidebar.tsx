@@ -115,7 +115,6 @@ const Sidebar = React.memo((props: any) => {
         displayPastChat,
         openDeleteModal,
         displayPastChatMenu,
-        closePastChatMenu,
         maxPagination,
         getChatGroupsPagination,
         currentPage,
@@ -169,7 +168,6 @@ const Sidebar = React.memo((props: any) => {
                                                     displayPastChat={displayPastChat}
                                                     openDeleteModal={openDeleteModal}
                                                     displayPastChatMenu={displayPastChatMenu}
-                                                    closePastChatMenu={closePastChatMenu}
                                                 />
                                             </React.Fragment>
                                         )

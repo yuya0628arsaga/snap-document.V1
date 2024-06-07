@@ -66,7 +66,6 @@ type PastChatPropsType = {
     displayPastChat: (chatGroup: ChatGroup) => void,
     openDeleteModal: (chatGroupId: string, chatGroupTitle: string) => void,
     displayPastChatMenu: (chatGroupId: string) => void,
-    closePastChatMenu: () => void,
 }
 
 const PastChat = React.memo((props: PastChatPropsType) => {
@@ -75,7 +74,6 @@ const PastChat = React.memo((props: PastChatPropsType) => {
         displayPastChat,
         openDeleteModal,
         displayPastChatMenu,
-        closePastChatMenu,
     } = props
 
     const dispatch = useDispatch<AppDispatch>();
@@ -183,7 +181,6 @@ const PastChat = React.memo((props: PastChatPropsType) => {
                     chatGroup={chatGroup}
                     openDeleteModal={openDeleteModal}
                     displayPastChatMenu={displayPastChatMenu}
-                    closePastChatMenu={closePastChatMenu}
                 />
             </div>
             {(chatGroup.isEditingRename && validationMessageOfTitle) &&

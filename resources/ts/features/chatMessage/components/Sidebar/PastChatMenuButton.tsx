@@ -8,7 +8,7 @@ import { FiEdit3 } from 'react-icons/fi';
 import { RiDeleteBin5Line } from 'react-icons/ri';
 import { ChatGroup } from '../../chatMessage';
 import { IconContext } from "react-icons" // iconにデザイン適用させるため
-import { toggleIsEditingRename } from '../../store/modules/chatGroups';
+import { toggleIsDisplayPastChatMenu, toggleIsEditingRename } from '../../store/modules/chatGroups';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store';
 
@@ -53,11 +53,10 @@ type PastChatMenuButtonPropsType = {
     chatGroup: ChatGroup,
     openDeleteModal: (chatGroupId: string, chatGroupTitle: string) => void,
     displayPastChatMenu: (chatGroupId: string) => void,
-    closePastChatMenu: () => void,
 }
 
 const PastChatMenuButton = React.memo((props: PastChatMenuButtonPropsType) => {
-    const { chatGroup, openDeleteModal, displayPastChatMenu, closePastChatMenu } = props
+    const { chatGroup, openDeleteModal, displayPastChatMenu } = props
     const dispatch = useDispatch<AppDispatch>();
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -69,6 +68,14 @@ const PastChatMenuButton = React.memo((props: PastChatMenuButtonPropsType) => {
         closePastChatMenu()
         setAnchorEl(null);
     };
+
+    /**
+     * pastChatのポップアップメニューを閉じる（クリック時に3点リーダーを非活性にさせるため）
+     */
+    const closePastChatMenu = () => {
+        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
+        dispatch(toggleIsDisplayPastChatMenu(''))
+    }
 
     /**
      * titleをinputタグに変換する
