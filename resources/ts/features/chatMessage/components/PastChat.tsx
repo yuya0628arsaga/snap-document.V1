@@ -3,6 +3,8 @@ import PastChatMenuButton from "./PastChatMenuButton"
 import styled from '@emotion/styled';
 import { bgColor, borderColor, fontSize, responsive, textColor } from '../../../utils/themeClient';
 import { ChatGroup } from '../chatMessage';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 const PastChatWrapper = styled('div')`
     display: flex;
@@ -58,9 +60,7 @@ const PastChatWrapper = styled('div')`
 `
 
 type PastChatPropsType = {
-    chatGroups: ChatGroup[],
     chatGroup: ChatGroup,
-    chatGroupId: string | null,
     displayPastChat: (chatGroup: ChatGroup) => void,
     renameTitle: (e: React.ChangeEvent<HTMLInputElement>, chatGroupsId: string, chatGroups: ChatGroup[]) => void,
     onKeyDownTitleInput: (e: React.KeyboardEvent<HTMLInputElement>) => void,
@@ -75,9 +75,7 @@ type PastChatPropsType = {
 
 const PastChat = React.memo((props: PastChatPropsType) => {
     const {
-        chatGroups,
         chatGroup,
-        chatGroupId,
         displayPastChat,
         renameTitle,
         onKeyDownTitleInput,
@@ -89,6 +87,9 @@ const PastChat = React.memo((props: PastChatPropsType) => {
         closePastChatMenu,
         validationMessageOfTitle,
     } = props
+
+    const chatGroupId = useSelector((state: RootState) => state.chatGroupId);
+    const chatGroups = useSelector((state: RootState) => state.chatGroups);
 
     return (
         <PastChatWrapper>
