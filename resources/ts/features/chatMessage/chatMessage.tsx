@@ -21,6 +21,7 @@ import Child from './components/Sidebar/Child';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store, { AppDispatch, RootState } from './store';
 import { updateChatGroupId } from './store/modules/chatGroupId';
+import Sidebar from './components/Sidebar/Sidebar';
 import {
     initChatGroups,
     renameChatGroupsTitle,
@@ -62,101 +63,6 @@ const MainContainer = styled('div')`
     }
     @media (max-width: ${responsive.sp}) {
         width: 100%;
-    }
-`
-
-const SidebarContainer = styled('div')`
-    width: 20%;
-    height: 100vh;
-    background: ${bgColor.lightGray};
-    @media (max-width: ${responsive.sp}) {
-        position: fixed;
-        width: 100%;
-        height: 100vh;
-        top: 80px;
-        transition: all 0.5s;
-        right: -120%;
-        z-index: 999;
-        &.open {
-            right: 0;
-        }
-    }
-
-    display: flex;
-    flex-direction: column;
-    >.contents {
-        height: calc(100vh - 60px);
-        width: 100%;
-        >.past-chats-container {
-            height: calc(100vh - 60px - 80px);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            // スクロールバー（サイドバー）
-            overflow-y: scroll;
-            &::-webkit-scrollbar {
-                visibility: hidden;
-                width: 10px;
-            }
-            &::-webkit-scrollbar-thumb {
-                visibility: hidden;
-                border-radius: 20px;
-            }
-            &:hover::-webkit-scrollbar {
-                visibility: visible;
-            }
-            &:hover::-webkit-scrollbar-thumb {
-                visibility: visible;
-                background: ${bgColor.buttonGray};
-            }
-
-            >.past-chats {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                flex-grow: 1; // paginationの位置を下に固定するため
-                >.date {
-                    margin: 0 8px;
-                    @media (max-width: ${responsive.sp}) {
-                        text-align: center;
-                    }
-                }
-            }
-            >.pagination {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-        }
-    }
-    >.sidebar-footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 20%;
-        background: ${bgColor.lightGray};
-        height: 60px;
-        @media (max-width: ${responsive.sp}) {
-            position: fixed;
-            left: 120%;
-            width: 100%;
-            transition: all 0.5s;
-        }
-        >.account {
-            height: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            display: none;
-            @media (max-width: ${responsive.sp}) {
-                display: block;
-            }
-        }
-
-        &.open {
-            left: 0;
-        }
     }
 `
 
@@ -267,8 +173,6 @@ export type ResChatGroup = {
     title: string,
     lastChatDate: string,
 }
-
-type GroupByDateChatGroupsType = Record<string, ChatGroup[]>
 
 type ChatMessagePropsType = {
     userName: string,
@@ -512,22 +416,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     }
 
     /**
-     * chatGroupsを日付でグルーピング
-     */
-    const groupByDateChatGroups = (chatGroups: ChatGroup[]) => {
-        const groupByDateChatGroups = chatGroups.reduce((group: GroupByDateChatGroupsType, chatGroup: ChatGroup) => {
-
-            group[chatGroup.lastChatDate] = group[chatGroup.lastChatDate] ?? [];
-            group[chatGroup.lastChatDate].push(chatGroup);
-
-            return group;
-
-        }, {} as GroupByDateChatGroupsType);
-
-        return groupByDateChatGroups
-    }
-
-    /**
      * サーバからチャットグループを取得
      */
     const getChatGroups = (page: number = 1): Promise<ResChatGroup[]> => {
@@ -659,92 +547,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         dispatch(toggleIsDisplayPastChatMenu(''))
     }, [chatGroups])
 
-    const chatGroupTitleInputRef = useRef<HTMLInputElement>(null)
-
-    /**
-     * titleをinputタグに変換する
-     */
-    const convertTitleToInput = useCallback((chatGroupId: string) => {
-        // isEditingRename（title編集中フラグ）を切り替える
-        dispatch(toggleIsEditingRename(chatGroupId))
-    }, [chatGroups])
-
-    /**
-     * chatGroupのtitle名を修正する
-     */
-    const renameTitle = useCallback((e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
-
-        const title = e.target.value
-        // titleの更新
-        dispatch(renameChatGroupsTitle({ chatGroupId, title }))
-    }, [chatGroups])
-
-    const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
-
-    /**
-     * titleのinputからフォーカスが外れた時に更新する
-     */
-    const outOfTitleInput = useCallback(() => {
-        updateTitle(chatGroups)
-    }, [chatGroups])
-
-    /**
-     * titleのinputでEnterが押された時に更新する
-     */
-    const onKeyDownTitleInput = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            updateTitle(chatGroups)
-        };
-    }, [chatGroups])
-
-    /**
-     * chatGroupのtitle名を更新する
-     */
-    const updateTitle = (chatGroups: ChatGroup[]) => {
-        if (!chatGroupTitleInputRef.current) return;
-
-        const chatGroupId = chatGroupTitleInputRef.current.id
-        const title = chatGroupTitleInputRef.current.value
-
-        const MAX_STR_COUNT = 255
-
-        if (!title || title.length > MAX_STR_COUNT) {
-            setValidationMessageOfTitle('1~255文字以内で入力してください。')
-            return
-        }
-        // titleのupdate（サーバー）
-        updateChatGroupTitle(chatGroupId, title)
-
-        // isEditingRename（title編集中フラグ）を元に戻す
-        dispatch(toggleIsEditingRename(''))
-    }
-
-    /**
-     * チャットグループtitleを更新
-     */
-    const updateChatGroupTitle = (chatGroupId: string, title: string): void => {
-        axios({
-            url: '/api/v1/chat-groups/',
-            method: 'POST',
-            params: {
-                'chatGroupId': chatGroupId,
-                'title': title,
-            }
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
-        })
-        .catch((e: AxiosError): void => {
-            console.error(e)
-        })
-    }
-
-    // 編集ボタン押下時にtitleのinputタグにフォーカスを自動で当てる
-    useEffect(() => {
-        chatGroupTitleInputRef.current?.focus()
-    }, [chatGroups])
-
     const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
     const [modalDescription, setModalDescription] = useState('')
     const [deleteTargetChatGroupId, setDeleteTargetChatGroupId] = useState('')
@@ -827,64 +629,24 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 handleExecute={() => {executeDelete(deleteTargetChatGroupId, chatGroupId)}}
             />
             <Wrapper>
-                <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
-                    <div className='contents'>
-                        <NewChatButton
-                            displayNewChat={displayNewChat}
-                        />
-                        <div className='past-chats-container'>
-                            <SearchQuestionInput
-                                searchChatGroups={searchChatGroups}
-                                refreshChatGroupsCache={refreshChatGroupsCache}
-                            />
-                            <div className='past-chats'>
-                                {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
-                                    return (
-                                        <React.Fragment key={i}>
-                                            <div className='date'>
-                                                {date}
-                                            </div>
-                                            {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
-                                                return (
-                                                    <React.Fragment key={i}>
-                                                        <PastChat
-                                                            chatGroup={chatGroup}
-                                                            displayPastChat={displayPastChat}
-                                                            renameTitle={renameTitle}
-                                                            onKeyDownTitleInput={onKeyDownTitleInput}
-                                                            outOfTitleInput={outOfTitleInput}
-                                                            chatGroupTitleInputRef={chatGroupTitleInputRef}
-                                                            convertTitleToInput={convertTitleToInput}
-                                                            openDeleteModal={openDeleteModal}
-                                                            displayPastChatMenu={displayPastChatMenu}
-                                                            closePastChatMenu={closePastChatMenu}
-                                                            validationMessageOfTitle={validationMessageOfTitle}
-                                                        />
-                                                    </React.Fragment>
-                                                )
-                                            })}
-                                        </React.Fragment>
-                                    )
-                                })}
-                            </div>
-                            <div className='pagination'>
-                                <Pagination count={maxPagination} onChange={getChatGroupsPagination} page={currentPage} />
-                            </div>
-
-                        </div>
-                    </div>
-                    <div className={`sidebar-footer ${isSpMenuOpen ? 'open' : ''}`}>
-                        <div className='account'>
-                            <AccountPopupMenuButton
-                                isGetPdfPage={isGetPdfPage}
-                                setIsGetPdfPage={setIsGetPdfPage}
-                                userName={userName}
-                                gptModel={gptModel}
-                                setGptModel={setGptModel}
-                            />
-                        </div>
-                    </div>
-                </SidebarContainer>
+                <Sidebar
+                    isSpMenuOpen={isSpMenuOpen}
+                    displayNewChat={displayNewChat}
+                    searchChatGroups={searchChatGroups}
+                    refreshChatGroupsCache={refreshChatGroupsCache}
+                    displayPastChat={displayPastChat}
+                    openDeleteModal={openDeleteModal}
+                    displayPastChatMenu={displayPastChatMenu}
+                    closePastChatMenu={closePastChatMenu}
+                    maxPagination={maxPagination}
+                    getChatGroupsPagination={getChatGroupsPagination}
+                    currentPage={currentPage}
+                    isGetPdfPage={isGetPdfPage}
+                    setIsGetPdfPage={setIsGetPdfPage}
+                    userName={userName}
+                    gptModel={gptModel}
+                    setGptModel={setGptModel}
+                />
 
                 <MainContainer>
                     <Child />
