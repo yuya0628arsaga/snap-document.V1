@@ -1,18 +1,12 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { ChangeEvent, createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from '@emotion/styled'
-import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
+import { bgColor, borderColor, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
 import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
-import { StatusCode } from '../../utils/statusCode';
-import Pagination from '@mui/material/Pagination';
-import AccountPopupMenuButton from './components/AccountPopupMenuButton';
-import PastChat from './components/PastChat';
-import SearchQuestionInput from './components/SearchQuestionInput';
 import QuestionInput from './components/QuestionInput';
-import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
 import AccountMenuButton from './components/AccountMenuButton';
 import Chat from './components/Chat';
@@ -23,10 +17,7 @@ import { updateChatGroupId } from './store/modules/chatGroupId';
 import Sidebar from './components/Sidebar/Sidebar';
 import {
     initChatGroups,
-    renameChatGroupsTitle,
-    searchChatGroupsTitle,
     toggleIsDisplayPastChatMenu,
-    toggleIsEditingRename
 } from './store/modules/chatGroups';
 import { updateChatGroupsCache } from './store/modules/chatGroupsCache';
 import { getChatGroups, getChatGroupsCount } from './api/api';
