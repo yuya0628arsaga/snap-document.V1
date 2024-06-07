@@ -8,6 +8,9 @@ import { FiEdit3 } from 'react-icons/fi';
 import { RiDeleteBin5Line } from 'react-icons/ri';
 import { ChatGroup } from '../../chatMessage';
 import { IconContext } from "react-icons" // iconにデザイン適用させるため
+import { toggleIsEditingRename } from '../../store/modules/chatGroups';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store';
 
 
 const PastChatMenuWrapper = styled('div')``
@@ -48,14 +51,15 @@ const PastChatMenu = styled('div')`
 
 type PastChatMenuButtonPropsType = {
     chatGroup: ChatGroup,
-    convertTitleToInput: (chatGroupId: string) => void,
     openDeleteModal: (chatGroupId: string, chatGroupTitle: string) => void,
     displayPastChatMenu: (chatGroupId: string) => void,
     closePastChatMenu: () => void,
 }
 
 const PastChatMenuButton = React.memo((props: PastChatMenuButtonPropsType) => {
-    const { chatGroup, convertTitleToInput, openDeleteModal, displayPastChatMenu, closePastChatMenu } = props
+    const { chatGroup, openDeleteModal, displayPastChatMenu, closePastChatMenu } = props
+    const dispatch = useDispatch<AppDispatch>();
+
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -65,6 +69,14 @@ const PastChatMenuButton = React.memo((props: PastChatMenuButtonPropsType) => {
         closePastChatMenu()
         setAnchorEl(null);
     };
+
+    /**
+     * titleをinputタグに変換する
+     */
+    const convertTitleToInput = (chatGroupId: string) => {
+        // isEditingRename（title編集中フラグ）を切り替える
+        dispatch(toggleIsEditingRename(chatGroupId))
+    }
 
     console.log(222222)
 

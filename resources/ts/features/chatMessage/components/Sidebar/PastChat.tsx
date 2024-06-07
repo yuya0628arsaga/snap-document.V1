@@ -92,14 +92,6 @@ const PastChat = React.memo((props: PastChatPropsType) => {
     }, [chatGroups])
 
     /**
-     * titleをinputタグに変換する
-     */
-    const convertTitleToInput = (chatGroupId: string) => {
-        // isEditingRename（title編集中フラグ）を切り替える
-        dispatch(toggleIsEditingRename(chatGroupId))
-    }
-
-    /**
      * chatGroupのtitle名を修正する
      */
     const renameTitle = (
@@ -189,7 +181,6 @@ const PastChat = React.memo((props: PastChatPropsType) => {
                 </div>
                 <PastChatMenuButton
                     chatGroup={chatGroup}
-                    convertTitleToInput={convertTitleToInput}
                     openDeleteModal={openDeleteModal}
                     displayPastChatMenu={displayPastChatMenu}
                     closePastChatMenu={closePastChatMenu}
