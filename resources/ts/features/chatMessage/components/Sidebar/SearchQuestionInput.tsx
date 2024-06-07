@@ -4,9 +4,9 @@ import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import styled from '@emotion/styled';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store';
-import { updateChatGroupsCache } from '../store/modules/chatGroupsCache';
-import { searchChatGroupsTitle } from '../store/modules/chatGroups';
+import { AppDispatch, RootState } from '../../store';
+import { updateChatGroupsCache } from '../../store/modules/chatGroupsCache';
+import { searchChatGroupsTitle } from '../../store/modules/chatGroups';
 
 const SearchQuestionInputWrapper = styled('div')`
     margin: 10px;

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FiEdit } from "react-icons/fi";
 import styled from "@emotion/styled"
-import { bgColor, fontWeight } from "../../../utils/themeClient"
+import { bgColor, fontWeight } from "../../../../utils/themeClient"
 
 const NewChatButtonWrapper = styled('div')`
     height: 80px;

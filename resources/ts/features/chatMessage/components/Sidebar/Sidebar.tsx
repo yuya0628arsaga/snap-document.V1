@@ -1,11 +1,11 @@
 import styled from '@emotion/styled';
 import * as React from 'react';
 import { bgColor, responsive } from '../../../../utils/themeClient';
-import NewChatButton from '../NewChatButton';
-import SearchQuestionInput from '../SearchQuestionInput';
-import PastChat from '../PastChat';
+import NewChatButton from './NewChatButton';
+import SearchQuestionInput from './SearchQuestionInput';
+import PastChat from './PastChat';
 import { Pagination } from '@mui/material';
-import AccountPopupMenuButton from '../AccountPopupMenuButton';
+import AccountPopupMenuButton from './AccountPopupMenuButton';
 import { ChatGroup } from '../../chatMessage';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';

@@ -1,11 +1,11 @@
 import * as React from 'react';
 import PastChatMenuButton from "./PastChatMenuButton"
 import styled from '@emotion/styled';
-import { bgColor, borderColor, fontSize, responsive, textColor } from '../../../utils/themeClient';
-import { ChatGroup } from '../chatMessage';
+import { bgColor, borderColor, fontSize, responsive, textColor } from '../../../../utils/themeClient';
+import { ChatGroup } from '../../chatMessage';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../store';
-import { renameChatGroupsTitle, toggleIsEditingRename } from '../store/modules/chatGroups';
+import { AppDispatch, RootState } from '../../store';
+import { renameChatGroupsTitle, toggleIsEditingRename } from '../../store/modules/chatGroups';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const PastChatWrapper = styled('div')`

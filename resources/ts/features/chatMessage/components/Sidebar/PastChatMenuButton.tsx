@@ -3,10 +3,10 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import styled from '@emotion/styled';
-import { bgColor, fontSize, textColor } from '../../../utils/themeClient';
+import { bgColor, fontSize, textColor } from '../../../../utils/themeClient';
 import { FiEdit3 } from 'react-icons/fi';
 import { RiDeleteBin5Line } from 'react-icons/ri';
-import { ChatGroup } from '../chatMessage';
+import { ChatGroup } from '../../chatMessage';
 import { IconContext } from "react-icons" // iconにデザイン適用させるため
 
 
