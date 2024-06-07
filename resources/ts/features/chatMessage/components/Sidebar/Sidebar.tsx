@@ -108,7 +108,7 @@ const SidebarWrapper = styled('div')`
 
 type GroupByDateChatGroupsType = Record<string, ChatGroup[]>
 
-const Sidebar = (props: any) => {
+const Sidebar = React.memo((props: any) => {
     const {
         isSpMenuOpen,
         displayNewChat,
@@ -127,6 +127,8 @@ const Sidebar = (props: any) => {
     } = props
 
     const chatGroups = useSelector((state: RootState) => state.chatGroups);
+
+    console.log('sidebar')
 
     /**
      * chatGroupsを日付でグルーピング
@@ -195,6 +197,6 @@ const Sidebar = (props: any) => {
             </div>
         </SidebarWrapper>
     )
-}
+})
 
 export default Sidebar

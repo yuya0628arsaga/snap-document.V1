@@ -550,12 +550,12 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * chatGroupsのページネーション押下時
      */
-    const getChatGroupsPagination = async (event: React.ChangeEvent<unknown>, page: number) => {
+    const getChatGroupsPagination = useCallback(async (event: React.ChangeEvent<unknown>, page: number) => {
         setCurrentPage(page)
 
         const resChatGroups = await getChatGroups(page)
         dispatch(initChatGroups(resChatGroups))
-    }
+    }, [currentPage])
 
     console.log(111111111)
 
