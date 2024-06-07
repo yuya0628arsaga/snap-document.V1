@@ -73,9 +73,9 @@ const chatGroupsSlice = createSlice({
          * 質問を検索
          */
         searchChatGroupsTitle: (chatGroups: ChatGroup[], { payload }) => {
-            const { searchWord, allChatGroups } = payload
+            const { searchWord, chatGroupsCache } = payload
 
-            return allChatGroups.filter((chatGroup: ChatGroup) => {
+            return chatGroupsCache.filter((chatGroup: ChatGroup) => {
                 const isMatch = chatGroup.title.indexOf(searchWord) !== -1
                 return isMatch
             })

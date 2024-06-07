@@ -108,12 +108,10 @@ const SidebarWrapper = styled('div')`
 
 type GroupByDateChatGroupsType = Record<string, ChatGroup[]>
 
-const Sidebar = (props) => {
+const Sidebar = (props: any) => {
     const {
         isSpMenuOpen,
         displayNewChat,
-        searchChatGroups,
-        refreshChatGroupsCache,
         displayPastChat,
         openDeleteModal,
         displayPastChatMenu,
@@ -153,10 +151,7 @@ const Sidebar = (props) => {
                     displayNewChat={displayNewChat}
                 />
                 <div className='past-chats-container'>
-                    <SearchQuestionInput
-                        searchChatGroups={searchChatGroups}
-                        refreshChatGroupsCache={refreshChatGroupsCache}
-                    />
+                    <SearchQuestionInput />
                     <div className='past-chats'>
                         {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
                             return (

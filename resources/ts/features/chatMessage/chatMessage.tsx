@@ -17,7 +17,6 @@ import { GPT_MODEL_LIST } from '../../utils/constants';
 import AccountMenuButton from './components/AccountMenuButton';
 import Chat from './components/Chat';
 import { GENERAL_ERROR_MESSAGE, getErrorMessageList } from '../../utils/helpers/getErrorMessageList';
-import Child from './components/Sidebar/Child';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import store, { AppDispatch, RootState } from './store';
 import { updateChatGroupId } from './store/modules/chatGroupId';
@@ -29,6 +28,8 @@ import {
     toggleIsDisplayPastChatMenu,
     toggleIsEditingRename
 } from './store/modules/chatGroups';
+import { updateChatGroupsCache } from './store/modules/chatGroupsCache';
+import { getChatGroups, getChatGroupsCount } from './api/api';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -363,8 +364,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         setIsSpMenuOpen(prev => !prev)
     }
 
-    const [allChatGroups, setAllChatGroups] = useState<ChatGroup[]>([])
-
     const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
@@ -379,7 +378,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         dispatch(initChatGroups(resChatGroups))
 
         const chatGroups = initializeChatGroups(resChatGroups)
-        setAllChatGroups(chatGroups) // 質問検索のキャッシュのため
+        dispatch(updateChatGroupsCache(chatGroups))  // 質問検索のキャッシュのため
 
         const { chatGroupsCount } = await getChatGroupsCount()
 
@@ -416,48 +415,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     }
 
     /**
-     * サーバからチャットグループを取得
-     */
-    const getChatGroups = (page: number = 1): Promise<ResChatGroup[]> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: `/api/v1/chat-groups/?page=${page}`,
-                method: 'GET',
-            })
-            .then((res: AxiosResponse): void => {
-                const { data } = res
-                console.log(data)
-                resolve(data)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
-    }
-
-    /**
-     * サーバからチャットグループのレコード数を取得
-     */
-    const getChatGroupsCount = (): Promise<{chatGroupsCount: number}> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: `/api/v1/chat-groups/count`,
-                method: 'GET',
-            })
-            .then((res: AxiosResponse): void => {
-                const { data } = res
-                console.log(data)
-                resolve(data)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
-    }
-
-    /**
      * チャットグループIDでチャットを取得
      */
     const getChats = (chatGroupId: string): Promise<Chat[]> => {
@@ -480,21 +437,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
             })
         })
     }
-
-    /**
-     * 質問を検索
-     */
-    const searchChatGroups = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const searchWord: string = e.target.value
-        dispatch(searchChatGroupsTitle({ searchWord: searchWord, allChatGroups: allChatGroups }))
-    }, [allChatGroups])
-
-    /**
-     * 質問検索欄にフォーカスが当たった時にChatGroupsのキャッシュを更新
-     */
-    const refreshChatGroupsCache = useCallback(() => {
-        setAllChatGroups(chatGroups)
-    }, [chatGroups])
 
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
@@ -632,8 +574,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 <Sidebar
                     isSpMenuOpen={isSpMenuOpen}
                     displayNewChat={displayNewChat}
-                    searchChatGroups={searchChatGroups}
-                    refreshChatGroupsCache={refreshChatGroupsCache}
                     displayPastChat={displayPastChat}
                     openDeleteModal={openDeleteModal}
                     displayPastChatMenu={displayPastChatMenu}
@@ -649,7 +589,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 />
 
                 <MainContainer>
-                    <Child />
                     <Header>
                         <div className='select-box'>
                             <SelectBox isSelectManual={isSelectManual} setIsSelectManual={setIsSelectManual} manual={manual} setManual={setManual} />

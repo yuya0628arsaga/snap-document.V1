@@ -3,21 +3,37 @@ import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import styled from '@emotion/styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
+import { updateChatGroupsCache } from '../store/modules/chatGroupsCache';
+import { searchChatGroupsTitle } from '../store/modules/chatGroups';
 
 const SearchQuestionInputWrapper = styled('div')`
     margin: 10px;
 `
 
-type SearchQuestionInputPropsType = {
-    searchChatGroups: (e: React.ChangeEvent<HTMLInputElement>) => void
-    refreshChatGroupsCache: () => void
-}
-
 /**
  * 質問検索欄
  */
-const SearchQuestionInput = React.memo((props: SearchQuestionInputPropsType) => {
-    const { searchChatGroups, refreshChatGroupsCache } = props
+const SearchQuestionInput = React.memo(() => {
+    const dispatch = useDispatch<AppDispatch>();
+    const chatGroups = useSelector((state: RootState) => state.chatGroups);
+    const chatGroupsCache = useSelector((state: RootState) => state.chatGroupsCache);
+
+    /**
+     * 質問検索欄にフォーカスが当たった時にChatGroupsのキャッシュを更新
+     */
+    const refreshChatGroupsCache = () => {
+        dispatch(updateChatGroupsCache(chatGroups))
+    }
+
+    /**
+     * 質問を検索
+     */
+    const searchChatGroups = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const searchWord: string = e.target.value
+        dispatch(searchChatGroupsTitle({ searchWord: searchWord, chatGroupsCache: chatGroupsCache }))
+    }
 
     return (
         <SearchQuestionInputWrapper>
