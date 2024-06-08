@@ -20,7 +20,13 @@ import {
     toggleIsDisplayPastChatMenu,
 } from './store/modules/chatGroups';
 import { updateChatGroupsCache } from './store/modules/chatGroupsCache';
-import { deleteChatGroup, getChatGroups, getChatGroupsCount, getChats } from './api/api';
+import {
+    deleteChatGroup,
+    getChatGroups,
+    getChatGroupsCount,
+    getChats,
+    postChats
+} from './api/api';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -171,6 +177,13 @@ type ChatMessagePropsType = {
     avatarUrl: string,
 }
 
+type PostChatsRes = {
+    answer: string,
+    images: { name: string, url: string }[],
+    pdfPages: number[],
+    chatGroupId: string,
+}
+
 const ChatMessage = (props: ChatMessagePropsType) => {
     const { userName, avatarUrl } = props
 
@@ -222,30 +235,24 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     }
 
     /**
-     * サーバに質問を投げて回答を取得
+     * 質問を投げて回答を取得
      */
-    const postChats = (
+    const postChatsWrapper = async (
         inputQuestion: string,
         manual: string,
         newChats: Chat[],
         chats: Chat[],
         chatGroupId: string | null
-    ): void => {
-        axios({
-            url: '/api/v1/chats/',
-            method: 'POST',
-            data: {
-                question: inputQuestion,
-                manualName: manual,
-                chatHistory: getChatHistory(chats),
-                chatGroupId: chatGroupId,
-                isGetPdfPage: isGetPdfPage,
-                gptModel: gptModel,
-            }
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
+    ): Promise<void> => {
+        try {
+            const data: PostChatsRes = await postChats(
+                inputQuestion,
+                manual,
+                chatGroupId,
+                getChatHistory(chats),
+                isGetPdfPage,
+                gptModel,
+            )
 
             const lastChat: Chat = newChats.slice(-1)[0];
             lastChat.answer = data.answer
@@ -261,8 +268,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
             // chatが投稿されたらサイドバーのchatGroupとpaginationを更新
             updateSidebarContents()
-        })
-        .catch((e: AxiosError): void => {
+        } catch (e) {
             if (axios.isAxiosError(e) && e.response) {
                 console.error(e)
                 const { status, message } = e.response.data as { status: number, message: string }
@@ -274,10 +280,9 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 setErrorMessage(GENERAL_ERROR_MESSAGE)
             }
             setChats(chats)
-        })
-        .then((): void => {
+        } finally {
             setIsLoading(false)
-        })
+        }
     }
 
     /**
@@ -308,7 +313,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         setIsDisplayChatGPT(true)
 
         // API通信
-        postChats(inputQuestion, manual, newChats, chats, chatGroupId)
+        postChatsWrapper(inputQuestion, manual, newChats, chats, chatGroupId)
 
         // 現在のchatGroupsのページネーションを１に
         setCurrentPage(1)

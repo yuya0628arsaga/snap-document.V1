@@ -5,6 +5,7 @@ type RequestParamType = {
     url: string,
     method: string,
     params?: any,
+    data?: any,
 }
 
 /**
@@ -51,7 +52,32 @@ export const getChats = (chatGroupId: string): Promise<Chat[]> => {
 }
 
 /**
- * リクエスト処理
+ * サーバに質問を投げて回答を取得
+ */
+export const postChats = (
+    inputQuestion: string,
+    manual: string,
+    chatGroupId: string | null,
+    chatHistory: string[][],
+    isGetPdfPage: boolean,
+    gptModel: string
+) => {
+    return requestApi({
+        url: '/api/v1/chats/',
+        method: 'POST',
+        data: {
+            question: inputQuestion,
+            manualName: manual,
+            chatHistory: chatHistory,
+            chatGroupId: chatGroupId,
+            isGetPdfPage: isGetPdfPage,
+            gptModel: gptModel,
+        }
+    })
+}
+
+/**
+ * リクエスト共通処理
  */
 const requestApi = (requestParam: RequestParamType) => {
     return new Promise((resolve: (value: any) => void, reject: (reason?: any) => void) => {
