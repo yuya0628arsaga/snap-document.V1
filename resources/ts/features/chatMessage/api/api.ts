@@ -1,24 +1,19 @@
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { ResChatGroup } from "../chatMessage"
+import { Chat, ResChatGroup } from "../chatMessage"
+
+type RequestParamType = {
+    url: string,
+    method: string,
+    params?: any,
+}
 
 /**
  * サーバからチャットグループのレコード数を取得
  */
-export const getChatGroupsCount = (): Promise<{chatGroupsCount: number}> => {
-    return new Promise((resolve, reject) => {
-        axios({
-            url: `/api/v1/chat-groups/count`,
-            method: 'GET',
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
-            resolve(data)
-        })
-        .catch((e: AxiosError): void => {
-            console.error(e)
-            reject(e)
-        })
+export const getChatGroupsCount = (): Promise<{ chatGroupsCount: number }> => {
+    return requestApi({
+        url: `/api/v1/chat-groups/count`,
+        method: 'GET',
     })
 }
 
@@ -26,11 +21,41 @@ export const getChatGroupsCount = (): Promise<{chatGroupsCount: number}> => {
  * サーバからチャットグループを取得
  */
 export const getChatGroups = (page: number = 1): Promise<ResChatGroup[]> => {
-    return new Promise((resolve, reject) => {
-        axios({
-            url: `/api/v1/chat-groups/?page=${page}`,
-            method: 'GET',
-        })
+    return requestApi({
+        url: `/api/v1/chat-groups/?page=${page}`,
+        method: 'GET',
+    })
+}
+
+/**
+ * chatGroup削除
+ */
+export const deleteChatGroup = (chatGroupId: string): Promise<unknown> => {
+    return requestApi({
+        url: `/api/v1/chat-groups/${chatGroupId}`,
+        method: 'DELETE',
+    })
+}
+
+/**
+ * チャットグループIDでチャットを取得
+ */
+export const getChats = (chatGroupId: string): Promise<Chat[]> => {
+    return requestApi({
+        url: '/api/v1/chats/',
+        method: 'GET',
+        params: {
+            'chat_group_id': chatGroupId
+        }
+    })
+}
+
+/**
+ * リクエスト処理
+ */
+const requestApi = (requestParam: RequestParamType) => {
+    return new Promise((resolve: (value: any) => void, reject: (reason?: any) => void) => {
+        axios(requestParam)
         .then((res: AxiosResponse): void => {
             const { data } = res
             console.log(data)

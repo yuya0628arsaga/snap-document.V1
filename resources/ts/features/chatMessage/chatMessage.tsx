@@ -20,7 +20,7 @@ import {
     toggleIsDisplayPastChatMenu,
 } from './store/modules/chatGroups';
 import { updateChatGroupsCache } from './store/modules/chatGroupsCache';
-import { getChatGroups, getChatGroupsCount } from './api/api';
+import { deleteChatGroup, getChatGroups, getChatGroupsCount, getChats } from './api/api';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -224,7 +224,13 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * サーバに質問を投げて回答を取得
      */
-    const postChats = (inputQuestion: string, manual: string, newChats: Chat[], chats: Chat[], chatGroupId: string | null): void => {
+    const postChats = (
+        inputQuestion: string,
+        manual: string,
+        newChats: Chat[],
+        chats: Chat[],
+        chatGroupId: string | null
+    ): void => {
         axios({
             url: '/api/v1/chats/',
             method: 'POST',
@@ -365,16 +371,21 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      * サイドバー（chatGroupsとpagination）を更新する
      */
     const updateSidebarContents = async () => {
-        const resChatGroups: ResChatGroup[] = await getChatGroups()
-        dispatch(initChatGroups(resChatGroups))
+        try {
+            const resChatGroups: ResChatGroup[] = await getChatGroups()
 
-        const chatGroups = initializeChatGroups(resChatGroups)
-        dispatch(updateChatGroupsCache(chatGroups))  // 質問検索のキャッシュのため
+            dispatch(initChatGroups(resChatGroups))
 
-        const { chatGroupsCount } = await getChatGroupsCount()
+            const chatGroups = initializeChatGroups(resChatGroups)
+            dispatch(updateChatGroupsCache(chatGroups))  // 質問検索のキャッシュのため
 
-        const maxPage: number = getMaxPage(chatGroupsCount)
-        setMaxPagination(maxPage)
+            const { chatGroupsCount } = await getChatGroupsCount()
+
+            const maxPage: number = getMaxPage(chatGroupsCount)
+            setMaxPagination(maxPage)
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }
 
     /**
@@ -405,30 +416,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         return chatGroups
     }
 
-    /**
-     * チャットグループIDでチャットを取得
-     */
-    const getChats = (chatGroupId: string): Promise<Chat[]> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: '/api/v1/chats/',
-                method: 'GET',
-                params: {
-                    'chat_group_id': chatGroupId
-                }
-            })
-            .then((res: AxiosResponse): void => {
-                const { data } = res
-                console.log(data)
-                resolve(data)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
-    }
-
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -436,19 +423,23 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      * 過去の質問を表示
      */
     const displayPastChat = useCallback(async (chatGroup: ChatGroup) => {
-        const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
-        const chatGroupId = chatGroup.id
-        if (isEditingRename) return
+        try {
+            const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
+            const chatGroupId = chatGroup.id
+            if (isEditingRename) return
 
-        setIsChatLoading(true)
+            setIsChatLoading(true)
 
-        const chats = await getChats(chatGroupId)
-        setChats(chats)
-        setIsChatLoading(false)
+            const chats = await getChats(chatGroupId)
+            setChats(chats)
+            setIsChatLoading(false)
 
-        dispatch(updateChatGroupId(chatGroupId))
-        setIsDisplayChatGPT(true)
-        setIsSpMenuOpen(prev => !prev)
+            dispatch(updateChatGroupId(chatGroupId))
+            setIsDisplayChatGPT(true)
+            setIsSpMenuOpen(prev => !prev)
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }, [chatGroups, isSpMenuOpen])
 
     /**
@@ -479,7 +470,10 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * 削除モーダルをopen
      */
-    const openDeleteModal = useCallback((chatGroupId: string, chatGroupTitle: string) => {
+    const openDeleteModal = useCallback((
+        chatGroupId: string,
+        chatGroupTitle: string
+    ) => {
         // 削除対象のchatGroupId
         setDeleteTargetChatGroupId(chatGroupId)
 
@@ -491,39 +485,30 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * chatGroupを削除しサイドバー更新
      */
-    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
-        await deleteChatGroup(deleteTargetChatGroupId)
+    const executeDelete = async (
+        deleteTargetChatGroupId: string,
+        currentlyOpenChatGroupId: string | null
+    ): Promise<void> => {
+        try {
+            await deleteChatGroup(deleteTargetChatGroupId)
 
-        const resChatGroups = await getChatGroups(currentPage)
-        dispatch(initChatGroups(resChatGroups))
+            const resChatGroups = await getChatGroups(currentPage)
+            dispatch(initChatGroups(resChatGroups))
 
-        // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
-        refreshChats(deleteTargetChatGroupId, currentlyOpenChatGroupId)
-    }
-
-    /**
-     * chatGroup削除
-     */
-    const deleteChatGroup = (chatGroupId: string): Promise<boolean> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: `/api/v1/chat-groups/${chatGroupId}`,
-                method: 'DELETE',
-            })
-            .then((res: AxiosResponse): void => {
-                resolve(true)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
+            // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
+            refreshChats(deleteTargetChatGroupId, currentlyOpenChatGroupId)
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }
 
     /**
      * 削除したchatGroupの画面を削除時に開いていた場合に、chat画面を初期化
      */
-    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
+    const refreshChats = (
+        deletedChatGroupId: string,
+        currentlyOpenChatGroupId: string | null
+    ) => {
         if (deleteTargetChatGroupId === currentlyOpenChatGroupId) {
             setChats([])
             dispatch(updateChatGroupId(''))
@@ -533,11 +518,18 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * chatGroupsのページネーション押下時
      */
-    const getChatGroupsPagination = useCallback(async (event: React.ChangeEvent<unknown>, page: number) => {
-        setCurrentPage(page)
+    const getChatGroupsPagination = useCallback(async (
+        event: React.ChangeEvent<unknown>,
+        page: number
+    ): Promise<void> => {
+        try {
+            setCurrentPage(page)
 
-        const resChatGroups = await getChatGroups(page)
-        dispatch(initChatGroups(resChatGroups))
+            const resChatGroups = await getChatGroups(page)
+            dispatch(initChatGroups(resChatGroups))
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }, [currentPage])
 
     console.log(111111111)
