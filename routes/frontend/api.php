@@ -40,6 +40,7 @@ Route::middleware(['auth:web'])->group(function () {
 });
 
 
+# テスト用のルーティング
 Route::get('/test1', function (Request $request) {
     Document::firstOrCreate(
         ['name' => 'Man_Digest_v9'],

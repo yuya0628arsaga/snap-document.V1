@@ -35,17 +35,8 @@ Route::middleware('auth:web')->group(function () {
 });
 
 
-
-
-Route::middleware('auth:web')->get('/ogawa', function () {
-    return view('backend.home.index');
-})->name('ogawa');
-
-Route::middleware('auth:web')->get('/ogawa2', function () {
-    return view('welcome');
-})->name('ogawa2');
-
-Route::get('/test-regi', function () {
+# テストユーザー登録用
+Route::get('/test-register', function () {
     return User::firstOrCreate([
         'email' => 'test@test.com'
     ], ['name' => 'テストユーザー', 'password' => 'test']);
