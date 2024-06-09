@@ -1,23 +1,32 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { createRoot } from 'react-dom/client'
-import React, { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from '@emotion/styled'
-import { bgColor, borderColor, fontSize, fontWeight, responsive, textColor } from '../../utils/themeClient';
+import { bgColor, borderColor, fontWeight, responsive, textColor } from '../../utils/themeClient';
 import CircularProgress from '@mui/material/CircularProgress';
 import SelectBox from '../../components/SelectBox';
 import BasicModal from '../../components/BasicModal';
-import { StatusCode } from '../../utils/statusCode';
-import Pagination from '@mui/material/Pagination';
-import AccountPopupMenuButton from './components/AccountPopupMenuButton';
-import PastChat from './components/PastChat';
-import SearchQuestionInput from './components/SearchQuestionInput';
 import QuestionInput from './components/QuestionInput';
-import NewChatButton from './components/NewChatButton';
 import { GPT_MODEL_LIST } from '../../utils/constants';
 import AccountMenuButton from './components/AccountMenuButton';
 import Chat from './components/Chat';
 import { GENERAL_ERROR_MESSAGE, getErrorMessageList } from '../../utils/helpers/getErrorMessageList';
-
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import store, { AppDispatch, RootState } from './store';
+import { updateChatGroupId } from './store/modules/chatGroupId';
+import Sidebar from './components/Sidebar/Sidebar';
+import {
+    initChatGroups,
+    toggleIsDisplayPastChatMenu,
+} from './store/modules/chatGroups';
+import { updateChatGroupsCache } from './store/modules/chatGroupsCache';
+import {
+    deleteChatGroup,
+    getChatGroups,
+    getChatGroupsCount,
+    getChats,
+    postChats
+} from './api/api';
 
 const Wrapper = styled('div')`
     display: flex;
@@ -52,101 +61,6 @@ const MainContainer = styled('div')`
     }
     @media (max-width: ${responsive.sp}) {
         width: 100%;
-    }
-`
-
-const SidebarContainer = styled('div')`
-    width: 20%;
-    height: 100vh;
-    background: ${bgColor.lightGray};
-    @media (max-width: ${responsive.sp}) {
-        position: fixed;
-        width: 100%;
-        height: 100vh;
-        top: 80px;
-        transition: all 0.5s;
-        right: -120%;
-        z-index: 999;
-        &.open {
-            right: 0;
-        }
-    }
-
-    display: flex;
-    flex-direction: column;
-    >.contents {
-        height: calc(100vh - 60px);
-        width: 100%;
-        >.past-chats-container {
-            height: calc(100vh - 60px - 80px);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            // スクロールバー（サイドバー）
-            overflow-y: scroll;
-            &::-webkit-scrollbar {
-                visibility: hidden;
-                width: 10px;
-            }
-            &::-webkit-scrollbar-thumb {
-                visibility: hidden;
-                border-radius: 20px;
-            }
-            &:hover::-webkit-scrollbar {
-                visibility: visible;
-            }
-            &:hover::-webkit-scrollbar-thumb {
-                visibility: visible;
-                background: ${bgColor.buttonGray};
-            }
-
-            >.past-chats {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                flex-grow: 1; // paginationの位置を下に固定するため
-                >.date {
-                    margin: 0 8px;
-                    @media (max-width: ${responsive.sp}) {
-                        text-align: center;
-                    }
-                }
-            }
-            >.pagination {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-        }
-    }
-    >.sidebar-footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 20%;
-        background: ${bgColor.lightGray};
-        height: 60px;
-        @media (max-width: ${responsive.sp}) {
-            position: fixed;
-            left: 120%;
-            width: 100%;
-            transition: all 0.5s;
-        }
-        >.account {
-            height: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            display: none;
-            @media (max-width: ${responsive.sp}) {
-                display: block;
-            }
-        }
-
-        &.open {
-            left: 0;
-        }
     }
 `
 
@@ -252,17 +166,22 @@ export type ChatGroup = {
     isEditingRename: boolean,
 }
 
-type ResChatGroup = {
+export type ResChatGroup = {
     id: string,
     title: string,
     lastChatDate: string,
 }
 
-type GroupByDateChatGroupsType = Record<string, ChatGroup[]>
-
 type ChatMessagePropsType = {
     userName: string,
     avatarUrl: string,
+}
+
+type PostChatsRes = {
+    answer: string,
+    images: { name: string, url: string }[],
+    pdfPages: number[],
+    chatGroupId: string,
 }
 
 const ChatMessage = (props: ChatMessagePropsType) => {
@@ -274,7 +193,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     const [isDisplayChatGPT, setIsDisplayChatGPT] = useState(false)
 
     const [chats, setChats] = useState<Chat[]>([])
-    const [chatGroupId, setChatGroupId] = useState<string | null>(null)
 
     const [manual, setManual] = React.useState('');
     const [isSelectManual, setIsSelectManual] = useState(true);
@@ -288,6 +206,10 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     const [isChecking, setIsChecking] = useState(false)
 
     const [errorMessage, setErrorMessage] = useState('')
+
+    const dispatch = useDispatch<AppDispatch>();
+    const chatGroupId = useSelector((state: RootState) => state.chatGroupId);
+    const chatGroups = useSelector((state: RootState) => state.chatGroups);
 
     /**
      * 質問入力のhandling
@@ -313,24 +235,24 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     }
 
     /**
-     * サーバに質問を投げて回答を取得
+     * 質問を投げて回答を取得
      */
-    const postChats = (inputQuestion: string, manual: string, newChats: Chat[], chats: Chat[], chatGroupId: string | null): void => {
-        axios({
-            url: '/api/v1/chats/',
-            method: 'POST',
-            data: {
-                question: inputQuestion,
-                manualName: manual,
-                chatHistory: getChatHistory(chats),
-                chatGroupId: chatGroupId,
-                isGetPdfPage: isGetPdfPage,
-                gptModel: gptModel,
-            }
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
+    const postChatsWrapper = async (
+        inputQuestion: string,
+        manual: string,
+        newChats: Chat[],
+        chats: Chat[],
+        chatGroupId: string | null
+    ): Promise<void> => {
+        try {
+            const data: PostChatsRes = await postChats(
+                inputQuestion,
+                manual,
+                chatGroupId,
+                getChatHistory(chats),
+                isGetPdfPage,
+                gptModel,
+            )
 
             const lastChat: Chat = newChats.slice(-1)[0];
             lastChat.answer = data.answer
@@ -339,15 +261,14 @@ const ChatMessage = (props: ChatMessagePropsType) => {
             lastChat.isGenerating = false
 
             setChats(newChats)
-            setChatGroupId(data.chatGroupId);
+            dispatch(updateChatGroupId(data.chatGroupId))
 
             // 質問入力欄を空に
             setInputQuestion('')
 
             // chatが投稿されたらサイドバーのchatGroupとpaginationを更新
             updateSidebarContents()
-        })
-        .catch((e: AxiosError): void => {
+        } catch (e) {
             if (axios.isAxiosError(e) && e.response) {
                 console.error(e)
                 const { status, message } = e.response.data as { status: number, message: string }
@@ -359,10 +280,9 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 setErrorMessage(GENERAL_ERROR_MESSAGE)
             }
             setChats(chats)
-        })
-        .then((): void => {
+        } finally {
             setIsLoading(false)
-        })
+        }
     }
 
     /**
@@ -393,7 +313,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         setIsDisplayChatGPT(true)
 
         // API通信
-        postChats(inputQuestion, manual, newChats, chats, chatGroupId)
+        postChatsWrapper(inputQuestion, manual, newChats, chats, chatGroupId)
 
         // 現在のchatGroupsのページネーションを１に
         setCurrentPage(1)
@@ -446,10 +366,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         setIsSpMenuOpen(prev => !prev)
     }
 
-
-    const [chatGroups, setChatGroups] = useState<ChatGroup[]>([])
-    const [allChatGroups, setAllChatGroups] = useState<ChatGroup[]>([])
-
     const [maxPagination, setMaxPagination] = useState(1)
 
     useEffect(() => {
@@ -460,16 +376,21 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      * サイドバー（chatGroupsとpagination）を更新する
      */
     const updateSidebarContents = async () => {
-        const resChatGroups: ResChatGroup[] = await getChatGroups()
-        const chatGroups = initChatGroups(resChatGroups)
+        try {
+            const resChatGroups: ResChatGroup[] = await getChatGroups()
 
-        setChatGroups(chatGroups)
-        setAllChatGroups(chatGroups) // 質問検索のキャッシュのため
+            dispatch(initChatGroups(resChatGroups))
 
-        const { chatGroupsCount } = await getChatGroupsCount()
+            const chatGroups = initializeChatGroups(resChatGroups)
+            dispatch(updateChatGroupsCache(chatGroups))  // 質問検索のキャッシュのため
 
-        const maxPage: number = getMaxPage(chatGroupsCount)
-        setMaxPagination(maxPage)
+            const { chatGroupsCount } = await getChatGroupsCount()
+
+            const maxPage: number = getMaxPage(chatGroupsCount)
+            setMaxPagination(maxPage)
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }
 
     /**
@@ -486,8 +407,9 @@ const ChatMessage = (props: ChatMessagePropsType) => {
 
     /**
      * chatGroupsの初期化
+     * FIXME::命名変える必要あり（storeのinitChatGroupsと被ったため一旦この命名にした）
      */
-    const initChatGroups = (resChatGroups: ResChatGroup[]) => {
+    const initializeChatGroups = (resChatGroups: ResChatGroup[]) => {
         const chatGroups: ChatGroup[] = resChatGroups.map((chatGroup) => {
             return {
                 ...chatGroup,
@@ -499,108 +421,6 @@ const ChatMessage = (props: ChatMessagePropsType) => {
         return chatGroups
     }
 
-    /**
-     * chatGroupsを日付でグルーピング
-     */
-    const groupByDateChatGroups = (chatGroups: ChatGroup[]) => {
-        const groupByDateChatGroups = chatGroups.reduce((group: GroupByDateChatGroupsType, chatGroup: ChatGroup) => {
-
-            group[chatGroup.lastChatDate] = group[chatGroup.lastChatDate] ?? [];
-            group[chatGroup.lastChatDate].push(chatGroup);
-
-            return group;
-
-        }, {} as GroupByDateChatGroupsType);
-
-        return groupByDateChatGroups
-    }
-
-    /**
-     * サーバからチャットグループを取得
-     */
-    const getChatGroups = (page: number = 1): Promise<ResChatGroup[]> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: `/api/v1/chat-groups/?page=${page}`,
-                method: 'GET',
-            })
-            .then((res: AxiosResponse): void => {
-                const { data } = res
-                console.log(data)
-                resolve(data)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
-    }
-
-    /**
-     * サーバからチャットグループのレコード数を取得
-     */
-    const getChatGroupsCount = (): Promise<{chatGroupsCount: number}> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: `/api/v1/chat-groups/count`,
-                method: 'GET',
-            })
-            .then((res: AxiosResponse): void => {
-                const { data } = res
-                console.log(data)
-                resolve(data)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
-    }
-
-    /**
-     * チャットグループIDでチャットを取得
-     */
-    const getChats = (chatGroupId: string): Promise<Chat[]> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: '/api/v1/chats/',
-                method: 'GET',
-                params: {
-                    'chat_group_id': chatGroupId
-                }
-            })
-            .then((res: AxiosResponse): void => {
-                const { data } = res
-                console.log(data)
-                resolve(data)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
-    }
-
-    /**
-     * 質問を検索
-     */
-    const searchChatGroups = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const searchWord: string = e.target.value
-        const filteredChangeGroup = allChatGroups.filter((chatGroup) => {
-            const isMatch = chatGroup.title.indexOf(searchWord) !== -1
-            return isMatch
-        })
-
-        setChatGroups(filteredChangeGroup)
-    }, [allChatGroups])
-
-    /**
-     * 質問検索欄にフォーカスが当たった時にChatGroupsのキャッシュを更新
-     */
-    const refreshChatGroupsCache = useCallback(() => {
-        setAllChatGroups(chatGroups)
-    }, [chatGroups])
-
     const [isChatLoading, setIsChatLoading] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
 
@@ -608,19 +428,23 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      * 過去の質問を表示
      */
     const displayPastChat = useCallback(async (chatGroup: ChatGroup) => {
-        const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
-        const chatGroupId = chatGroup.id
-        if (isEditingRename) return
+        try {
+            const isEditingRename = chatGroup.isEditingRename  // title編集中はイベント発火させない
+            const chatGroupId = chatGroup.id
+            if (isEditingRename) return
 
-        setIsChatLoading(true)
+            setIsChatLoading(true)
 
-        const chats = await getChats(chatGroupId)
-        setChats(chats)
-        setIsChatLoading(false)
+            const chats = await getChats(chatGroupId)
+            setChats(chats)
+            setIsChatLoading(false)
 
-        setChatGroupId(chatGroupId)
-        setIsDisplayChatGPT(true)
-        setIsSpMenuOpen(prev => !prev)
+            dispatch(updateChatGroupId(chatGroupId))
+            setIsDisplayChatGPT(true)
+            setIsSpMenuOpen(prev => !prev)
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }, [chatGroups, isSpMenuOpen])
 
     /**
@@ -628,11 +452,11 @@ const ChatMessage = (props: ChatMessagePropsType) => {
      */
     const displayNewChat = useCallback(async () => {
         setChats([])
-        setChatGroupId('')
+        dispatch(updateChatGroupId(''))
         setIsSpMenuOpen(prev => !prev)
         setErrorMessage('') // エラーメッセージを空に
 
-        setChatGroups(chatGroups)
+        // setChatGroups(chatGroups)
     }, [chatGroups, isSpMenuOpen])
 
     /**
@@ -641,142 +465,7 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     const displayPastChatMenu = useCallback((chatGroupId: string) => {
 
         // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を切り替える
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            return (
-                chatGroup.id === chatGroupId
-                    ? { ...chatGroup, isDisplayPastChatMenu: true }
-                    : { ...chatGroup, isDisplayPastChatMenu: false }
-            )
-        })
-
-        setChatGroups(editedChatGroups)
-    }, [chatGroups])
-
-    /**
-     * pastChatのポップアップメニューを閉じる（クリック時に3点リーダーを非活性にさせるため）
-     */
-    const closePastChatMenu = useCallback(() => {
-        // isDisplayPastChatMenu（ポップアップメニューの表示フラグ）を全てfalseにする
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            return { ...chatGroup, isDisplayPastChatMenu: false }
-        })
-
-        setChatGroups(editedChatGroups)
-    }, [chatGroups])
-
-    const chatGroupTitleInputRef = useRef<HTMLInputElement>(null)
-
-    /**
-     * titleをinputタグに変換する
-     */
-    const convertTitleToInput = useCallback((chatGroupId: string) => {
-
-        // // isEditingRename（title編集中フラグ）を切り替える
-        // const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-        //     return (
-        //         chatGroup.id === chatGroupId
-        //             ? { ...chatGroup, isEditingRename: true }
-        //             : { ...chatGroup, isEditingRename: false }
-        //     )
-        // })
-
-        // isEditingRename（title編集中フラグ）を切り替える
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            chatGroup.isEditingRename =
-                chatGroup.id === chatGroupId
-                ? true
-                : false
-
-            return chatGroup
-        })
-
-        setChatGroups(editedChatGroups)
-    }, [chatGroups])
-
-    /**
-     * chatGroupのtitle名を修正する
-     */
-    const renameTitle = useCallback((e: ChangeEvent<HTMLInputElement>, chatGroupId: string, chatGroups: ChatGroup[]) => {
-        // titleの更新
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            return (
-                chatGroup.id === chatGroupId
-                    ? { ...chatGroup, title: e.target.value }
-                    : chatGroup
-            )
-        })
-
-        setChatGroups(editedChatGroups)
-    }, [chatGroups])
-
-    const [validationMessageOfTitle, setValidationMessageOfTitle] = useState('')
-
-    /**
-     * titleのinputからフォーカスが外れた時に更新する
-     */
-    const outOfTitleInput = useCallback(() => {
-        updateTitle(chatGroups)
-    }, [chatGroups])
-
-    /**
-     * titleのinputでEnterが押された時に更新する
-     */
-    const onKeyDownTitleInput = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            updateTitle(chatGroups)
-        };
-    }, [chatGroups])
-
-    /**
-     * chatGroupのtitle名を更新する
-     */
-    const updateTitle = (chatGroups: ChatGroup[]) => {
-        if (!chatGroupTitleInputRef.current) return;
-
-        const chatGroupId = chatGroupTitleInputRef.current.id
-        const title = chatGroupTitleInputRef.current.value
-
-        const MAX_STR_COUNT = 255
-
-        if (!title || title.length > MAX_STR_COUNT) {
-            setValidationMessageOfTitle('1~255文字以内で入力してください。')
-            return
-        }
-        // titleのupdate（サーバー）
-        updateChatGroupTitle(chatGroupId, title)
-
-        // isEditingRename（title編集中フラグ）を元に戻す
-        const editedChatGroups: ChatGroup[] = chatGroups.map((chatGroup) => {
-            return { ...chatGroup, isEditingRename: false }
-        })
-
-        setChatGroups(editedChatGroups)
-    }
-
-    /**
-     * チャットグループtitleを更新
-     */
-    const updateChatGroupTitle = (chatGroupId: string, title: string): void => {
-        axios({
-            url: '/api/v1/chat-groups/',
-            method: 'POST',
-            params: {
-                'chatGroupId': chatGroupId,
-                'title': title,
-            }
-        })
-        .then((res: AxiosResponse): void => {
-            const { data } = res
-            console.log(data)
-        })
-        .catch((e: AxiosError): void => {
-            console.error(e)
-        })
-    }
-
-    // 編集ボタン押下時にtitleのinputタグにフォーカスを自動で当てる
-    useEffect(() => {
-        chatGroupTitleInputRef.current?.focus()
+        dispatch(toggleIsDisplayPastChatMenu(chatGroupId))
     }, [chatGroups])
 
     const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
@@ -786,7 +475,10 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * 削除モーダルをopen
      */
-    const openDeleteModal = useCallback((chatGroupId: string, chatGroupTitle: string) => {
+    const openDeleteModal = useCallback((
+        chatGroupId: string,
+        chatGroupTitle: string
+    ) => {
         // 削除対象のchatGroupId
         setDeleteTargetChatGroupId(chatGroupId)
 
@@ -798,58 +490,52 @@ const ChatMessage = (props: ChatMessagePropsType) => {
     /**
      * chatGroupを削除しサイドバー更新
      */
-    const executeDelete = async (deleteTargetChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
-        await deleteChatGroup(deleteTargetChatGroupId)
+    const executeDelete = async (
+        deleteTargetChatGroupId: string,
+        currentlyOpenChatGroupId: string | null
+    ): Promise<void> => {
+        try {
+            await deleteChatGroup(deleteTargetChatGroupId)
 
-        const resChatGroups = await getChatGroups(currentPage)
-        const chatGroups = initChatGroups(resChatGroups)
+            const resChatGroups = await getChatGroups(currentPage)
+            dispatch(initChatGroups(resChatGroups))
 
-        setChatGroups(chatGroups)
-
-        // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
-        refreshChats(deleteTargetChatGroupId, currentlyOpenChatGroupId)
-    }
-
-    /**
-     * chatGroup削除
-     */
-    const deleteChatGroup = (chatGroupId: string): Promise<boolean> => {
-        return new Promise((resolve, reject) => {
-            axios({
-                url: `/api/v1/chat-groups/${chatGroupId}`,
-                method: 'DELETE',
-            })
-            .then((res: AxiosResponse): void => {
-                resolve(true)
-            })
-            .catch((e: AxiosError): void => {
-                console.error(e)
-                reject(e)
-            })
-        })
+            // 今開いているchatが削除したchatGroupのものなら画面をnewChatにし、他のchatGroupのものなら、そのままの画面にする
+            refreshChats(deleteTargetChatGroupId, currentlyOpenChatGroupId)
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
     }
 
     /**
      * 削除したchatGroupの画面を削除時に開いていた場合に、chat画面を初期化
      */
-    const refreshChats = (deletedChatGroupId: string, currentlyOpenChatGroupId: string | null) => {
+    const refreshChats = (
+        deletedChatGroupId: string,
+        currentlyOpenChatGroupId: string | null
+    ) => {
         if (deleteTargetChatGroupId === currentlyOpenChatGroupId) {
             setChats([])
-            setChatGroupId('')
+            dispatch(updateChatGroupId(''))
         }
     }
 
     /**
      * chatGroupsのページネーション押下時
      */
-    const getChatGroupsPagination = async (event: React.ChangeEvent<unknown>, page: number) => {
-        setCurrentPage(page)
+    const getChatGroupsPagination = useCallback(async (
+        event: React.ChangeEvent<unknown>,
+        page: number
+    ): Promise<void> => {
+        try {
+            setCurrentPage(page)
 
-        const resChatGroups = await getChatGroups(page)
-        const chatGroups = initChatGroups(resChatGroups)
-
-        setChatGroups(chatGroups)
-    }
+            const resChatGroups = await getChatGroups(page)
+            dispatch(initChatGroups(resChatGroups))
+        } catch (e) {
+            setErrorMessage(GENERAL_ERROR_MESSAGE)
+        }
+    }, [currentPage])
 
     console.log(111111111)
 
@@ -865,66 +551,21 @@ const ChatMessage = (props: ChatMessagePropsType) => {
                 handleExecute={() => {executeDelete(deleteTargetChatGroupId, chatGroupId)}}
             />
             <Wrapper>
-                <SidebarContainer className={isSpMenuOpen ? 'open' : ''}>
-                    <div className='contents'>
-                        <NewChatButton
-                            displayNewChat={displayNewChat}
-                        />
-                        <div className='past-chats-container'>
-                            <SearchQuestionInput
-                                searchChatGroups={searchChatGroups}
-                                refreshChatGroupsCache={refreshChatGroupsCache}
-                            />
-                            <div className='past-chats'>
-                                {Object.keys(groupByDateChatGroups(chatGroups)).map((date: string, i: number) => {
-                                    return (
-                                        <React.Fragment key={i}>
-                                            <div className='date'>
-                                                {date}
-                                            </div>
-                                            {groupByDateChatGroups(chatGroups)[date].map((chatGroup: ChatGroup, i: number) => {
-                                                return (
-                                                    <React.Fragment key={i}>
-                                                        <PastChat
-                                                            chatGroups={chatGroups}
-                                                            chatGroup={chatGroup}
-                                                            chatGroupId={chatGroupId}
-                                                            displayPastChat={displayPastChat}
-                                                            renameTitle={renameTitle}
-                                                            onKeyDownTitleInput={onKeyDownTitleInput}
-                                                            outOfTitleInput={outOfTitleInput}
-                                                            chatGroupTitleInputRef={chatGroupTitleInputRef}
-                                                            convertTitleToInput={convertTitleToInput}
-                                                            openDeleteModal={openDeleteModal}
-                                                            displayPastChatMenu={displayPastChatMenu}
-                                                            closePastChatMenu={closePastChatMenu}
-                                                            validationMessageOfTitle={validationMessageOfTitle}
-                                                        />
-                                                    </React.Fragment>
-                                                )
-                                            })}
-                                        </React.Fragment>
-                                    )
-                                })}
-                            </div>
-                            <div className='pagination'>
-                                <Pagination count={maxPagination} onChange={getChatGroupsPagination} page={currentPage} />
-                            </div>
-
-                        </div>
-                    </div>
-                    <div className={`sidebar-footer ${isSpMenuOpen ? 'open' : ''}`}>
-                        <div className='account'>
-                            <AccountPopupMenuButton
-                                isGetPdfPage={isGetPdfPage}
-                                setIsGetPdfPage={setIsGetPdfPage}
-                                userName={userName}
-                                gptModel={gptModel}
-                                setGptModel={setGptModel}
-                            />
-                        </div>
-                    </div>
-                </SidebarContainer>
+                <Sidebar
+                    isSpMenuOpen={isSpMenuOpen}
+                    displayNewChat={displayNewChat}
+                    displayPastChat={displayPastChat}
+                    openDeleteModal={openDeleteModal}
+                    displayPastChatMenu={displayPastChatMenu}
+                    maxPagination={maxPagination}
+                    getChatGroupsPagination={getChatGroupsPagination}
+                    currentPage={currentPage}
+                    isGetPdfPage={isGetPdfPage}
+                    setIsGetPdfPage={setIsGetPdfPage}
+                    userName={userName}
+                    gptModel={gptModel}
+                    setGptModel={setGptModel}
+                />
 
                 <MainContainer>
                     <Header>
@@ -993,5 +634,9 @@ const element = document.getElementById('chat-message')
 if (element) {
   const props = element.dataset.props
   const reactProps = props ? JSON.parse(props) : null
-  createRoot(element).render(<ChatMessage {...reactProps}/>)
+    createRoot(element).render(
+        <Provider store={store}>
+            <ChatMessage {...reactProps} />
+        </Provider>
+    )
 }

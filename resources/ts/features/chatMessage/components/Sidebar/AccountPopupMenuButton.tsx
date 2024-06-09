@@ -3,11 +3,11 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { FaRegUserCircle } from "react-icons/fa";
 import styled from '@emotion/styled';
-import { bgColor } from '../../../utils/themeClient';
-import { fontSize } from '../../../utils/themeClient';
-import { fontWeight } from '../../../utils/themeClient';
+import { bgColor } from '../../../../utils/themeClient';
+import { fontSize } from '../../../../utils/themeClient';
+import { fontWeight } from '../../../../utils/themeClient';
 import { IoSettingsOutline } from "react-icons/io5";
-import AccountSettingsModal, { setIsGetPdfPageParam } from './AccountSettingsModal';
+import AccountSettingsModal, { setIsGetPdfPageParam } from '../AccountSettingsModal';
 import axios, { AxiosResponse } from 'axios';
 
 const AccountButton = styled('button')`
