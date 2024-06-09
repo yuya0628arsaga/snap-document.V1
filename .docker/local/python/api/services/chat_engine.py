@@ -1,6 +1,3 @@
-import base64
-import re
-
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
@@ -11,7 +8,6 @@ from langchain.chains import LLMChain
 from langchain.chains.question_answering import load_qa_chain
 
 from api.services.chroma_engine import ChromaEngine
-from api.models.s3 import S3
 import settings
 
 
@@ -85,7 +81,6 @@ class ChatEngine(object):
                 template=prompt_template_qa,
                 input_variables=["context", "question"]
         )
-        # chain_type_kwargs = {"prompt": prompt_qa}
 
         return prompt_qa
 
@@ -107,9 +102,6 @@ class ChatEngine(object):
 
     def _get_answer_from_gpt(self, qa, question, chat_history):
         """GPTに質問を投げて回答を取得"""
-        # ベクトル間の距離を閾値としたフィルターを設定し、関連度がより強いものしか参照しないようにできます。ここでは、 vectordbkwargs 内のdictに、 search_distance というキー名で格納します。 vector store が探していれば、 search distance に閾値を設定してフィルタがかけられる
-        # vectordbkwargs = {"search_distance": 0.9}
-        # result = qa({"question": question, "chat_history": chat_history, "vectordbkwargs": vectordbkwargs})
 
         with get_openai_callback() as cb:
             result = qa({"question": question, "chat_history": chat_history})
@@ -146,8 +138,6 @@ class ChatEngine(object):
                     "cost": int,
                 }
         """
-        # question = '回路シミュレーションでSパラメータ解析はどのように実行すればいいですか？'
-        # question = 'SPICEモデルはどこのフォルダに入れればいいですか？'
         chat_history = [tuple(history) for history in chat_history]
 
         prompt_qg = self._make_prompt_qg()

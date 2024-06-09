@@ -41,7 +41,7 @@ async def answer(chat: Chat):
             "errors": e,
         }
 
-# サンプルデータを返却
+# テスト用（サンプルデータを返却）
 @router.post("/test3")
 async def test3(chat: Chat):
 

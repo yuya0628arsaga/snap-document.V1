@@ -245,7 +245,8 @@ const UserLogin = (props: UserLoginPropsType) => {
                         </div>
                     }
 
-                    <div className='auto-login-checkbox'>
+                    {/* TODO::サーバ実装予定 */}
+                    {/* <div className='auto-login-checkbox'>
                         <CheckboxLabels
                             label={'次回から自動的にログインする'}
                             handleChangeCheckbox={() => console.log(333)}
@@ -265,7 +266,7 @@ const UserLogin = (props: UserLoginPropsType) => {
                                 <path d="M2 9.35315L6 5.35315L2 1.35315" stroke={`${textColor.linkBlue}`} />
                             </svg>
                         </a>
-                    </div>
+                    </div> */}
 
                     <div className='login-button'>
                         <Button

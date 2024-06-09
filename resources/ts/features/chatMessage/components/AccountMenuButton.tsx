@@ -111,12 +111,13 @@ const AccountMenuButton = React.memo((props: AccountMenuButtonPropsType) => {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-                <MenuItem onClick={handleClose}>
+                {/* TODO::実装完了次第コメントアウト外す */}
+                {/* <MenuItem onClick={handleClose}>
                     <ListItemIcon>
                         <AccountCircle fontSize="medium" />
                     </ListItemIcon>
                     プロフィール
-                </MenuItem>
+                </MenuItem> */}
 
                 <MenuItem onClick={() => {
                     handleClose()
